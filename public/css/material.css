@@ -1,0 +1,31 @@
+table.md[name="view"] input {
+    font-size: 10pt;
+    font-family: Verdana,Geneva,Arial,Helvetica,sans-serif;
+    border: 1px solid #B9CF8E;
+    border-style: none none solid none;
+    margin: 0px;
+    margin-right: 1px;
+    padding: 0px;
+    padding-left: 2px;
+}
+
+table.md[name="view"] select {
+    border: 1px solid #B9CF8E;
+    border-style: none none solid none;
+    box-shadow: none
+}
+
+table.md[name="view"] textarea {
+    resize: none;
+    width: 99%;
+    font-size: 10pt;
+    font-family: Verdana,Geneva,Arial,Helvetica,sans-serif;
+    border: 1px solid #B9CF8E;
+    border-style: none none solid none;
+    margin: 0px;
+    margin-right: 1px;
+    padding: 0px;
+    padding-left: 2px;
+    overflow: hidden;
+    background-color: white;
+}

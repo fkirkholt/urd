@@ -1,0 +1,48 @@
+#header {
+    display: none;
+}
+
+#toolbar {
+    display: none;
+}
+
+#meny {
+    display: none;
+}
+
+#alertmod {
+    display: none;
+}
+
+#print-view table {
+    /*margin: 1px;*/
+    border-collapse: collapse;
+    border: 1px solid #E0E0E0;
+}
+
+#print-view table thead tr th
+{
+    border: 1px solid #E0E0E0;
+    border-bottom: 2px solid black;
+    font-weight: bold;
+    margin-right: 4px;
+    padding: 0 2px;
+}
+
+#print-view table tbody tr td
+{
+    border: 1px solid #E0E0E0; /*#D2D2D2;*/
+    padding: 0px 2px;
+    /*max-width: 250px;*/
+}
+
+#print-view table tfoot tr td {
+    /*border: 1px solid #E0E0E0;*/
+    border-top: 2px solid black;
+    margin-right: 4px;
+    padding: 0 2px;
+}
+
+#print-view-close {
+    display: none;
+}

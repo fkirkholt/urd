@@ -1,0 +1,56 @@
+<script type="text/javascript"
+        src="skript/rapportgenerator/rapportgenerator.js"/>
+<link rel="stylesheet" href="skript/rapportgenerator/rapportgenerator.css"
+      type="text/css"/>
+
+<table>
+    <tr>
+        <td id="choose_from_column">
+            <h3>Tilgjengelige kolonner</h3>
+            <div id="path"></div>
+            <div id="column_list"></div>
+        </td>
+        <td id="chosen_column">
+            <h3>Valgte kolonner</h3>
+            <div id="field_list">
+                <table>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </td>
+        <td id="conditions_column">
+            <h3>Betingelser</h3>
+            <div id="conditions">
+                <div class="condition">
+                    <select class="cond_table">
+                        <option value="">-- Tabell --</option>
+                    </select>
+                    <select class="cond_field">
+                        <option value="">-- Felt --</option>
+                    </select>
+                    <select class="cond_operator">
+                        <option value="">-- Operator --</option>
+                    </select>
+                    <select class="cond_values" style="display:none"></select>
+                    <input type="text" class="cond_value">
+                </div>
+            </div>
+            <div>
+                <input type="button" value="+">
+            </div>
+        </td>
+    </tr>
+</table>
+<div>
+    <input type="button" id="run_report" value="Kjør rapport">
+    <input type="button" id="save_report" value="Lagre rapport">
+</div>
+<div id="save_report_dialog" style="display:none">
+    Navn:<input type="text" name="name">
+    <input type="button" value="OK">
+    <input type="button" value="Avbryt">
+</div>
+<div id="report">
+    <table>
+    </table>
+</div>

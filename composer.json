@@ -1,0 +1,41 @@
+{
+    "name": "URD",
+    "description": "Universal Relational Database",
+    "license": "LGPL",
+    "require": {
+        "php": ">=5.4.0",
+        "slim/slim": "2.*",
+        "monolog/monolog": "1.17.*",
+        "opis/database": "3.6.*",
+        "dibi/dibi": "3.0.*",
+        "davedevelopment/phpmig": "dev-master",
+        "ccampbell/chromephp": "*",
+        "oomphinc/composer-installers-extender": "dev-master",
+        "psy/psysh": "*",
+        "jdorn/sql-formatter": "dev-master",
+        "yajra/laravel-pdo-via-oci8": "1.*",
+        "ircmaxell/password-compat": "1.*",
+        "phpmailer/phpmailer": "5.2.*",
+        "wikimedia/composer-merge-plugin": "dev-master"
+    },
+    "config": {
+        "bin-dir": "bin/",
+        "github-protocols": ["https", "ssh", "git"]
+    },
+    "extra": {
+        "installer-types": ["urd-schema"],
+        "installer-paths": {
+            "schemas/{$name}/": ["type:urd-schema"]
+        },
+        "merge-plugin": {
+            "include": "composer.local.json",
+            "recurse": true,
+            "replace": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "URD\\": "app/"
+        }
+    }
+}

@@ -1,0 +1,94 @@
+html {
+    line-height: normal;
+}
+
+.sans-serif {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#action-dialog {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+}
+
+.focus-blue:focus {
+    color: blue;
+}
+
+.cursor-default:hover {
+    cursor: default;
+}
+
+.bt--black {
+    border-top-color: black !important;
+}
+
+.bt-2 {
+    border-top-width: 2px;
+}
+
+.min-h-0 {
+    min-height: 0;
+}
+
+.max-h1 {max-height: 1rem;}
+.max-h2 {max-height: 2rem;}
+.max-h3 {max-height: 3rem;}
+.max-h4 {max-height: 5rem;}
+.max-h5 {max-height: 8rem;}
+
+.fast-spin {
+  -webkit-animation: fa-spin 0.2s infinite linear;
+  animation: fa-spin 0.2s infinite linear;
+}
+
+/* Use fibonacci for widths */
+
+.w0 {width: 0;}
+.w1 {width: 1rem;}
+.w2 {width: 2rem;}
+.w3 {width: 3rem;}
+.w4 {width: 5rem;}
+.w5 {width: 8rem;}
+.w6 {width:13rem;}
+.w7 {width:21rem;}
+.w8 {width:34rem;}
+.w9 {width:55rem;}
+
+.max-w1 {max-width: 1rem;}
+.max-w2 {max-width: 2rem;}
+.max-w3 {max-width: 3rem;}
+.max-w4 {max-width: 5rem;}
+.max-w5 {max-width: 8rem;}
+.max-w6 {max-width:13rem;}
+.max-w7 {max-width:21rem;}
+.max-w8 {max-width:34rem;}
+.max-w9 {max-width:55rem;}
+.max-w10 {max-width:89rem;}
+.max-w11 {max-width:144rem;}
+
+.min-w1 {min-width: 1rem;}
+.min-w2 {min-width: 2rem;}
+.min-w3 {min-width: 3rem;}
+.min-w4 {min-width: 5rem;}
+.min-w5 {min-width: 8rem;}
+.min-w6 {min-width:13rem;}
+.min-w7 {min-width:21rem;}
+.min-w8 {min-width:34rem;}
+.min-w9 {min-width:55rem;}
+
+.max-w-100 {max-width: 100%;}
+.min-w-100 {min-width: 100%;}
+
+.overflow-wrap {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}

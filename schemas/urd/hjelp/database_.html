@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Databaser</title>
+    </head>
+    <body>
+        <p>Denne tabellen holder oversikt over alle databaser som er tilgjengelig i URD</p>
+        <h2>Tilgjengeliggjøre eksisterende database</h2>
+        <p>
+            For å tilgjengeliggjøre en eksisterende database i URD, må man først få denne databasen
+            inn i det databasesystemet URD kjører på (foreløpig støttes kun MySQL).
+        </p>
+        <p>
+            Alle databaser i URD må knyttes til en mal. Malen bestemmer hvordan databasen skal framtre
+            i URD. Hvis det ikke finnes noen mal for den aktuelle databasen, må malen opprettes. Du oppretter
+            malen ganske enkelt ved å opprette en mappe under urd/templates som representerer malen. Navnet
+            på malen blir lik navnet på mappen. I resten av beskrivelsen her går vi ut ifra at det ikke finnes
+            noen mal fra før.
+        </p>
+        <p>
+            Deretter opprettes en oppføring av denne databasen i databaseoversikten til URD, dvs. den
+            tabellen du er inne på nå. Skriv inn navnet på databasen, slik du la den inn i databasesystemet,
+            og gi den en betegnelse og et datoformat, og knytt den til den malen du nettopp har opprettet.
+            Lagre deretter innførselen.
+        </p>
+        <p>
+            Etter at innførselen er lagrret, må man definere opp malen. URD kan hente informasjon fra
+            databasen til å beskrive alle tabeller og kolonner i databasen. Velg handlingen "Lag strukturtabeller"
+            under komboboksen "Flere...".
+        </p>
+        <p>
+            Etter at strukturtabellene er populert, kan du redigere opplysningene om malen i tabellene "Tabeller"
+            og "Kolonner".
+        </p>
+    </body>
+</html>

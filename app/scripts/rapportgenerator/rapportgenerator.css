@@ -1,0 +1,40 @@
+#choose_from_column {
+    vertical-align: top;
+}
+
+#chosen_column {
+    vertical-align: top;
+    padding-left: 50px;
+}
+
+#conditions_column {
+    vertical-align: top;
+    padding-left: 50px;
+}
+
+#column_list table tr.selected,
+#field_list table tr.selected {
+    background-color: #B5D5F5;
+}
+
+#column_list td.link {
+    color: blue;
+}
+
+#column_list td.link:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#path span {
+    color: blue;
+}
+
+#path span:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#report {
+    margin-top: 20px;
+}

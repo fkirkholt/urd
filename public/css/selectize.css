@@ -1,0 +1,66 @@
+form[name="record"] .selectize-control.single .selectize-input {
+    border-radius: 0px;
+    border-style: none none solid none;
+    border-color: #B9CF8E;
+    padding: 0 0;
+    background-image: none;
+    background-color: transparent;
+    font-size: 14px;
+    box-shadow: none;
+}
+
+.selectize-control.single .selectize-input {
+    padding: 0 0;
+    background-color: transparent;
+    font-size: 11px;
+    padding: 0 7px;
+    height: 20px;
+    line-height: 16px;
+    border-radius: 4px;
+}
+
+.selectize-control.single .selectize-input.invalid {
+    border-color: red;
+}
+
+form[name="record"] td.dirty .selectize-control.single .selectize-input {
+    border-color: violet;
+}
+
+form[name="record"] .selectize-control.single {
+    background-image: none;
+    display: inline-block;
+    width: 100%;
+}
+
+.selectize-control.single {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.selectize-control .selectize-input.disabled {
+    opacity: 1;
+}
+
+form[name="record"] .selectize-control.single .selectize-input.disabled {
+    border: none;
+}
+
+.selectize-control.single .selectize-input.disabled::after {
+    border-style: none;
+}
+
+.selectize-control.single .selectize-input::after {
+    right: 5px;
+}
+
+.selectize-dropdown-content {
+    font-size: 11px;
+}
+
+.selectize-dropdown [data-selectable], .selectize-dropdown .optgroup-header {
+    padding: 2px 8px;
+}
+
+

@@ -1,0 +1,35 @@
+div#skript {
+    float: left;
+    width: 40%;
+}
+
+div#visning {
+    float: left;
+    width: 60%;
+}
+
+div#visning_header {
+    margin-left: 10px;
+}
+
+div#resultat {
+    border: 1px solid #D2D2D2;
+    margin-left: 10px;
+    padding: 10px;
+}
+
+div#info {
+    border: 1px solid #D2D2D2;
+    margin-left: 10px;
+    padding: 10px;
+    /*font-family: monospace;*/
+}
+
+textarea#sql {
+    width:100%;
+}
+
+a {
+    padding-right: 10px;
+}
+

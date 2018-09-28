@@ -1,0 +1,36 @@
+# Ignore directories and files
+composer.lock
+bin/*
+vendor/
+node_modules/
+public/assets/
+lib_old/
+lib/img/silk/
+schemas/*/
+schemas/*/uploads/
+inc/versjon.inc.php
+tags
+uncommitted/
+lib/FirePHP.class.php
+lib/FirePHPCore/
+lib/fb.php
+lib/firelogger.php
+schemes/urd/sql/
+app/config/config.php
+js/build.js
+
+# Ignore invisible files
+.*
+
+# Ignore logs
+*.log
+
+# Ignore taskpape files
+*.taskpaper
+
+# Include files
+!.gitignore
+!.htaccess
+!schemas/urd/
+!.editorconfig
+!bin/run.php
