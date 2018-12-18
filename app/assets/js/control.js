@@ -14,6 +14,7 @@ var control = {
     validate: function(value, field) {
         field.invalid = false;
         field.errormsg = '';
+        if (field.editable == false) return;
         if ((field.nullable || field.extra) && (value == '' || value == null)) {
             field.invalid = false;
         } else if (!field.nullable && (value === '' || value === null) && !field.source) {
