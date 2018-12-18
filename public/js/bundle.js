@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 208);
+/******/ 	return __webpack_require__(__webpack_require__.s = 209);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1331,7 +1331,7 @@
 
     var defaultLocaleWeek = {
         dow : 0, // Sunday is the first day of the week.
-        doy : 6  // The week that contains Jan 1st is the first week of the year.
+        doy : 6  // The week that contains Jan 6th is the first week of the year.
     };
 
     function localeFirstDayOfWeek () {
@@ -1544,9 +1544,9 @@
 
             mom = createUTC([2000, 1]).day(i);
             if (strict && !this._fullWeekdaysParse[i]) {
-                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
-                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
-                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\\.?') + '$', 'i');
+                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\\.?') + '$', 'i');
+                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\\.?') + '$', 'i');
             }
             if (!this._weekdaysParse[i]) {
                 regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
@@ -1905,7 +1905,7 @@
             try {
                 oldLocale = globalLocale._abbr;
                 var aliasedRequire = require;
-                __webpack_require__(319)("./" + name);
+                __webpack_require__(320)("./" + name);
                 getSetGlobalLocale(oldLocale);
             } catch (e) {}
         }
@@ -2207,13 +2207,13 @@
                     weekdayOverflow = true;
                 }
             } else if (w.e != null) {
-                // local weekday -- counting starts from begining of week
+                // local weekday -- counting starts from beginning of week
                 weekday = w.e + dow;
                 if (w.e < 0 || w.e > 6) {
                     weekdayOverflow = true;
                 }
             } else {
-                // default to begining of week
+                // default to beginning of week
                 weekday = dow;
             }
         }
@@ -2349,7 +2349,7 @@
 
     function preprocessRFC2822(s) {
         // Remove comments and folding whitespace and replace multiple-spaces with a single space
-        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').trim();
+        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     }
 
     function checkWeekday(weekdayStr, parsedInput, config) {
@@ -2807,7 +2807,7 @@
             years = normalizedInput.year || 0,
             quarters = normalizedInput.quarter || 0,
             months = normalizedInput.month || 0,
-            weeks = normalizedInput.week || 0,
+            weeks = normalizedInput.week || normalizedInput.isoWeek || 0,
             days = normalizedInput.day || 0,
             hours = normalizedInput.hour || 0,
             minutes = normalizedInput.minute || 0,
@@ -3111,7 +3111,7 @@
                 ms : toInt(absRound(match[MILLISECOND] * 1000)) * sign // the millisecond decimal point is included in the match
             };
         } else if (!!(match = isoRegex.exec(input))) {
-            sign = (match[1] === '-') ? -1 : (match[1] === '+') ? 1 : 1;
+            sign = (match[1] === '-') ? -1 : 1;
             duration = {
                 y : parseIso(match[2], sign),
                 M : parseIso(match[3], sign),
@@ -3262,7 +3262,7 @@
         if (!(this.isValid() && localInput.isValid())) {
             return false;
         }
-        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
+        units = normalizeUnits(units) || 'millisecond';
         if (units === 'millisecond') {
             return this.valueOf() > localInput.valueOf();
         } else {
@@ -3275,7 +3275,7 @@
         if (!(this.isValid() && localInput.isValid())) {
             return false;
         }
-        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
+        units = normalizeUnits(units) || 'millisecond';
         if (units === 'millisecond') {
             return this.valueOf() < localInput.valueOf();
         } else {
@@ -3284,9 +3284,14 @@
     }
 
     function isBetween (from, to, units, inclusivity) {
+        var localFrom = isMoment(from) ? from : createLocal(from),
+            localTo = isMoment(to) ? to : createLocal(to);
+        if (!(this.isValid() && localFrom.isValid() && localTo.isValid())) {
+            return false;
+        }
         inclusivity = inclusivity || '()';
-        return (inclusivity[0] === '(' ? this.isAfter(from, units) : !this.isBefore(from, units)) &&
-            (inclusivity[1] === ')' ? this.isBefore(to, units) : !this.isAfter(to, units));
+        return (inclusivity[0] === '(' ? this.isAfter(localFrom, units) : !this.isBefore(localFrom, units)) &&
+            (inclusivity[1] === ')' ? this.isBefore(localTo, units) : !this.isAfter(localTo, units));
     }
 
     function isSame (input, units) {
@@ -3295,7 +3300,7 @@
         if (!(this.isValid() && localInput.isValid())) {
             return false;
         }
-        units = normalizeUnits(units || 'millisecond');
+        units = normalizeUnits(units) || 'millisecond';
         if (units === 'millisecond') {
             return this.valueOf() === localInput.valueOf();
         } else {
@@ -3305,11 +3310,11 @@
     }
 
     function isSameOrAfter (input, units) {
-        return this.isSame(input, units) || this.isAfter(input,units);
+        return this.isSame(input, units) || this.isAfter(input, units);
     }
 
     function isSameOrBefore (input, units) {
-        return this.isSame(input, units) || this.isBefore(input,units);
+        return this.isSame(input, units) || this.isBefore(input, units);
     }
 
     function diff (input, units, asFloat) {
@@ -4528,7 +4533,7 @@
     // Side effect imports
 
 
-    hooks.version = '2.22.1';
+    hooks.version = '2.23.0';
 
     setHookCallback(createLocal);
 
@@ -4569,7 +4574,7 @@
         TIME: 'HH:mm',                                  // <input type="time" />
         TIME_SECONDS: 'HH:mm:ss',                       // <input type="time" step="1" />
         TIME_MS: 'HH:mm:ss.SSS',                        // <input type="time" step="0.001" />
-        WEEK: 'YYYY-[W]WW',                             // <input type="week" />
+        WEEK: 'GGGG-[W]WW',                             // <input type="week" />
         MONTH: 'YYYY-MM'                                // <input type="month" />
     };
 
@@ -16211,7 +16216,7 @@ m.vnode = Vnode
 if (true) module["exports"] = m
 else window.m = m
 }());
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(326).setImmediate, __webpack_require__(46)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(327).setImmediate, __webpack_require__(46)))
 
 /***/ }),
 /* 3 */
@@ -16539,8 +16544,8 @@ return $.ui.version = "1.12.1";
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsNative = __webpack_require__(232),
-    getValue = __webpack_require__(262);
+var baseIsNative = __webpack_require__(233),
+    getValue = __webpack_require__(263);
 
 /**
  * Gets the native function at `key` of `object`.
@@ -17717,7 +17722,7 @@ var m = __webpack_require__(2);
 var $ = __webpack_require__(1);
 var moment = __webpack_require__(0);
 var numeral = __webpack_require__(28);
-__webpack_require__(201);
+__webpack_require__(202);
 var entry = __webpack_require__(13);
 var control = __webpack_require__(31);
 var config = __webpack_require__(3);
@@ -18561,7 +18566,7 @@ var $ = __webpack_require__(1);
 var moment = __webpack_require__(0);
 var config = __webpack_require__(3);
 var ds = __webpack_require__(6);
-var _merge = __webpack_require__(308);
+var _merge = __webpack_require__(309);
 var _isEqual = __webpack_require__(75);
 var _get = __webpack_require__(25);
 
@@ -18575,8 +18580,8 @@ var toolbar = __webpack_require__(30);
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(18),
-    getRawTag = __webpack_require__(259),
-    objectToString = __webpack_require__(288);
+    getRawTag = __webpack_require__(260),
+    objectToString = __webpack_require__(289);
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
@@ -18690,11 +18695,11 @@ module.exports = eq;
 /* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var listCacheClear = __webpack_require__(273),
-    listCacheDelete = __webpack_require__(274),
-    listCacheGet = __webpack_require__(275),
-    listCacheHas = __webpack_require__(276),
-    listCacheSet = __webpack_require__(277);
+var listCacheClear = __webpack_require__(274),
+    listCacheDelete = __webpack_require__(275),
+    listCacheGet = __webpack_require__(276),
+    listCacheHas = __webpack_require__(277),
+    listCacheSet = __webpack_require__(278);
 
 /**
  * Creates an list cache object.
@@ -18767,7 +18772,7 @@ module.exports = assocIndexOf;
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isKeyable = __webpack_require__(271);
+var isKeyable = __webpack_require__(272);
 
 /**
  * Gets the data for `map`.
@@ -18854,8 +18859,8 @@ module.exports = toKey;
 /* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createFind = __webpack_require__(254),
-    findIndex = __webpack_require__(303);
+var createFind = __webpack_require__(255),
+    findIndex = __webpack_require__(304);
 
 /**
  * Iterates over elements of `collection`, returning the first element
@@ -18977,7 +18982,7 @@ module.exports = isSymbol;
 /***/ (function(module, exports, __webpack_require__) {
 
 var arrayLikeKeys = __webpack_require__(58),
-    baseKeys = __webpack_require__(234),
+    baseKeys = __webpack_require__(235),
     isArrayLike = __webpack_require__(15);
 
 /**
@@ -20701,7 +20706,7 @@ var toolbar = {
 module.exports = toolbar;
 
 var m = __webpack_require__(2);
-var mousetrap = __webpack_require__(320);
+var mousetrap = __webpack_require__(321);
 var config = __webpack_require__(3);
 var grid = __webpack_require__(12);
 var filterpanel = __webpack_require__(11);
@@ -21425,14 +21430,14 @@ var select = __webpack_require__(32);
 var datepicker = __webpack_require__(50);
 var autocomplete = __webpack_require__(49);
 var ds = __webpack_require__(6);
-var showdown = __webpack_require__(324);
+var showdown = __webpack_require__(325);
 var moment = __webpack_require__(0);
-var numeral = __webpack_require__(28); __webpack_require__(201);
+var numeral = __webpack_require__(28); __webpack_require__(202);
 var _get = __webpack_require__(25);
 var _find = __webpack_require__(24);
 var _isEqual = __webpack_require__(75);
 var config = __webpack_require__(3);
-var sprintf = __webpack_require__(325).sprintf
+var sprintf = __webpack_require__(326).sprintf
 
 // TODO: Dette fører til sirkulær avhengighet, som gjør at entry blir tomt objekt.
 var entry = __webpack_require__(13);
@@ -21516,11 +21521,11 @@ module.exports = Map;
 /* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mapCacheClear = __webpack_require__(278),
-    mapCacheDelete = __webpack_require__(279),
-    mapCacheGet = __webpack_require__(280),
-    mapCacheHas = __webpack_require__(281),
-    mapCacheSet = __webpack_require__(282);
+var mapCacheClear = __webpack_require__(279),
+    mapCacheDelete = __webpack_require__(280),
+    mapCacheGet = __webpack_require__(281),
+    mapCacheHas = __webpack_require__(282),
+    mapCacheSet = __webpack_require__(283);
 
 /**
  * Creates a map cache object to store key-value pairs.
@@ -21555,11 +21560,11 @@ module.exports = MapCache;
 /***/ (function(module, exports, __webpack_require__) {
 
 var ListCache = __webpack_require__(17),
-    stackClear = __webpack_require__(295),
-    stackDelete = __webpack_require__(296),
-    stackGet = __webpack_require__(297),
-    stackHas = __webpack_require__(298),
-    stackSet = __webpack_require__(299);
+    stackClear = __webpack_require__(296),
+    stackDelete = __webpack_require__(297),
+    stackGet = __webpack_require__(298),
+    stackHas = __webpack_require__(299),
+    stackSet = __webpack_require__(300);
 
 /**
  * Creates a stack cache object to store key-value pairs.
@@ -21618,7 +21623,7 @@ module.exports = baseAssignValue;
 /* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsEqualDeep = __webpack_require__(230),
+var baseIsEqualDeep = __webpack_require__(231),
     isObjectLike = __webpack_require__(10);
 
 /**
@@ -21745,7 +21750,7 @@ module.exports = identity;
 /* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsArguments = __webpack_require__(229),
+var baseIsArguments = __webpack_require__(230),
     isObjectLike = __webpack_require__(10);
 
 /** Used for built-in method references. */
@@ -21788,7 +21793,7 @@ module.exports = isArguments;
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var root = __webpack_require__(4),
-    stubFalse = __webpack_require__(311);
+    stubFalse = __webpack_require__(312);
 
 /** Detect free variable `exports`. */
 var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
@@ -21916,9 +21921,9 @@ module.exports = isLength;
 /* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsTypedArray = __webpack_require__(233),
-    baseUnary = __webpack_require__(246),
-    nodeUtil = __webpack_require__(287);
+var baseIsTypedArray = __webpack_require__(234),
+    baseUnary = __webpack_require__(247),
+    nodeUtil = __webpack_require__(288);
 
 /* Node.js helper references. */
 var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
@@ -22104,7 +22109,7 @@ var pagination = __webpack_require__(51);
 var toolbar = __webpack_require__(30);
 var grid = __webpack_require__(12);
 var entry = __webpack_require__(13);
-var search = __webpack_require__(209);
+var search = __webpack_require__(210);
 var config = __webpack_require__(3);
 
 
@@ -22116,7 +22121,7 @@ var m = __webpack_require__(2);
 var $ = __webpack_require__(1);
 var _last = __webpack_require__(77);
 var _find = __webpack_require__(24);
-__webpack_require__(211);
+__webpack_require__(212);
 
 
 var autocomplete = {
@@ -22287,7 +22292,7 @@ module.exports = autocomplete;
 var m = __webpack_require__(2);
 var $ = __webpack_require__(1);
 var moment = __webpack_require__(0);
-var Pikaday = __webpack_require__(321);
+var Pikaday = __webpack_require__(322);
 
 var datepicker = {
 
@@ -23983,7 +23988,7 @@ module.exports = Uint8Array;
 /* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseTimes = __webpack_require__(244),
+var baseTimes = __webpack_require__(245),
     isArguments = __webpack_require__(41),
     isArray = __webpack_require__(5),
     isBuffer = __webpack_require__(42),
@@ -24128,11 +24133,11 @@ module.exports = baseGet;
 /* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseMatches = __webpack_require__(236),
-    baseMatchesProperty = __webpack_require__(237),
+var baseMatches = __webpack_require__(237),
+    baseMatchesProperty = __webpack_require__(238),
     identity = __webpack_require__(40),
     isArray = __webpack_require__(5),
-    property = __webpack_require__(309);
+    property = __webpack_require__(310);
 
 /**
  * The base implementation of `_.iteratee`.
@@ -24167,8 +24172,8 @@ module.exports = baseIteratee;
 
 var isArray = __webpack_require__(5),
     isKey = __webpack_require__(39),
-    stringToPath = __webpack_require__(300),
-    toString = __webpack_require__(316);
+    stringToPath = __webpack_require__(301),
+    toString = __webpack_require__(317);
 
 /**
  * Casts `value` to a path array if it's not one.
@@ -24238,8 +24243,8 @@ module.exports = copyObject;
 /* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseRest = __webpack_require__(242),
-    isIterateeCall = __webpack_require__(270);
+var baseRest = __webpack_require__(243),
+    isIterateeCall = __webpack_require__(271);
 
 /**
  * Creates a function like `_.assign`.
@@ -24298,9 +24303,9 @@ module.exports = defineProperty;
 /* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var SetCache = __webpack_require__(217),
-    arraySome = __webpack_require__(223),
-    cacheHas = __webpack_require__(247);
+var SetCache = __webpack_require__(218),
+    arraySome = __webpack_require__(224),
+    cacheHas = __webpack_require__(248);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1,
@@ -24487,9 +24492,11 @@ module.exports = overArg;
  * @returns {*} Returns the property value.
  */
 function safeGet(object, key) {
-  return key == '__proto__'
-    ? undefined
-    : object[key];
+  if (key == '__proto__') {
+    return;
+  }
+
+  return object[key];
 }
 
 module.exports = safeGet;
@@ -24573,7 +24580,7 @@ module.exports = isEqual;
 /***/ (function(module, exports, __webpack_require__) {
 
 var arrayLikeKeys = __webpack_require__(58),
-    baseKeysIn = __webpack_require__(235),
+    baseKeysIn = __webpack_require__(236),
     isArrayLike = __webpack_require__(15);
 
 /**
@@ -24763,7 +24770,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 4  // The week that contains Jan 1st is the first week of the year.
+            doy : 4  // The week that contains Jan 4th is the first week of the year.
         }
     });
 
@@ -24826,7 +24833,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -24952,7 +24959,7 @@ module.exports = last;
         },
         week : {
             dow : 6, // Saturday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -25015,7 +25022,7 @@ module.exports = last;
         },
         week : {
             dow : 6, // Saturday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -25123,7 +25130,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -25325,7 +25332,7 @@ module.exports = last;
         },
         week : {
             dow : 6, // Saturday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -25394,7 +25401,7 @@ module.exports = last;
         relativeTime : {
             future : '%s sonra',
             past : '%s əvvəl',
-            s : 'birneçə saniyyə',
+            s : 'birneçə saniyə',
             ss : '%d saniyə',
             m : 'bir dəqiqə',
             mm : '%d dəqiqə',
@@ -25434,7 +25441,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -25489,7 +25496,7 @@ module.exports = last;
         weekdays : {
             format: 'нядзелю_панядзелак_аўторак_сераду_чацвер_пятніцу_суботу'.split('_'),
             standalone: 'нядзеля_панядзелак_аўторак_серада_чацвер_пятніца_субота'.split('_'),
-            isFormat: /\[ ?[Вв] ?(?:мінулую|наступную)? ?\] ?dddd/
+            isFormat: /\[ ?[Ууў] ?(?:мінулую|наступную)? ?\] ?dddd/
         },
         weekdaysShort : 'нд_пн_ат_ср_чц_пт_сб'.split('_'),
         weekdaysMin : 'нд_пн_ат_ср_чц_пт_сб'.split('_'),
@@ -25570,7 +25577,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -25664,7 +25671,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -25849,7 +25856,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -25972,7 +25979,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -26239,7 +26246,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -26581,7 +26588,7 @@ module.exports = last;
         ordinal : '%d-мӗш',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -27072,7 +27079,7 @@ module.exports = last;
         },
         week : {
             dow : 7,  // Sunday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -27668,7 +27675,7 @@ module.exports = last;
         ordinal : '%da',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -27851,7 +27858,7 @@ module.exports = last;
         ordinal : '%dº',
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -28101,7 +28108,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -28211,7 +28218,7 @@ module.exports = last;
         ordinal : '%dم',
         week : {
             dow : 6, // Saturday is the first day of the week.
-            doy : 12 // The week that contains Jan 1st is the first week of the year.
+            doy : 12 // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -29130,7 +29137,7 @@ module.exports = last;
         },
         week: {
             dow: 0, // Sunday is the first day of the week.
-            doy: 6 // The week that contains Jan 1st is the first week of the year.
+            doy: 6 // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -29359,7 +29366,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -29517,7 +29524,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -29730,7 +29737,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -29816,7 +29823,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -30207,7 +30214,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -30391,7 +30398,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -30635,7 +30642,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -30742,6 +30749,129 @@ module.exports = last;
 }(this, (function (moment) { 'use strict';
 
 
+    var symbolMap = {
+        '1': '١',
+        '2': '٢',
+        '3': '٣',
+        '4': '٤',
+        '5': '٥',
+        '6': '٦',
+        '7': '٧',
+        '8': '٨',
+        '9': '٩',
+        '0': '٠'
+    }, numberMap = {
+        '١': '1',
+        '٢': '2',
+        '٣': '3',
+        '٤': '4',
+        '٥': '5',
+        '٦': '6',
+        '٧': '7',
+        '٨': '8',
+        '٩': '9',
+        '٠': '0'
+    },
+    months = [
+        'کانونی دووەم',
+        'شوبات',
+        'ئازار',
+        'نیسان',
+        'ئایار',
+        'حوزەیران',
+        'تەمموز',
+        'ئاب',
+        'ئەیلوول',
+        'تشرینی یەكەم',
+        'تشرینی دووەم',
+        'كانونی یەکەم'
+    ];
+
+
+    var ku = moment.defineLocale('ku', {
+        months : months,
+        monthsShort : months,
+        weekdays : 'یه‌كشه‌ممه‌_دووشه‌ممه‌_سێشه‌ممه‌_چوارشه‌ممه‌_پێنجشه‌ممه‌_هه‌ینی_شه‌ممه‌'.split('_'),
+        weekdaysShort : 'یه‌كشه‌م_دووشه‌م_سێشه‌م_چوارشه‌م_پێنجشه‌م_هه‌ینی_شه‌ممه‌'.split('_'),
+        weekdaysMin : 'ی_د_س_چ_پ_ه_ش'.split('_'),
+        weekdaysParseExact : true,
+        longDateFormat : {
+            LT : 'HH:mm',
+            LTS : 'HH:mm:ss',
+            L : 'DD/MM/YYYY',
+            LL : 'D MMMM YYYY',
+            LLL : 'D MMMM YYYY HH:mm',
+            LLLL : 'dddd, D MMMM YYYY HH:mm'
+        },
+        meridiemParse: /ئێواره‌|به‌یانی/,
+        isPM: function (input) {
+            return /ئێواره‌/.test(input);
+        },
+        meridiem : function (hour, minute, isLower) {
+            if (hour < 12) {
+                return 'به‌یانی';
+            } else {
+                return 'ئێواره‌';
+            }
+        },
+        calendar : {
+            sameDay : '[ئه‌مرۆ كاتژمێر] LT',
+            nextDay : '[به‌یانی كاتژمێر] LT',
+            nextWeek : 'dddd [كاتژمێر] LT',
+            lastDay : '[دوێنێ كاتژمێر] LT',
+            lastWeek : 'dddd [كاتژمێر] LT',
+            sameElse : 'L'
+        },
+        relativeTime : {
+            future : 'له‌ %s',
+            past : '%s',
+            s : 'چه‌ند چركه‌یه‌ك',
+            ss : 'چركه‌ %d',
+            m : 'یه‌ك خوله‌ك',
+            mm : '%d خوله‌ك',
+            h : 'یه‌ك كاتژمێر',
+            hh : '%d كاتژمێر',
+            d : 'یه‌ك ڕۆژ',
+            dd : '%d ڕۆژ',
+            M : 'یه‌ك مانگ',
+            MM : '%d مانگ',
+            y : 'یه‌ك ساڵ',
+            yy : '%d ساڵ'
+        },
+        preparse: function (string) {
+            return string.replace(/[١٢٣٤٥٦٧٨٩٠]/g, function (match) {
+                return numberMap[match];
+            }).replace(/،/g, ',');
+        },
+        postformat: function (string) {
+            return string.replace(/\d/g, function (match) {
+                return symbolMap[match];
+            }).replace(/,/g, '،');
+        },
+        week : {
+            dow : 6, // Saturday is the first day of the week.
+            doy : 12 // The week that contains Jan 12th is the first week of the year.
+        }
+    });
+
+    return ku;
+
+})));
+
+
+/***/ }),
+/* 143 */
+/***/ (function(module, exports, __webpack_require__) {
+
+//! moment.js locale configuration
+
+;(function (global, factory) {
+    true ? factory(__webpack_require__(0)) :
+   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+   factory(global.moment)
+}(this, (function (moment) { 'use strict';
+
+
     var suffixes = {
         0: '-чү',
         1: '-чи',
@@ -30783,8 +30913,8 @@ module.exports = last;
             sameDay : '[Бүгүн саат] LT',
             nextDay : '[Эртең саат] LT',
             nextWeek : 'dddd [саат] LT',
-            lastDay : '[Кече саат] LT',
-            lastWeek : '[Өткен аптанын] dddd [күнү] [саат] LT',
+            lastDay : '[Кечээ саат] LT',
+            lastWeek : '[Өткөн аптанын] dddd [күнү] [саат] LT',
             sameElse : 'L'
         },
         relativeTime : {
@@ -30811,7 +30941,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -30821,7 +30951,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 143 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -30961,7 +31091,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 144 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31035,7 +31165,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 145 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31157,7 +31287,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 146 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31258,7 +31388,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 147 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31364,7 +31494,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -31374,7 +31504,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 148 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31442,7 +31572,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 149 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31526,7 +31656,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -31536,7 +31666,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 150 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31621,7 +31751,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 151 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31729,7 +31859,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 152 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31883,7 +32013,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -31893,7 +32023,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 153 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -31969,7 +32099,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -31979,7 +32109,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 154 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32055,7 +32185,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -32065,7 +32195,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 155 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32129,7 +32259,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 156 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32216,7 +32346,7 @@ module.exports = last;
         },
         week: {
             dow: 1, // Monday is the first day of the week.
-            doy: 4 // The week that contains Jan 1st is the first week of the year.
+            doy: 4 // The week that contains Jan 4th is the first week of the year.
         }
     });
 
@@ -32226,7 +32356,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 157 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32292,7 +32422,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 158 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32409,7 +32539,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -32419,7 +32549,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 159 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32435,7 +32565,7 @@ module.exports = last;
         monthsShortWithoutDots = 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_');
 
     var monthsParse = [/^jan/i, /^feb/i, /^maart|mrt.?$/i, /^apr/i, /^mei$/i, /^jun[i.]?$/i, /^jul[i.]?$/i, /^aug/i, /^sep/i, /^okt/i, /^nov/i, /^dec/i];
-    var monthsRegex = /^(januari|februari|maart|april|mei|april|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
+    var monthsRegex = /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
 
     var nlBe = moment.defineLocale('nl-be', {
         months : 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
@@ -32451,7 +32581,7 @@ module.exports = last;
 
         monthsRegex: monthsRegex,
         monthsShortRegex: monthsRegex,
-        monthsStrictRegex: /^(januari|februari|maart|mei|ju[nl]i|april|augustus|september|oktober|november|december)/i,
+        monthsStrictRegex: /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december)/i,
         monthsShortStrictRegex: /^(jan\.?|feb\.?|mrt\.?|apr\.?|mei|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i,
 
         monthsParse : monthsParse,
@@ -32510,7 +32640,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 160 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32526,7 +32656,7 @@ module.exports = last;
         monthsShortWithoutDots = 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_');
 
     var monthsParse = [/^jan/i, /^feb/i, /^maart|mrt.?$/i, /^apr/i, /^mei$/i, /^jun[i.]?$/i, /^jul[i.]?$/i, /^aug/i, /^sep/i, /^okt/i, /^nov/i, /^dec/i];
-    var monthsRegex = /^(januari|februari|maart|april|mei|april|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
+    var monthsRegex = /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
 
     var nl = moment.defineLocale('nl', {
         months : 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
@@ -32542,7 +32672,7 @@ module.exports = last;
 
         monthsRegex: monthsRegex,
         monthsShortRegex: monthsRegex,
-        monthsStrictRegex: /^(januari|februari|maart|mei|ju[nl]i|april|augustus|september|oktober|november|december)/i,
+        monthsStrictRegex: /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december)/i,
         monthsShortStrictRegex: /^(jan\.?|feb\.?|mrt\.?|apr\.?|mei|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i,
 
         monthsParse : monthsParse,
@@ -32601,7 +32731,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 161 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32665,7 +32795,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 162 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32703,7 +32833,7 @@ module.exports = last;
     };
 
     var paIn = moment.defineLocale('pa-in', {
-        // There are months name as per Nanakshahi Calender but they are not used as rigidly in modern Punjabi.
+        // There are months name as per Nanakshahi Calendar but they are not used as rigidly in modern Punjabi.
         months : 'ਜਨਵਰੀ_ਫ਼ਰਵਰੀ_ਮਾਰਚ_ਅਪ੍ਰੈਲ_ਮਈ_ਜੂਨ_ਜੁਲਾਈ_ਅਗਸਤ_ਸਤੰਬਰ_ਅਕਤੂਬਰ_ਨਵੰਬਰ_ਦਸੰਬਰ'.split('_'),
         monthsShort : 'ਜਨਵਰੀ_ਫ਼ਰਵਰੀ_ਮਾਰਚ_ਅਪ੍ਰੈਲ_ਮਈ_ਜੂਨ_ਜੁਲਾਈ_ਅਗਸਤ_ਸਤੰਬਰ_ਅਕਤੂਬਰ_ਨਵੰਬਰ_ਦਸੰਬਰ'.split('_'),
         weekdays : 'ਐਤਵਾਰ_ਸੋਮਵਾਰ_ਮੰਗਲਵਾਰ_ਬੁਧਵਾਰ_ਵੀਰਵਾਰ_ਸ਼ੁੱਕਰਵਾਰ_ਸ਼ਨੀਚਰਵਾਰ'.split('_'),
@@ -32720,7 +32850,7 @@ module.exports = last;
         calendar : {
             sameDay : '[ਅਜ] LT',
             nextDay : '[ਕਲ] LT',
-            nextWeek : 'dddd, LT',
+            nextWeek : '[ਅਗਲਾ] dddd, LT',
             lastDay : '[ਕਲ] LT',
             lastWeek : '[ਪਿਛਲੇ] dddd, LT',
             sameElse : 'L'
@@ -32783,7 +32913,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -32793,7 +32923,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 163 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32923,7 +33053,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 164 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -32988,7 +33118,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 165 */
+/* 166 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33057,7 +33187,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 166 */
+/* 167 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33126,7 +33256,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -33136,7 +33266,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 167 */
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33322,7 +33452,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 168 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33424,7 +33554,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 169 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33488,7 +33618,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 170 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33563,7 +33693,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 171 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33723,7 +33853,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 172 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33748,7 +33878,7 @@ module.exports = last;
                 } else if (number < 5) {
                     result += withoutSuffix || isFuture ? 'sekunde' : 'sekundah';
                 } else {
-                    result += withoutSuffix || isFuture ? 'sekund' : 'sekund';
+                    result += 'sekund';
                 }
                 return result;
             case 'm':
@@ -33890,7 +34020,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -33900,7 +34030,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 173 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -33972,7 +34102,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 174 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34077,7 +34207,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -34087,7 +34217,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 175 */
+/* 176 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34192,7 +34322,7 @@ module.exports = last;
         ordinal : '%d.',
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -34202,7 +34332,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 176 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34294,7 +34424,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 177 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34367,7 +34497,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 178 */
+/* 179 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34420,7 +34550,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -34430,7 +34560,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 179 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34553,7 +34683,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -34563,7 +34693,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 180 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34646,7 +34776,7 @@ module.exports = last;
         },
         week : {
             dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
+            doy : 6  // The week that contains Jan 6th is the first week of the year.
         }
     });
 
@@ -34656,7 +34786,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 181 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34727,7 +34857,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 182 */
+/* 183 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34847,7 +34977,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 183 */
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34918,7 +35048,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 184 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -34984,7 +35114,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 185 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35110,7 +35240,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 186 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -35198,7 +35328,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -35208,7 +35338,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 187 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35303,7 +35433,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 188 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35355,7 +35485,7 @@ module.exports = last;
         },
         week : {
             dow : 6, // Saturday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -35365,7 +35495,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 189 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35417,7 +35547,7 @@ module.exports = last;
         },
         week : {
             dow : 6, // Saturday is the first day of the week.
-            doy : 12  // The week that contains Jan 1st is the first week of the year.
+            doy : 12  // The week that contains Jan 12th is the first week of the year.
         }
     });
 
@@ -35427,7 +35557,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 190 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js language configuration
@@ -35550,7 +35680,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 191 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35695,7 +35825,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -35705,7 +35835,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 192 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35807,7 +35937,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 193 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35859,7 +35989,7 @@ module.exports = last;
         },
         week : {
             dow : 1, // Monday is the first day of the week.
-            doy : 7  // The week that contains Jan 1st is the first week of the year.
+            doy : 7  // The week that contains Jan 7th is the first week of the year.
         }
     });
 
@@ -35869,7 +35999,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 194 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -35931,7 +36061,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 195 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -36014,7 +36144,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 196 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -36086,7 +36216,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 197 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -36150,7 +36280,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 198 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -36264,7 +36394,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 199 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -36371,7 +36501,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 200 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
@@ -36478,7 +36608,7 @@ module.exports = last;
 
 
 /***/ }),
-/* 201 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;// numeral.js locale configuration
@@ -36519,16 +36649,16 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 202 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(2);
 var $ = __webpack_require__(1);
-var _assign = __webpack_require__(301);
+var _assign = __webpack_require__(302);
 var _get = __webpack_require__(25)
 var _isArray = __webpack_require__(5);
 var ds = __webpack_require__(6);
-var Stream = __webpack_require__(317);
+var Stream = __webpack_require__(318);
 var config = __webpack_require__(3);
 
 contents = {
@@ -36627,7 +36757,7 @@ module.exports = contents;
 
 
 /***/ }),
-/* 203 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(2);
@@ -36764,7 +36894,7 @@ module.exports = export_dialog;
 
 
 /***/ }),
-/* 204 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var config = __webpack_require__(3);
@@ -36897,7 +37027,7 @@ module.exports = header;
 
 
 /***/ }),
-/* 205 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var config = __webpack_require__(3);
@@ -36966,7 +37096,7 @@ module.exports = home;
 
 
 /***/ }),
-/* 206 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(2);
@@ -37019,7 +37149,7 @@ module.exports = login;
 
 
 /***/ }),
-/* 207 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(2);
@@ -37061,24 +37191,24 @@ module.exports = report;
 
 
 /***/ }),
-/* 208 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 window.m = __webpack_require__(2);
 window.$ = __webpack_require__(1);
 window.ds = __webpack_require__(6);
 
-var contents = __webpack_require__(202);
-var header = __webpack_require__(204);
+var contents = __webpack_require__(203);
+var header = __webpack_require__(205);
 var breadcrumb = __webpack_require__(47);
 var filterpanel = __webpack_require__(11);
 var toolbar = __webpack_require__(30);
-var home = __webpack_require__(205);
+var home = __webpack_require__(206);
 var datapanel = __webpack_require__(48);
-var export_dialog = __webpack_require__(203);
+var export_dialog = __webpack_require__(204);
 var config = __webpack_require__(3);
-var login = __webpack_require__(206);
-var report = __webpack_require__(207);
+var login = __webpack_require__(207);
+var report = __webpack_require__(208);
 var grid = __webpack_require__(12);
 
 var adresse_tilbakestilling = false;
@@ -37194,7 +37324,7 @@ m.mount($login[0], login);
 
 
 /***/ }),
-/* 209 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var search = {
@@ -37370,7 +37500,7 @@ var config = __webpack_require__(3);
 
 
 /***/ }),
-/* 210 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -37428,7 +37558,7 @@ return $.fn.extend( {
 
 
 /***/ }),
-/* 211 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -37455,7 +37585,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 		// AMD. Register as an anonymous module.
 		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 			__webpack_require__(1),
-			__webpack_require__(212),
+			__webpack_require__(213),
 			__webpack_require__(52),
 			__webpack_require__(53),
 			__webpack_require__(54),
@@ -38119,7 +38249,7 @@ return $.ui.autocomplete;
 
 
 /***/ }),
-/* 212 */
+/* 213 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -38149,7 +38279,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 			__webpack_require__(52),
 			__webpack_require__(53),
 			__webpack_require__(54),
-			__webpack_require__(210),
+			__webpack_require__(211),
 			__webpack_require__(8),
 			__webpack_require__(55)
 		], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
@@ -38801,7 +38931,7 @@ return $.widget( "ui.menu", {
 
 
 /***/ }),
-/* 213 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getNative = __webpack_require__(9),
@@ -38814,14 +38944,14 @@ module.exports = DataView;
 
 
 /***/ }),
-/* 214 */
+/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var hashClear = __webpack_require__(264),
-    hashDelete = __webpack_require__(265),
-    hashGet = __webpack_require__(266),
-    hashHas = __webpack_require__(267),
-    hashSet = __webpack_require__(268);
+var hashClear = __webpack_require__(265),
+    hashDelete = __webpack_require__(266),
+    hashGet = __webpack_require__(267),
+    hashHas = __webpack_require__(268),
+    hashSet = __webpack_require__(269);
 
 /**
  * Creates a hash object.
@@ -38852,7 +38982,7 @@ module.exports = Hash;
 
 
 /***/ }),
-/* 215 */
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getNative = __webpack_require__(9),
@@ -38865,7 +38995,7 @@ module.exports = Promise;
 
 
 /***/ }),
-/* 216 */
+/* 217 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getNative = __webpack_require__(9),
@@ -38878,12 +39008,12 @@ module.exports = Set;
 
 
 /***/ }),
-/* 217 */
+/* 218 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var MapCache = __webpack_require__(34),
-    setCacheAdd = __webpack_require__(290),
-    setCacheHas = __webpack_require__(291);
+    setCacheAdd = __webpack_require__(291),
+    setCacheHas = __webpack_require__(292);
 
 /**
  *
@@ -38911,7 +39041,7 @@ module.exports = SetCache;
 
 
 /***/ }),
-/* 218 */
+/* 219 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getNative = __webpack_require__(9),
@@ -38924,7 +39054,7 @@ module.exports = WeakMap;
 
 
 /***/ }),
-/* 219 */
+/* 220 */
 /***/ (function(module, exports) {
 
 /**
@@ -38951,7 +39081,7 @@ module.exports = apply;
 
 
 /***/ }),
-/* 220 */
+/* 221 */
 /***/ (function(module, exports) {
 
 /**
@@ -38982,7 +39112,7 @@ module.exports = arrayFilter;
 
 
 /***/ }),
-/* 221 */
+/* 222 */
 /***/ (function(module, exports) {
 
 /**
@@ -39009,7 +39139,7 @@ module.exports = arrayMap;
 
 
 /***/ }),
-/* 222 */
+/* 223 */
 /***/ (function(module, exports) {
 
 /**
@@ -39035,7 +39165,7 @@ module.exports = arrayPush;
 
 
 /***/ }),
-/* 223 */
+/* 224 */
 /***/ (function(module, exports) {
 
 /**
@@ -39064,7 +39194,7 @@ module.exports = arraySome;
 
 
 /***/ }),
-/* 224 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(7);
@@ -39100,7 +39230,7 @@ module.exports = baseCreate;
 
 
 /***/ }),
-/* 225 */
+/* 226 */
 /***/ (function(module, exports) {
 
 /**
@@ -39130,10 +39260,10 @@ module.exports = baseFindIndex;
 
 
 /***/ }),
-/* 226 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createBaseFor = __webpack_require__(253);
+var createBaseFor = __webpack_require__(254);
 
 /**
  * The base implementation of `baseForOwn` which iterates over `object`
@@ -39152,10 +39282,10 @@ module.exports = baseFor;
 
 
 /***/ }),
-/* 227 */
+/* 228 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var arrayPush = __webpack_require__(222),
+var arrayPush = __webpack_require__(223),
     isArray = __webpack_require__(5);
 
 /**
@@ -39178,7 +39308,7 @@ module.exports = baseGetAllKeys;
 
 
 /***/ }),
-/* 228 */
+/* 229 */
 /***/ (function(module, exports) {
 
 /**
@@ -39197,7 +39327,7 @@ module.exports = baseHasIn;
 
 
 /***/ }),
-/* 229 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseGetTag = __webpack_require__(14),
@@ -39221,14 +39351,14 @@ module.exports = baseIsArguments;
 
 
 /***/ }),
-/* 230 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Stack = __webpack_require__(35),
     equalArrays = __webpack_require__(67),
-    equalByTag = __webpack_require__(255),
-    equalObjects = __webpack_require__(256),
-    getTag = __webpack_require__(261),
+    equalByTag = __webpack_require__(256),
+    equalObjects = __webpack_require__(257),
+    getTag = __webpack_require__(262),
     isArray = __webpack_require__(5),
     isBuffer = __webpack_require__(42),
     isTypedArray = __webpack_require__(45);
@@ -39310,7 +39440,7 @@ module.exports = baseIsEqualDeep;
 
 
 /***/ }),
-/* 231 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Stack = __webpack_require__(35),
@@ -39378,11 +39508,11 @@ module.exports = baseIsMatch;
 
 
 /***/ }),
-/* 232 */
+/* 233 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isFunction = __webpack_require__(43),
-    isMasked = __webpack_require__(272),
+    isMasked = __webpack_require__(273),
     isObject = __webpack_require__(7),
     toSource = __webpack_require__(74);
 
@@ -39431,7 +39561,7 @@ module.exports = baseIsNative;
 
 
 /***/ }),
-/* 233 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseGetTag = __webpack_require__(14),
@@ -39497,11 +39627,11 @@ module.exports = baseIsTypedArray;
 
 
 /***/ }),
-/* 234 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isPrototype = __webpack_require__(21),
-    nativeKeys = __webpack_require__(285);
+    nativeKeys = __webpack_require__(286);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -39533,12 +39663,12 @@ module.exports = baseKeys;
 
 
 /***/ }),
-/* 235 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(7),
     isPrototype = __webpack_require__(21),
-    nativeKeysIn = __webpack_require__(286);
+    nativeKeysIn = __webpack_require__(287);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -39572,11 +39702,11 @@ module.exports = baseKeysIn;
 
 
 /***/ }),
-/* 236 */
+/* 237 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsMatch = __webpack_require__(231),
-    getMatchData = __webpack_require__(258),
+var baseIsMatch = __webpack_require__(232),
+    getMatchData = __webpack_require__(259),
     matchesStrictComparable = __webpack_require__(71);
 
 /**
@@ -39600,12 +39730,12 @@ module.exports = baseMatches;
 
 
 /***/ }),
-/* 237 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseIsEqual = __webpack_require__(37),
     get = __webpack_require__(25),
-    hasIn = __webpack_require__(304),
+    hasIn = __webpack_require__(305),
     isKey = __webpack_require__(39),
     isStrictComparable = __webpack_require__(70),
     matchesStrictComparable = __webpack_require__(71),
@@ -39639,13 +39769,13 @@ module.exports = baseMatchesProperty;
 
 
 /***/ }),
-/* 238 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Stack = __webpack_require__(35),
     assignMergeValue = __webpack_require__(59),
-    baseFor = __webpack_require__(226),
-    baseMergeDeep = __webpack_require__(239),
+    baseFor = __webpack_require__(227),
+    baseMergeDeep = __webpack_require__(240),
     isObject = __webpack_require__(7),
     keysIn = __webpack_require__(76),
     safeGet = __webpack_require__(73);
@@ -39687,24 +39817,24 @@ module.exports = baseMerge;
 
 
 /***/ }),
-/* 239 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assignMergeValue = __webpack_require__(59),
-    cloneBuffer = __webpack_require__(249),
-    cloneTypedArray = __webpack_require__(250),
-    copyArray = __webpack_require__(251),
-    initCloneObject = __webpack_require__(269),
+    cloneBuffer = __webpack_require__(250),
+    cloneTypedArray = __webpack_require__(251),
+    copyArray = __webpack_require__(252),
+    initCloneObject = __webpack_require__(270),
     isArguments = __webpack_require__(41),
     isArray = __webpack_require__(5),
-    isArrayLikeObject = __webpack_require__(305),
+    isArrayLikeObject = __webpack_require__(306),
     isBuffer = __webpack_require__(42),
     isFunction = __webpack_require__(43),
     isObject = __webpack_require__(7),
-    isPlainObject = __webpack_require__(306),
+    isPlainObject = __webpack_require__(307),
     isTypedArray = __webpack_require__(45),
     safeGet = __webpack_require__(73),
-    toPlainObject = __webpack_require__(315);
+    toPlainObject = __webpack_require__(316);
 
 /**
  * A specialized version of `baseMerge` for arrays and objects which performs
@@ -39766,7 +39896,7 @@ function baseMergeDeep(object, source, key, srcIndex, mergeFunc, customizer, sta
       if (isArguments(objValue)) {
         newValue = toPlainObject(objValue);
       }
-      else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
+      else if (!isObject(objValue) || isFunction(objValue)) {
         newValue = initCloneObject(srcValue);
       }
     }
@@ -39787,7 +39917,7 @@ module.exports = baseMergeDeep;
 
 
 /***/ }),
-/* 240 */
+/* 241 */
 /***/ (function(module, exports) {
 
 /**
@@ -39807,7 +39937,7 @@ module.exports = baseProperty;
 
 
 /***/ }),
-/* 241 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseGet = __webpack_require__(61);
@@ -39829,12 +39959,12 @@ module.exports = basePropertyDeep;
 
 
 /***/ }),
-/* 242 */
+/* 243 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var identity = __webpack_require__(40),
-    overRest = __webpack_require__(289),
-    setToString = __webpack_require__(293);
+    overRest = __webpack_require__(290),
+    setToString = __webpack_require__(294);
 
 /**
  * The base implementation of `_.rest` which doesn't validate or coerce arguments.
@@ -39852,10 +39982,10 @@ module.exports = baseRest;
 
 
 /***/ }),
-/* 243 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var constant = __webpack_require__(302),
+var constant = __webpack_require__(303),
     defineProperty = __webpack_require__(66),
     identity = __webpack_require__(40);
 
@@ -39880,7 +40010,7 @@ module.exports = baseSetToString;
 
 
 /***/ }),
-/* 244 */
+/* 245 */
 /***/ (function(module, exports) {
 
 /**
@@ -39906,11 +40036,11 @@ module.exports = baseTimes;
 
 
 /***/ }),
-/* 245 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(18),
-    arrayMap = __webpack_require__(221),
+    arrayMap = __webpack_require__(222),
     isArray = __webpack_require__(5),
     isSymbol = __webpack_require__(26);
 
@@ -39949,7 +40079,7 @@ module.exports = baseToString;
 
 
 /***/ }),
-/* 246 */
+/* 247 */
 /***/ (function(module, exports) {
 
 /**
@@ -39969,7 +40099,7 @@ module.exports = baseUnary;
 
 
 /***/ }),
-/* 247 */
+/* 248 */
 /***/ (function(module, exports) {
 
 /**
@@ -39988,7 +40118,7 @@ module.exports = cacheHas;
 
 
 /***/ }),
-/* 248 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Uint8Array = __webpack_require__(57);
@@ -40010,7 +40140,7 @@ module.exports = cloneArrayBuffer;
 
 
 /***/ }),
-/* 249 */
+/* 250 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var root = __webpack_require__(4);
@@ -40052,10 +40182,10 @@ module.exports = cloneBuffer;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)(module)))
 
 /***/ }),
-/* 250 */
+/* 251 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var cloneArrayBuffer = __webpack_require__(248);
+var cloneArrayBuffer = __webpack_require__(249);
 
 /**
  * Creates a clone of `typedArray`.
@@ -40074,7 +40204,7 @@ module.exports = cloneTypedArray;
 
 
 /***/ }),
-/* 251 */
+/* 252 */
 /***/ (function(module, exports) {
 
 /**
@@ -40100,7 +40230,7 @@ module.exports = copyArray;
 
 
 /***/ }),
-/* 252 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var root = __webpack_require__(4);
@@ -40112,7 +40242,7 @@ module.exports = coreJsData;
 
 
 /***/ }),
-/* 253 */
+/* 254 */
 /***/ (function(module, exports) {
 
 /**
@@ -40143,7 +40273,7 @@ module.exports = createBaseFor;
 
 
 /***/ }),
-/* 254 */
+/* 255 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseIteratee = __webpack_require__(62),
@@ -40174,15 +40304,15 @@ module.exports = createFind;
 
 
 /***/ }),
-/* 255 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(18),
     Uint8Array = __webpack_require__(57),
     eq = __webpack_require__(16),
     equalArrays = __webpack_require__(67),
-    mapToArray = __webpack_require__(283),
-    setToArray = __webpack_require__(292);
+    mapToArray = __webpack_require__(284),
+    setToArray = __webpack_require__(293);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1,
@@ -40292,10 +40422,10 @@ module.exports = equalByTag;
 
 
 /***/ }),
-/* 256 */
+/* 257 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getAllKeys = __webpack_require__(257);
+var getAllKeys = __webpack_require__(258);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1;
@@ -40387,11 +40517,11 @@ module.exports = equalObjects;
 
 
 /***/ }),
-/* 257 */
+/* 258 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetAllKeys = __webpack_require__(227),
-    getSymbols = __webpack_require__(260),
+var baseGetAllKeys = __webpack_require__(228),
+    getSymbols = __webpack_require__(261),
     keys = __webpack_require__(27);
 
 /**
@@ -40409,7 +40539,7 @@ module.exports = getAllKeys;
 
 
 /***/ }),
-/* 258 */
+/* 259 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isStrictComparable = __webpack_require__(70),
@@ -40439,7 +40569,7 @@ module.exports = getMatchData;
 
 
 /***/ }),
-/* 259 */
+/* 260 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(18);
@@ -40491,11 +40621,11 @@ module.exports = getRawTag;
 
 
 /***/ }),
-/* 260 */
+/* 261 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var arrayFilter = __webpack_require__(220),
-    stubArray = __webpack_require__(310);
+var arrayFilter = __webpack_require__(221),
+    stubArray = __webpack_require__(311);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -40527,14 +40657,14 @@ module.exports = getSymbols;
 
 
 /***/ }),
-/* 261 */
+/* 262 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DataView = __webpack_require__(213),
+var DataView = __webpack_require__(214),
     Map = __webpack_require__(33),
-    Promise = __webpack_require__(215),
-    Set = __webpack_require__(216),
-    WeakMap = __webpack_require__(218),
+    Promise = __webpack_require__(216),
+    Set = __webpack_require__(217),
+    WeakMap = __webpack_require__(219),
     baseGetTag = __webpack_require__(14),
     toSource = __webpack_require__(74);
 
@@ -40591,7 +40721,7 @@ module.exports = getTag;
 
 
 /***/ }),
-/* 262 */
+/* 263 */
 /***/ (function(module, exports) {
 
 /**
@@ -40610,7 +40740,7 @@ module.exports = getValue;
 
 
 /***/ }),
-/* 263 */
+/* 264 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var castPath = __webpack_require__(63),
@@ -40655,7 +40785,7 @@ module.exports = hasPath;
 
 
 /***/ }),
-/* 264 */
+/* 265 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(22);
@@ -40676,7 +40806,7 @@ module.exports = hashClear;
 
 
 /***/ }),
-/* 265 */
+/* 266 */
 /***/ (function(module, exports) {
 
 /**
@@ -40699,7 +40829,7 @@ module.exports = hashDelete;
 
 
 /***/ }),
-/* 266 */
+/* 267 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(22);
@@ -40735,7 +40865,7 @@ module.exports = hashGet;
 
 
 /***/ }),
-/* 267 */
+/* 268 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(22);
@@ -40764,7 +40894,7 @@ module.exports = hashHas;
 
 
 /***/ }),
-/* 268 */
+/* 269 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(22);
@@ -40793,10 +40923,10 @@ module.exports = hashSet;
 
 
 /***/ }),
-/* 269 */
+/* 270 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseCreate = __webpack_require__(224),
+var baseCreate = __webpack_require__(225),
     getPrototype = __webpack_require__(69),
     isPrototype = __webpack_require__(21);
 
@@ -40817,7 +40947,7 @@ module.exports = initCloneObject;
 
 
 /***/ }),
-/* 270 */
+/* 271 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var eq = __webpack_require__(16),
@@ -40853,7 +40983,7 @@ module.exports = isIterateeCall;
 
 
 /***/ }),
-/* 271 */
+/* 272 */
 /***/ (function(module, exports) {
 
 /**
@@ -40874,10 +41004,10 @@ module.exports = isKeyable;
 
 
 /***/ }),
-/* 272 */
+/* 273 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var coreJsData = __webpack_require__(252);
+var coreJsData = __webpack_require__(253);
 
 /** Used to detect methods masquerading as native. */
 var maskSrcKey = (function() {
@@ -40900,7 +41030,7 @@ module.exports = isMasked;
 
 
 /***/ }),
-/* 273 */
+/* 274 */
 /***/ (function(module, exports) {
 
 /**
@@ -40919,7 +41049,7 @@ module.exports = listCacheClear;
 
 
 /***/ }),
-/* 274 */
+/* 275 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(19);
@@ -40960,7 +41090,7 @@ module.exports = listCacheDelete;
 
 
 /***/ }),
-/* 275 */
+/* 276 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(19);
@@ -40985,7 +41115,7 @@ module.exports = listCacheGet;
 
 
 /***/ }),
-/* 276 */
+/* 277 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(19);
@@ -41007,7 +41137,7 @@ module.exports = listCacheHas;
 
 
 /***/ }),
-/* 277 */
+/* 278 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(19);
@@ -41039,10 +41169,10 @@ module.exports = listCacheSet;
 
 
 /***/ }),
-/* 278 */
+/* 279 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Hash = __webpack_require__(214),
+var Hash = __webpack_require__(215),
     ListCache = __webpack_require__(17),
     Map = __webpack_require__(33);
 
@@ -41066,7 +41196,7 @@ module.exports = mapCacheClear;
 
 
 /***/ }),
-/* 279 */
+/* 280 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(20);
@@ -41090,7 +41220,7 @@ module.exports = mapCacheDelete;
 
 
 /***/ }),
-/* 280 */
+/* 281 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(20);
@@ -41112,7 +41242,7 @@ module.exports = mapCacheGet;
 
 
 /***/ }),
-/* 281 */
+/* 282 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(20);
@@ -41134,7 +41264,7 @@ module.exports = mapCacheHas;
 
 
 /***/ }),
-/* 282 */
+/* 283 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(20);
@@ -41162,7 +41292,7 @@ module.exports = mapCacheSet;
 
 
 /***/ }),
-/* 283 */
+/* 284 */
 /***/ (function(module, exports) {
 
 /**
@@ -41186,10 +41316,10 @@ module.exports = mapToArray;
 
 
 /***/ }),
-/* 284 */
+/* 285 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var memoize = __webpack_require__(307);
+var memoize = __webpack_require__(308);
 
 /** Used as the maximum memoize cache size. */
 var MAX_MEMOIZE_SIZE = 500;
@@ -41218,7 +41348,7 @@ module.exports = memoizeCapped;
 
 
 /***/ }),
-/* 285 */
+/* 286 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var overArg = __webpack_require__(72);
@@ -41230,7 +41360,7 @@ module.exports = nativeKeys;
 
 
 /***/ }),
-/* 286 */
+/* 287 */
 /***/ (function(module, exports) {
 
 /**
@@ -41256,7 +41386,7 @@ module.exports = nativeKeysIn;
 
 
 /***/ }),
-/* 287 */
+/* 288 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(68);
@@ -41293,7 +41423,7 @@ module.exports = nodeUtil;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)(module)))
 
 /***/ }),
-/* 288 */
+/* 289 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -41321,10 +41451,10 @@ module.exports = objectToString;
 
 
 /***/ }),
-/* 289 */
+/* 290 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var apply = __webpack_require__(219);
+var apply = __webpack_require__(220);
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeMax = Math.max;
@@ -41363,7 +41493,7 @@ module.exports = overRest;
 
 
 /***/ }),
-/* 290 */
+/* 291 */
 /***/ (function(module, exports) {
 
 /** Used to stand-in for `undefined` hash values. */
@@ -41388,7 +41518,7 @@ module.exports = setCacheAdd;
 
 
 /***/ }),
-/* 291 */
+/* 292 */
 /***/ (function(module, exports) {
 
 /**
@@ -41408,7 +41538,7 @@ module.exports = setCacheHas;
 
 
 /***/ }),
-/* 292 */
+/* 293 */
 /***/ (function(module, exports) {
 
 /**
@@ -41432,11 +41562,11 @@ module.exports = setToArray;
 
 
 /***/ }),
-/* 293 */
+/* 294 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseSetToString = __webpack_require__(243),
-    shortOut = __webpack_require__(294);
+var baseSetToString = __webpack_require__(244),
+    shortOut = __webpack_require__(295);
 
 /**
  * Sets the `toString` method of `func` to return `string`.
@@ -41452,7 +41582,7 @@ module.exports = setToString;
 
 
 /***/ }),
-/* 294 */
+/* 295 */
 /***/ (function(module, exports) {
 
 /** Used to detect hot functions by number of calls within a span of milliseconds. */
@@ -41495,7 +41625,7 @@ module.exports = shortOut;
 
 
 /***/ }),
-/* 295 */
+/* 296 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ListCache = __webpack_require__(17);
@@ -41516,7 +41646,7 @@ module.exports = stackClear;
 
 
 /***/ }),
-/* 296 */
+/* 297 */
 /***/ (function(module, exports) {
 
 /**
@@ -41540,7 +41670,7 @@ module.exports = stackDelete;
 
 
 /***/ }),
-/* 297 */
+/* 298 */
 /***/ (function(module, exports) {
 
 /**
@@ -41560,7 +41690,7 @@ module.exports = stackGet;
 
 
 /***/ }),
-/* 298 */
+/* 299 */
 /***/ (function(module, exports) {
 
 /**
@@ -41580,7 +41710,7 @@ module.exports = stackHas;
 
 
 /***/ }),
-/* 299 */
+/* 300 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ListCache = __webpack_require__(17),
@@ -41620,10 +41750,10 @@ module.exports = stackSet;
 
 
 /***/ }),
-/* 300 */
+/* 301 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var memoizeCapped = __webpack_require__(284);
+var memoizeCapped = __webpack_require__(285);
 
 /** Used to match property names within property paths. */
 var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
@@ -41653,7 +41783,7 @@ module.exports = stringToPath;
 
 
 /***/ }),
-/* 301 */
+/* 302 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assignValue = __webpack_require__(60),
@@ -41717,7 +41847,7 @@ module.exports = assign;
 
 
 /***/ }),
-/* 302 */
+/* 303 */
 /***/ (function(module, exports) {
 
 /**
@@ -41749,12 +41879,12 @@ module.exports = constant;
 
 
 /***/ }),
-/* 303 */
+/* 304 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseFindIndex = __webpack_require__(225),
+var baseFindIndex = __webpack_require__(226),
     baseIteratee = __webpack_require__(62),
-    toInteger = __webpack_require__(313);
+    toInteger = __webpack_require__(314);
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeMax = Math.max;
@@ -41810,11 +41940,11 @@ module.exports = findIndex;
 
 
 /***/ }),
-/* 304 */
+/* 305 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseHasIn = __webpack_require__(228),
-    hasPath = __webpack_require__(263);
+var baseHasIn = __webpack_require__(229),
+    hasPath = __webpack_require__(264);
 
 /**
  * Checks if `path` is a direct or inherited property of `object`.
@@ -41850,7 +41980,7 @@ module.exports = hasIn;
 
 
 /***/ }),
-/* 305 */
+/* 306 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArrayLike = __webpack_require__(15),
@@ -41889,7 +42019,7 @@ module.exports = isArrayLikeObject;
 
 
 /***/ }),
-/* 306 */
+/* 307 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseGetTag = __webpack_require__(14),
@@ -41957,7 +42087,7 @@ module.exports = isPlainObject;
 
 
 /***/ }),
-/* 307 */
+/* 308 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var MapCache = __webpack_require__(34);
@@ -42036,10 +42166,10 @@ module.exports = memoize;
 
 
 /***/ }),
-/* 308 */
+/* 309 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseMerge = __webpack_require__(238),
+var baseMerge = __webpack_require__(239),
     createAssigner = __webpack_require__(65);
 
 /**
@@ -42081,11 +42211,11 @@ module.exports = merge;
 
 
 /***/ }),
-/* 309 */
+/* 310 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseProperty = __webpack_require__(240),
-    basePropertyDeep = __webpack_require__(241),
+var baseProperty = __webpack_require__(241),
+    basePropertyDeep = __webpack_require__(242),
     isKey = __webpack_require__(39),
     toKey = __webpack_require__(23);
 
@@ -42119,7 +42249,7 @@ module.exports = property;
 
 
 /***/ }),
-/* 310 */
+/* 311 */
 /***/ (function(module, exports) {
 
 /**
@@ -42148,7 +42278,7 @@ module.exports = stubArray;
 
 
 /***/ }),
-/* 311 */
+/* 312 */
 /***/ (function(module, exports) {
 
 /**
@@ -42172,10 +42302,10 @@ module.exports = stubFalse;
 
 
 /***/ }),
-/* 312 */
+/* 313 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toNumber = __webpack_require__(314);
+var toNumber = __webpack_require__(315);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0,
@@ -42220,10 +42350,10 @@ module.exports = toFinite;
 
 
 /***/ }),
-/* 313 */
+/* 314 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toFinite = __webpack_require__(312);
+var toFinite = __webpack_require__(313);
 
 /**
  * Converts `value` to an integer.
@@ -42262,7 +42392,7 @@ module.exports = toInteger;
 
 
 /***/ }),
-/* 314 */
+/* 315 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(7),
@@ -42334,7 +42464,7 @@ module.exports = toNumber;
 
 
 /***/ }),
-/* 315 */
+/* 316 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var copyObject = __webpack_require__(64),
@@ -42372,10 +42502,10 @@ module.exports = toPlainObject;
 
 
 /***/ }),
-/* 316 */
+/* 317 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseToString = __webpack_require__(245);
+var baseToString = __webpack_require__(246);
 
 /**
  * Converts `value` to a string. An empty string is returned for `null`
@@ -42406,17 +42536,17 @@ module.exports = toString;
 
 
 /***/ }),
-/* 317 */
+/* 318 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(318)
+module.exports = __webpack_require__(319)
 
 
 /***/ }),
-/* 318 */
+/* 319 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable */
@@ -42583,7 +42713,7 @@ else window.m = {stream : createStream}
 
 
 /***/ }),
-/* 319 */
+/* 320 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -42715,124 +42845,126 @@ var map = {
 	"./kn.js": 140,
 	"./ko": 141,
 	"./ko.js": 141,
-	"./ky": 142,
-	"./ky.js": 142,
-	"./lb": 143,
-	"./lb.js": 143,
-	"./lo": 144,
-	"./lo.js": 144,
-	"./lt": 145,
-	"./lt.js": 145,
-	"./lv": 146,
-	"./lv.js": 146,
-	"./me": 147,
-	"./me.js": 147,
-	"./mi": 148,
-	"./mi.js": 148,
-	"./mk": 149,
-	"./mk.js": 149,
-	"./ml": 150,
-	"./ml.js": 150,
-	"./mn": 151,
-	"./mn.js": 151,
-	"./mr": 152,
-	"./mr.js": 152,
-	"./ms": 154,
-	"./ms-my": 153,
-	"./ms-my.js": 153,
-	"./ms.js": 154,
-	"./mt": 155,
-	"./mt.js": 155,
-	"./my": 156,
-	"./my.js": 156,
-	"./nb": 157,
-	"./nb.js": 157,
-	"./ne": 158,
-	"./ne.js": 158,
-	"./nl": 160,
-	"./nl-be": 159,
-	"./nl-be.js": 159,
-	"./nl.js": 160,
-	"./nn": 161,
-	"./nn.js": 161,
-	"./pa-in": 162,
-	"./pa-in.js": 162,
-	"./pl": 163,
-	"./pl.js": 163,
-	"./pt": 165,
-	"./pt-br": 164,
-	"./pt-br.js": 164,
-	"./pt.js": 165,
-	"./ro": 166,
-	"./ro.js": 166,
-	"./ru": 167,
-	"./ru.js": 167,
-	"./sd": 168,
-	"./sd.js": 168,
-	"./se": 169,
-	"./se.js": 169,
-	"./si": 170,
-	"./si.js": 170,
-	"./sk": 171,
-	"./sk.js": 171,
-	"./sl": 172,
-	"./sl.js": 172,
-	"./sq": 173,
-	"./sq.js": 173,
-	"./sr": 175,
-	"./sr-cyrl": 174,
-	"./sr-cyrl.js": 174,
-	"./sr.js": 175,
-	"./ss": 176,
-	"./ss.js": 176,
-	"./sv": 177,
-	"./sv.js": 177,
-	"./sw": 178,
-	"./sw.js": 178,
-	"./ta": 179,
-	"./ta.js": 179,
-	"./te": 180,
-	"./te.js": 180,
-	"./tet": 181,
-	"./tet.js": 181,
-	"./tg": 182,
-	"./tg.js": 182,
-	"./th": 183,
-	"./th.js": 183,
-	"./tl-ph": 184,
-	"./tl-ph.js": 184,
-	"./tlh": 185,
-	"./tlh.js": 185,
-	"./tr": 186,
-	"./tr.js": 186,
-	"./tzl": 187,
-	"./tzl.js": 187,
-	"./tzm": 189,
-	"./tzm-latn": 188,
-	"./tzm-latn.js": 188,
-	"./tzm.js": 189,
-	"./ug-cn": 190,
-	"./ug-cn.js": 190,
-	"./uk": 191,
-	"./uk.js": 191,
-	"./ur": 192,
-	"./ur.js": 192,
-	"./uz": 194,
-	"./uz-latn": 193,
-	"./uz-latn.js": 193,
-	"./uz.js": 194,
-	"./vi": 195,
-	"./vi.js": 195,
-	"./x-pseudo": 196,
-	"./x-pseudo.js": 196,
-	"./yo": 197,
-	"./yo.js": 197,
-	"./zh-cn": 198,
-	"./zh-cn.js": 198,
-	"./zh-hk": 199,
-	"./zh-hk.js": 199,
-	"./zh-tw": 200,
-	"./zh-tw.js": 200
+	"./ku": 142,
+	"./ku.js": 142,
+	"./ky": 143,
+	"./ky.js": 143,
+	"./lb": 144,
+	"./lb.js": 144,
+	"./lo": 145,
+	"./lo.js": 145,
+	"./lt": 146,
+	"./lt.js": 146,
+	"./lv": 147,
+	"./lv.js": 147,
+	"./me": 148,
+	"./me.js": 148,
+	"./mi": 149,
+	"./mi.js": 149,
+	"./mk": 150,
+	"./mk.js": 150,
+	"./ml": 151,
+	"./ml.js": 151,
+	"./mn": 152,
+	"./mn.js": 152,
+	"./mr": 153,
+	"./mr.js": 153,
+	"./ms": 155,
+	"./ms-my": 154,
+	"./ms-my.js": 154,
+	"./ms.js": 155,
+	"./mt": 156,
+	"./mt.js": 156,
+	"./my": 157,
+	"./my.js": 157,
+	"./nb": 158,
+	"./nb.js": 158,
+	"./ne": 159,
+	"./ne.js": 159,
+	"./nl": 161,
+	"./nl-be": 160,
+	"./nl-be.js": 160,
+	"./nl.js": 161,
+	"./nn": 162,
+	"./nn.js": 162,
+	"./pa-in": 163,
+	"./pa-in.js": 163,
+	"./pl": 164,
+	"./pl.js": 164,
+	"./pt": 166,
+	"./pt-br": 165,
+	"./pt-br.js": 165,
+	"./pt.js": 166,
+	"./ro": 167,
+	"./ro.js": 167,
+	"./ru": 168,
+	"./ru.js": 168,
+	"./sd": 169,
+	"./sd.js": 169,
+	"./se": 170,
+	"./se.js": 170,
+	"./si": 171,
+	"./si.js": 171,
+	"./sk": 172,
+	"./sk.js": 172,
+	"./sl": 173,
+	"./sl.js": 173,
+	"./sq": 174,
+	"./sq.js": 174,
+	"./sr": 176,
+	"./sr-cyrl": 175,
+	"./sr-cyrl.js": 175,
+	"./sr.js": 176,
+	"./ss": 177,
+	"./ss.js": 177,
+	"./sv": 178,
+	"./sv.js": 178,
+	"./sw": 179,
+	"./sw.js": 179,
+	"./ta": 180,
+	"./ta.js": 180,
+	"./te": 181,
+	"./te.js": 181,
+	"./tet": 182,
+	"./tet.js": 182,
+	"./tg": 183,
+	"./tg.js": 183,
+	"./th": 184,
+	"./th.js": 184,
+	"./tl-ph": 185,
+	"./tl-ph.js": 185,
+	"./tlh": 186,
+	"./tlh.js": 186,
+	"./tr": 187,
+	"./tr.js": 187,
+	"./tzl": 188,
+	"./tzl.js": 188,
+	"./tzm": 190,
+	"./tzm-latn": 189,
+	"./tzm-latn.js": 189,
+	"./tzm.js": 190,
+	"./ug-cn": 191,
+	"./ug-cn.js": 191,
+	"./uk": 192,
+	"./uk.js": 192,
+	"./ur": 193,
+	"./ur.js": 193,
+	"./uz": 195,
+	"./uz-latn": 194,
+	"./uz-latn.js": 194,
+	"./uz.js": 195,
+	"./vi": 196,
+	"./vi.js": 196,
+	"./x-pseudo": 197,
+	"./x-pseudo.js": 197,
+	"./yo": 198,
+	"./yo.js": 198,
+	"./zh-cn": 199,
+	"./zh-cn.js": 199,
+	"./zh-hk": 200,
+	"./zh-hk.js": 200,
+	"./zh-tw": 201,
+	"./zh-tw.js": 201
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -42848,10 +42980,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 319;
+webpackContext.id = 320;
 
 /***/ }),
-/* 320 */
+/* 321 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
@@ -42873,7 +43005,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
  * Mousetrap is a simple keyboard shortcut library for Javascript with
  * no external dependencies
  *
- * @version 1.6.1
+ * @version 1.6.2
  * @url craig.is/killing/mice
  */
 (function(window, document, undefined) {
@@ -43902,13 +44034,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
 
 
 /***/ }),
-/* 321 */
+/* 322 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
  * Pikaday
  *
- * Copyright © 2014 David Bushell | BSD & MIT license | https://github.com/dbushell/Pikaday
+ * Copyright © 2014 David Bushell | BSD & MIT license | https://github.com/Pikaday/Pikaday
  */
 
 (function (root, factory)
@@ -44089,6 +44221,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
 
         // automatically show/hide the picker on `field` focus (default `true` if `field` is set)
         bound: undefined,
+
+        // data-attribute on the input field with an aria assistance tekst (only applied when `bound` is set)
+        ariaLabel: 'Use the arrow keys to pick a date',
 
         // position of the datepicker, relative to the field (default to bottom & left)
         // ('bottom' & 'left' keywords are not used, 'top' & 'right' are modifier on the bottom/left position)
@@ -44930,13 +45065,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
 
             if (opts.bound) {
                 // let the screen reader user know to use arrow keys
-                opts.field.setAttribute('aria-label', 'Use the arrow keys to pick a date');
+                opts.field.setAttribute('aria-label', opts.ariaLabel);
             }
         },
 
         adjustPosition: function()
         {
-            var field, pEl, width, height, viewportWidth, viewportHeight, scrollTop, left, top, clientRect;
+            var field, pEl, width, height, viewportWidth, viewportHeight, scrollTop, left, top, clientRect, leftAligned, bottomAligned;
 
             if (this._o.container) return;
 
@@ -44949,6 +45084,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
             viewportWidth = window.innerWidth || document.documentElement.clientWidth;
             viewportHeight = window.innerHeight || document.documentElement.clientHeight;
             scrollTop = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+            leftAligned = true;
+            bottomAligned = true;
 
             if (typeof field.getBoundingClientRect === 'function') {
                 clientRect = field.getBoundingClientRect();
@@ -44971,6 +45108,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
                 )
             ) {
                 left = left - width + field.offsetWidth;
+                leftAligned = false;
             }
             if ((this._o.reposition && top + height > viewportHeight + scrollTop) ||
                 (
@@ -44979,10 +45117,16 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
                 )
             ) {
                 top = top - height - field.offsetHeight;
+                bottomAligned = false;
             }
 
             this.el.style.left = left + 'px';
             this.el.style.top = top + 'px';
+
+            addClass(this.el, leftAligned ? 'left-aligned' : 'right-aligned');
+            addClass(this.el, bottomAligned ? 'bottom-aligned' : 'top-aligned');
+            removeClass(this.el, !leftAligned ? 'left-aligned' : 'right-aligned');
+            removeClass(this.el, !bottomAligned ? 'bottom-aligned' : 'top-aligned');
         },
 
         /**
@@ -45153,7 +45297,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*global define:false */
 
 
 /***/ }),
-/* 322 */
+/* 323 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -45343,7 +45487,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 323 */
+/* 324 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -45533,13 +45677,13 @@ process.umask = function() { return 0; };
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(46), __webpack_require__(322)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(46), __webpack_require__(323)))
 
 /***/ }),
-/* 324 */
+/* 325 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_RESULT__;;/*! showdown v 1.8.6 - 22-12-2017 */
+var __WEBPACK_AMD_DEFINE_RESULT__;;/*! showdown v 1.9.0 - 10-11-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -46257,6 +46401,21 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
   return text;
 };
 
+/**
+ * Unescape HTML entities
+ * @param txt
+ * @returns {string}
+ */
+showdown.helper.unescapeHTMLEntities = function (txt) {
+  'use strict';
+
+  return txt
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+};
+
 var rgxFindMatchPos = function (str, left, right, flags) {
   'use strict';
   var f = flags || '',
@@ -46465,6 +46624,31 @@ showdown.helper.encodeEmailAddress = function (mail) {
   });
 
   return mail;
+};
+
+/**
+ *
+ * @param str
+ * @param targetLength
+ * @param padString
+ * @returns {string}
+ */
+showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
+  'use strict';
+  /*jshint bitwise: false*/
+  // eslint-disable-next-line space-infix-ops
+  targetLength = targetLength>>0; //floor if number or convert non-number to 0;
+  /*jshint bitwise: true*/
+  padString = String(padString || ' ');
+  if (str.length > targetLength) {
+    return String(str);
+  } else {
+    targetLength = targetLength - str.length;
+    if (targetLength > padString.length) {
+      padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+    }
+    return String(str) + padString.slice(0,targetLength);
+  }
 };
 
 /**
@@ -47675,8 +47859,8 @@ showdown.helper.emojis = {
   'zzz':'\ud83d\udca4',
 
   /* special emojis :P */
-  'octocat':  '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,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">',
-  'showdown': '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,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/GMzLdsAAECtaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pgo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzA2NyA3OS4xNTc3NDcsIDIwMTUvMDMvMzAtMjM6NDA6NDIgICAgICAgICI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgICAgICAgICAgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIgogICAgICAgICAgICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iCiAgICAgICAgICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgICAgICAgICB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIgogICAgICAgICAgICB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIKICAgICAgICAgICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iCiAgICAgICAgICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIj4KICAgICAgICAgPHhtcDpDcmVhdG9yVG9vbD5BZG9iZSBQaG90b3Nob3AgQ0MgMjAxNSAoV2luZG93cyk8L3htcDpDcmVhdG9yVG9vbD4KICAgICAgICAgPHhtcDpDcmVhdGVEYXRlPjIwMTUtMDEtMTVUMjE6MDE6MTlaPC94bXA6Q3JlYXRlRGF0ZT4KICAgICAgICAgPHhtcDpNZXRhZGF0YURhdGU+MjAxNy0xMC0yNFQxMzozMTozMCswMTowMDwveG1wOk1ldGFkYXRhRGF0ZT4KICAgICAgICAgPHhtcDpNb2RpZnlEYXRlPjIwMTctMTAtMjRUMTM6MzE6MzArMDE6MDA8L3htcDpNb2RpZnlEYXRlPgogICAgICAgICA8cGhvdG9zaG9wOkNvbG9yTW9kZT4zPC9waG90b3Nob3A6Q29sb3JNb2RlPgogICAgICAgICA8cGhvdG9zaG9wOklDQ1Byb2ZpbGU+c1JHQiBJRUM2MTk2Ni0yLjE8L3Bob3Rvc2hvcDpJQ0NQcm9maWxlPgogICAgICAgICA8cGhvdG9zaG9wOlRleHRMYXllcnM+CiAgICAgICAgICAgIDxyZGY6QmFnPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHBob3Rvc2hvcDpMYXllck5hbWU+UyAtPC9waG90b3Nob3A6TGF5ZXJOYW1lPgogICAgICAgICAgICAgICAgICA8cGhvdG9zaG9wOkxheWVyVGV4dD5TIC08L3Bob3Rvc2hvcDpMYXllclRleHQ+CiAgICAgICAgICAgICAgIDwvcmRmOmxpPgogICAgICAgICAgICA8L3JkZjpCYWc+CiAgICAgICAgIDwvcGhvdG9zaG9wOlRleHRMYXllcnM+CiAgICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2UvcG5nPC9kYzpmb3JtYXQ+CiAgICAgICAgIDx4bXBNTTpJbnN0YW5jZUlEPnhtcC5paWQ6N2NkMzQxNzctOWYyZi0yNDRiLWEyYjQtMzU1MzJkY2Y1MWJiPC94bXBNTTpJbnN0YW5jZUlEPgogICAgICAgICA8eG1wTU06RG9jdW1lbnRJRD5hZG9iZTpkb2NpZDpwaG90b3Nob3A6M2E1YzgxYmYtYjhiNy0xMWU3LTk0NDktYTQ2MzdlZjJkNjMzPC94bXBNTTpEb2N1bWVudElEPgogICAgICAgICA8eG1wTU06T3JpZ2luYWxEb2N1bWVudElEPnhtcC5kaWQ6NjBDNUFFNjVGNjlDRTQxMTk0NUE4NTVFM0JDQTdFRUI8L3htcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD4KICAgICAgICAgPHhtcE1NOkhpc3Rvcnk+CiAgICAgICAgICAgIDxyZGY6U2VxPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OmFjdGlvbj5jcmVhdGVkPC9zdEV2dDphY3Rpb24+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDppbnN0YW5jZUlEPnhtcC5paWQ6NjBDNUFFNjVGNjlDRTQxMTk0NUE4NTVFM0JDQTdFRUI8L3N0RXZ0Omluc3RhbmNlSUQ+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDp3aGVuPjIwMTUtMDEtMTVUMjE6MDE6MTlaPC9zdEV2dDp3aGVuPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6c29mdHdhcmVBZ2VudD5BZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKTwvc3RFdnQ6c29mdHdhcmVBZ2VudD4KICAgICAgICAgICAgICAgPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0iUmVzb3VyY2UiPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6YWN0aW9uPnNhdmVkPC9zdEV2dDphY3Rpb24+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDppbnN0YW5jZUlEPnhtcC5paWQ6ODZjNjBkMGQtOGY0Yy01ZTRlLWEwMjQtODI4ZWQyNTIwZDc3PC9zdEV2dDppbnN0YW5jZUlEPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6d2hlbj4yMDE3LTEwLTI0VDEzOjMxOjMwKzAxOjAwPC9zdEV2dDp3aGVuPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6c29mdHdhcmVBZ2VudD5BZG9iZSBQaG90b3Nob3AgQ0MgMjAxNSAoV2luZG93cyk8L3N0RXZ0OnNvZnR3YXJlQWdlbnQ+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDpjaGFuZ2VkPi88L3N0RXZ0OmNoYW5nZWQ+CiAgICAgICAgICAgICAgIDwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OmFjdGlvbj5jb252ZXJ0ZWQ8L3N0RXZ0OmFjdGlvbj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OnBhcmFtZXRlcnM+ZnJvbSBhcHBsaWNhdGlvbi92bmQuYWRvYmUucGhvdG9zaG9wIHRvIGltYWdlL3BuZzwvc3RFdnQ6cGFyYW1ldGVycz4KICAgICAgICAgICAgICAgPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0iUmVzb3VyY2UiPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6YWN0aW9uPmRlcml2ZWQ8L3N0RXZ0OmFjdGlvbj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OnBhcmFtZXRlcnM+Y29udmVydGVkIGZyb20gYXBwbGljYXRpb24vdm5kLmFkb2JlLnBob3Rvc2hvcCB0byBpbWFnZS9wbmc8L3N0RXZ0OnBhcmFtZXRlcnM+CiAgICAgICAgICAgICAgIDwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OmFjdGlvbj5zYXZlZDwvc3RFdnQ6YWN0aW9uPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6aW5zdGFuY2VJRD54bXAuaWlkOjdjZDM0MTc3LTlmMmYtMjQ0Yi1hMmI0LTM1NTMyZGNmNTFiYjwvc3RFdnQ6aW5zdGFuY2VJRD4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OndoZW4+MjAxNy0xMC0yNFQxMzozMTozMCswMTowMDwvc3RFdnQ6d2hlbj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OnNvZnR3YXJlQWdlbnQ+QWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKFdpbmRvd3MpPC9zdEV2dDpzb2Z0d2FyZUFnZW50PgogICAgICAgICAgICAgICAgICA8c3RFdnQ6Y2hhbmdlZD4vPC9zdEV2dDpjaGFuZ2VkPgogICAgICAgICAgICAgICA8L3JkZjpsaT4KICAgICAgICAgICAgPC9yZGY6U2VxPgogICAgICAgICA8L3htcE1NOkhpc3Rvcnk+CiAgICAgICAgIDx4bXBNTTpEZXJpdmVkRnJvbSByZGY6cGFyc2VUeXBlPSJSZXNvdXJjZSI+CiAgICAgICAgICAgIDxzdFJlZjppbnN0YW5jZUlEPnhtcC5paWQ6ODZjNjBkMGQtOGY0Yy01ZTRlLWEwMjQtODI4ZWQyNTIwZDc3PC9zdFJlZjppbnN0YW5jZUlEPgogICAgICAgICAgICA8c3RSZWY6ZG9jdW1lbnRJRD54bXAuZGlkOjYwQzVBRTY1RjY5Q0U0MTE5NDVBODU1RTNCQ0E3RUVCPC9zdFJlZjpkb2N1bWVudElEPgogICAgICAgICAgICA8c3RSZWY6b3JpZ2luYWxEb2N1bWVudElEPnhtcC5kaWQ6NjBDNUFFNjVGNjlDRTQxMTk0NUE4NTVFM0JDQTdFRUI8L3N0UmVmOm9yaWdpbmFsRG9jdW1lbnRJRD4KICAgICAgICAgPC94bXBNTTpEZXJpdmVkRnJvbT4KICAgICAgICAgPHRpZmY6T3JpZW50YXRpb24+MTwvdGlmZjpPcmllbnRhdGlvbj4KICAgICAgICAgPHRpZmY6WFJlc29sdXRpb24+NzIwMDAwLzEwMDAwPC90aWZmOlhSZXNvbHV0aW9uPgogICAgICAgICA8dGlmZjpZUmVzb2x1dGlvbj43MjAwMDAvMTAwMDA8L3RpZmY6WVJlc29sdXRpb24+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDxleGlmOkNvbG9yU3BhY2U+MTwvZXhpZjpDb2xvclNwYWNlPgogICAgICAgICA8ZXhpZjpQaXhlbFhEaW1lbnNpb24+NjQ8L2V4aWY6UGl4ZWxYRGltZW5zaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+NjQ8L2V4aWY6UGl4ZWxZRGltZW5zaW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAKPD94cGFja2V0IGVuZD0idyI/Pse7bzcAAAAgY0hSTQAAeiUAAICDAAD5/wAAgOkAAHUwAADqYAAAOpgAABdvkl/FRgAAA1JJREFUeNrsm1+OmlAUhz+aeS9dwZggJn1AnRUMO6jpBgZXULuC2hWUWUGZBTSxKyiuoA4mfUBMnB04K5g+9DihRBHlyh/lJLwIXLgf99xzzu9etZeXFy7Z3nDh1gBoAFy4XeVtQNO0zNcapmUDfUBPnFoBfhQGq6IBaHmjwD4Ahmk5wAD4kKG5J8CNwsAFaHe6DvA9cc0wCgOv8gDka3vA9RHNPgo0D7hNnJtGYWBXxgV2dH4MfMnRRA+Y1WIO2NJ5F/ikoKm3tYsChmkNFHW+fmHQMC1dfHaXPQP3wM1yMdc2B/AOGALTWobBmI1Shu0UGCwX83XyRBQGawHntTtdG5gUNfxVu4CTNqNv6/wWGL7kCc+1AmCYVisl3I2ydD4GYZUCs7IjoLXrxHIx9w9tLAqDCfBwDrXAY457x+cAoCfuwRGjYFUnAGk+PsjR7s8Dn1VeLWCYVlpDw+VivjVHSHt+u9PVJbzGzZXQWTkAkz0V31fATUaEsjVJlQBs4FeGcteLgzgbAALBA+4y3voAeJL8nA0AHfClnM1qm1HhnYUidCSE+KzvSSJUTwAxCOMcpfETMFYpfRUKIAbCFhC3OTJJJwqDWS0BxED0JZ4Pjix1P2+E0loCSMBwyK4S/xc1ojBwag8gMU84cvTKGgmlAYhngu1O9xAXuVE5J1QCQCz3bwHuHvdQui5QKQAxEO6eEKpsFCgTRSXkvdoxSlBMCxhJJbgrrbZRtHCiShN0pRB6PeQ3ckBw2K0oKXMBVYJIP+Nvh9qulFivGoBt1lLQxowT2ykBXCfnhZIglgYACWmqXQv+baioBYCeiCQHm+QEg1O7RhF7hO4OhSAhcJKSFU7qBGADwZeqMMuXn6TUBw8qlaMrirNb4LdhWlP+SWD+cjFfxTpuS2GUpik+o3jFSEkqbJiWn0P0OMSGqlWiOu0TvD+FRHZKAE+oW+cfRmEwqlsesJJEJs8y91QqP+9UL6lqEtz2gpuNEY5sm9sIHln2DRa2aFKGJtiXkZEMiWtgVvRKUSUFkSKt2S7fAGgAXLYpmQQXf36MUChTZdUa2u8/rkvPA6Tz30r4eH3ybcBS5gJ6SaNXb+aABkA1AMxKenclBZLW/He4cYEGwEXb3wEASelexk6LIIIAAAAASUVORK5CYII=">'
+  'octocat':  '<img alt=":octocat:" height="20" width="20" align="absmiddle" src="https://assets-cdn.github.com/images/icons/emoji/octocat.png">',
+  'showdown': '<span style="font-family: \'Anonymous Pro\', monospace; text-decoration: underline; text-decoration-style: dashed; text-decoration-color: #3e8b8a;text-underline-position: under;">S</span>'
 };
 
 /**
@@ -47968,8 +48152,8 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
     text = text.replace(/\r/g, '\n'); // Mac to Unix
 
-    // Stardardize line spaces (nbsp causes trouble in older browsers and some regex flavors)
-    text = text.replace(/\u00A0/g, ' ');
+    // Stardardize line spaces
+    text = text.replace(/\u00A0/g, '&nbsp;');
 
     if (options.smartIndentationFix) {
       text = rTrimInputText(text);
@@ -48022,6 +48206,112 @@ showdown.Converter = function (converterOptions) {
     // update metadata
     metadata = globals.metadata;
     return text;
+  };
+
+  /**
+   * Converts an HTML string into a markdown string
+   * @param src
+   * @param [HTMLParser] A WHATWG DOM and HTML parser, such as JSDOM. If none is supplied, window.document will be used.
+   * @returns {string}
+   */
+  this.makeMarkdown = this.makeMd = function (src, HTMLParser) {
+
+    // replace \r\n with \n
+    src = src.replace(/\r\n/g, '\n');
+    src = src.replace(/\r/g, '\n'); // old macs
+
+    // due to an edge case, we need to find this: > <
+    // to prevent removing of non silent white spaces
+    // ex: <em>this is</em> <strong>sparta</strong>
+    src = src.replace(/>[ \t]+</, '>¨NBSP;<');
+
+    if (!HTMLParser) {
+      if (window && window.document) {
+        HTMLParser = window.document;
+      } else {
+        throw new Error('HTMLParser is undefined. If in a webworker or nodejs environment, you need to provide a WHATWG DOM and HTML such as JSDOM');
+      }
+    }
+
+    var doc = HTMLParser.createElement('div');
+    doc.innerHTML = src;
+
+    var globals = {
+      preList: substitutePreCodeTags(doc)
+    };
+
+    // remove all newlines and collapse spaces
+    clean(doc);
+
+    // some stuff, like accidental reference links must now be escaped
+    // TODO
+    // doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
+
+    var nodes = doc.childNodes,
+        mdDoc = '';
+
+    for (var i = 0; i < nodes.length; i++) {
+      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], globals);
+    }
+
+    function clean (node) {
+      for (var n = 0; n < node.childNodes.length; ++n) {
+        var child = node.childNodes[n];
+        if (child.nodeType === 3) {
+          if (!/\S/.test(child.nodeValue)) {
+            node.removeChild(child);
+            --n;
+          } else {
+            child.nodeValue = child.nodeValue.split('\n').join(' ');
+            child.nodeValue = child.nodeValue.replace(/(\s)+/g, '$1');
+          }
+        } else if (child.nodeType === 1) {
+          clean(child);
+        }
+      }
+    }
+
+    // find all pre tags and replace contents with placeholder
+    // we need this so that we can remove all indentation from html
+    // to ease up parsing
+    function substitutePreCodeTags (doc) {
+
+      var pres = doc.querySelectorAll('pre'),
+          presPH = [];
+
+      for (var i = 0; i < pres.length; ++i) {
+
+        if (pres[i].childElementCount === 1 && pres[i].firstChild.tagName.toLowerCase() === 'code') {
+          var content = pres[i].firstChild.innerHTML.trim(),
+              language = pres[i].firstChild.getAttribute('data-language') || '';
+
+          // if data-language attribute is not defined, then we look for class language-*
+          if (language === '') {
+            var classes = pres[i].firstChild.className.split(' ');
+            for (var c = 0; c < classes.length; ++c) {
+              var matches = classes[c].match(/^language-(.+)$/);
+              if (matches !== null) {
+                language = matches[1];
+                break;
+              }
+            }
+          }
+
+          // unescape html entities in content
+          content = showdown.helper.unescapeHTMLEntities(content);
+
+          presPH.push(content);
+          pres[i].outerHTML = '<precode language="' + language + '" precodenum="' + i.toString() + '"></precode>';
+        } else {
+          presPH.push(pres[i].innerHTML);
+          pres[i].innerHTML = '';
+          pres[i].setAttribute('prenum', i.toString());
+        }
+      }
+      return presPH;
+    }
+
+    return mdDoc;
   };
 
   /**
@@ -48253,7 +48543,7 @@ showdown.subParser('anchors', function (text, options, globals) {
 
   // Lastly handle GithubMentions if option is enabled
   if (options.ghMentions) {
-    text = text.replace(/(^|\s)(\\)?(@([a-z\d\-]+))(?=[.!?;,[\]()]|\s|$)/gmi, function (wm, st, escape, mentions, username) {
+    text = text.replace(/(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d.-]+?[a-z\d]+)*))/gmi, function (wm, st, escape, mentions, username) {
       if (escape === '\\') {
         return st + mentions;
       }
@@ -48520,7 +48810,7 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 });
 
 /**
- * Turn Markdown link shortcuts into XHTML <a> tags.
+ * Create a full HTML document from the processed markdown
  */
 showdown.subParser('completeHTMLDocument', function (text, options, globals) {
   'use strict';
@@ -48629,8 +48919,9 @@ showdown.subParser('ellipsis', function (text, options, globals) {
 });
 
 /**
- * These are all the transformations that occur *within* block-level
- * tags like paragraphs, headers, and list items.
+ * Turn emoji codes into emojis
+ *
+ * List of supported emojis: https://github.com/showdownjs/showdown/wiki/Emojis
  */
 showdown.subParser('emoji', function (text, options, globals) {
   'use strict';
@@ -48774,7 +49065,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
   text += '¨0';
 
-  text = text.replace(/(?:^|\n)(```+|~~~+)([^\s`~]*)\n([\s\S]*?)\n\1/g, function (wholeMatch, delim, language, codeblock) {
+  text = text.replace(/(?:^|\n)(?: {0,3})(```+|~~~+)(?: *)([^\s`~]*)\n([\s\S]*?)\n(?: {0,3})\1/g, function (wholeMatch, delim, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
     // First parse the github code block
@@ -49237,7 +49528,7 @@ showdown.subParser('images', function (text, options, globals) {
     url = url.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
-    if (title) {
+    if (title && showdown.helper.isString(title)) {
       title = title
         .replace(/"/g, '&quot;')
       //title = showdown.helper.escapeCharacters(title, '*_', false);
@@ -49299,10 +49590,10 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
 
   // Parse underscores
   if (options.literalMidWordUnderscores) {
-    text = text.replace(/\b___(\S[\s\S]*)___\b/g, function (wm, txt) {
+    text = text.replace(/\b___(\S[\s\S]*?)___\b/g, function (wm, txt) {
       return parseInside (txt, '<strong><em>', '</em></strong>');
     });
-    text = text.replace(/\b__(\S[\s\S]*)__\b/g, function (wm, txt) {
+    text = text.replace(/\b__(\S[\s\S]*?)__\b/g, function (wm, txt) {
       return parseInside (txt, '<strong>', '</strong>');
     });
     text = text.replace(/\b_(\S[\s\S]*?)_\b/g, function (wm, txt) {
@@ -49323,13 +49614,13 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
 
   // Now parse asterisks
   if (options.literalMidWordAsterisks) {
-    text = text.replace(/([^*]|^)\B\*\*\*(\S[\s\S]+?)\*\*\*\B(?!\*)/g, function (wm, lead, txt) {
+    text = text.replace(/([^*]|^)\B\*\*\*(\S[\s\S]*?)\*\*\*\B(?!\*)/g, function (wm, lead, txt) {
       return parseInside (txt, lead + '<strong><em>', '</em></strong>');
     });
-    text = text.replace(/([^*]|^)\B\*\*(\S[\s\S]+?)\*\*\B(?!\*)/g, function (wm, lead, txt) {
+    text = text.replace(/([^*]|^)\B\*\*(\S[\s\S]*?)\*\*\B(?!\*)/g, function (wm, lead, txt) {
       return parseInside (txt, lead + '<strong>', '</strong>');
     });
-    text = text.replace(/([^*]|^)\B\*(\S[\s\S]+?)\*\B(?!\*)/g, function (wm, lead, txt) {
+    text = text.replace(/([^*]|^)\B\*(\S[\s\S]*?)\*\B(?!\*)/g, function (wm, lead, txt) {
       return parseInside (txt, lead + '<em>', '</em>');
     });
   } else {
@@ -49990,11 +50281,17 @@ showdown.subParser('underline', function (text, options, globals) {
   text = globals.converter._dispatch('underline.before', text, options, globals);
 
   if (options.literalMidWordUnderscores) {
-    text = text.replace(/\b_?__(\S[\s\S]*)___?\b/g, function (wm, txt) {
+    text = text.replace(/\b___(\S[\s\S]*?)___\b/g, function (wm, txt) {
+      return '<u>' + txt + '</u>';
+    });
+    text = text.replace(/\b__(\S[\s\S]*?)__\b/g, function (wm, txt) {
       return '<u>' + txt + '</u>';
     });
   } else {
-    text = text.replace(/_?__(\S[\s\S]*?)___?/g, function (wm, m) {
+    text = text.replace(/___(\S[\s\S]*?)___/g, function (wm, m) {
+      return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
+    });
+    text = text.replace(/__(\S[\s\S]*?)__/g, function (wm, m) {
       return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
     });
   }
@@ -50023,6 +50320,492 @@ showdown.subParser('unescapeSpecialChars', function (text, options, globals) {
   return text;
 });
 
+showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes()) {
+    var children = node.childNodes,
+        childrenLength = children.length;
+
+    for (var i = 0; i < childrenLength; ++i) {
+      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], globals);
+
+      if (innerTxt === '') {
+        continue;
+      }
+      txt += innerTxt;
+    }
+  }
+  // cleanup
+  txt = txt.trim();
+  txt = '> ' + txt.split('\n').join('\n> ');
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.codeBlock', function (node, globals) {
+  'use strict';
+
+  var lang = node.getAttribute('language'),
+      num  = node.getAttribute('precodenum');
+  return '```' + lang + '\n' + globals.preList[num] + '\n```';
+});
+
+showdown.subParser('makeMarkdown.codeSpan', function (node) {
+  'use strict';
+
+  return '`' + node.innerHTML + '`';
+});
+
+showdown.subParser('makeMarkdown.emphasis', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes()) {
+    txt += '*';
+    var children = node.childNodes,
+        childrenLength = children.length;
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+    txt += '*';
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.header', function (node, globals, headerLevel) {
+  'use strict';
+
+  var headerMark = new Array(headerLevel + 1).join('#'),
+      txt = '';
+
+  if (node.hasChildNodes()) {
+    txt = headerMark + ' ';
+    var children = node.childNodes,
+        childrenLength = children.length;
+
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.hr', function () {
+  'use strict';
+
+  return '---';
+});
+
+showdown.subParser('makeMarkdown.image', function (node) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasAttribute('src')) {
+    txt += '![' + node.getAttribute('alt') + '](';
+    txt += '<' + node.getAttribute('src') + '>';
+    if (node.hasAttribute('width') && node.hasAttribute('height')) {
+      txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
+    }
+
+    if (node.hasAttribute('title')) {
+      txt += ' "' + node.getAttribute('title') + '"';
+    }
+    txt += ')';
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.links', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes() && node.hasAttribute('href')) {
+    var children = node.childNodes,
+        childrenLength = children.length;
+    txt = '[';
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+    txt += '](';
+    txt += '<' + node.getAttribute('href') + '>';
+    if (node.hasAttribute('title')) {
+      txt += ' "' + node.getAttribute('title') + '"';
+    }
+    txt += ')';
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.list', function (node, globals, type) {
+  'use strict';
+
+  var txt = '';
+  if (!node.hasChildNodes()) {
+    return '';
+  }
+  var listItems       = node.childNodes,
+      listItemsLenght = listItems.length,
+      listNum = node.getAttribute('start') || 1;
+
+  for (var i = 0; i < listItemsLenght; ++i) {
+    if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
+      continue;
+    }
+
+    // define the bullet to use in list
+    var bullet = '';
+    if (type === 'ol') {
+      bullet = listNum.toString() + '. ';
+    } else {
+      bullet = '- ';
+    }
+
+    // parse list item
+    txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], globals);
+    ++listNum;
+  }
+
+  // add comment at the end to prevent consecutive lists to be parsed as one
+  txt += '\n<!-- -->\n';
+  return txt.trim();
+});
+
+showdown.subParser('makeMarkdown.listItem', function (node, globals) {
+  'use strict';
+
+  var listItemTxt = '';
+
+  var children = node.childNodes,
+      childrenLenght = children.length;
+
+  for (var i = 0; i < childrenLenght; ++i) {
+    listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+  }
+  // if it's only one liner, we need to add a newline at the end
+  if (!/\n$/.test(listItemTxt)) {
+    listItemTxt += '\n';
+  } else {
+    // it's multiparagraph, so we need to indent
+    listItemTxt = listItemTxt
+      .split('\n')
+      .join('\n    ')
+      .replace(/^ {4}$/gm, '')
+      .replace(/\n\n+/g, '\n\n');
+  }
+
+  return listItemTxt;
+});
+
+
+
+showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
+  'use strict';
+
+  spansOnly = spansOnly || false;
+
+  var txt = '';
+
+  // edge case of text without wrapper paragraph
+  if (node.nodeType === 3) {
+    return showdown.subParser('makeMarkdown.txt')(node, globals);
+  }
+
+  // HTML comment
+  if (node.nodeType === 8) {
+    return '<!--' + node.data + '-->\n\n';
+  }
+
+  // process only node elements
+  if (node.nodeType !== 1) {
+    return '';
+  }
+
+  var tagName = node.tagName.toLowerCase();
+
+  switch (tagName) {
+
+    //
+    // BLOCKS
+    //
+    case 'h1':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 1) + '\n\n'; }
+      break;
+    case 'h2':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 2) + '\n\n'; }
+      break;
+    case 'h3':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 3) + '\n\n'; }
+      break;
+    case 'h4':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 4) + '\n\n'; }
+      break;
+    case 'h5':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 5) + '\n\n'; }
+      break;
+    case 'h6':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 6) + '\n\n'; }
+      break;
+
+    case 'p':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, globals) + '\n\n'; }
+      break;
+
+    case 'blockquote':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, globals) + '\n\n'; }
+      break;
+
+    case 'hr':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, globals) + '\n\n'; }
+      break;
+
+    case 'ol':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, globals, 'ol') + '\n\n'; }
+      break;
+
+    case 'ul':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, globals, 'ul') + '\n\n'; }
+      break;
+
+    case 'precode':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, globals) + '\n\n'; }
+      break;
+
+    case 'pre':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, globals) + '\n\n'; }
+      break;
+
+    case 'table':
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, globals) + '\n\n'; }
+      break;
+
+    //
+    // SPANS
+    //
+    case 'code':
+      txt = showdown.subParser('makeMarkdown.codeSpan')(node, globals);
+      break;
+
+    case 'em':
+    case 'i':
+      txt = showdown.subParser('makeMarkdown.emphasis')(node, globals);
+      break;
+
+    case 'strong':
+    case 'b':
+      txt = showdown.subParser('makeMarkdown.strong')(node, globals);
+      break;
+
+    case 'del':
+      txt = showdown.subParser('makeMarkdown.strikethrough')(node, globals);
+      break;
+
+    case 'a':
+      txt = showdown.subParser('makeMarkdown.links')(node, globals);
+      break;
+
+    case 'img':
+      txt = showdown.subParser('makeMarkdown.image')(node, globals);
+      break;
+
+    default:
+      txt = node.outerHTML + '\n\n';
+  }
+
+  // common normalization
+  // TODO eventually
+
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes()) {
+    var children = node.childNodes,
+        childrenLength = children.length;
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+  }
+
+  // some text normalization
+  txt = txt.trim();
+
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.pre', function (node, globals) {
+  'use strict';
+
+  var num  = node.getAttribute('prenum');
+  return '<pre>' + globals.preList[num] + '</pre>';
+});
+
+showdown.subParser('makeMarkdown.strikethrough', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes()) {
+    txt += '~~';
+    var children = node.childNodes,
+        childrenLength = children.length;
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+    txt += '~~';
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.strong', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes()) {
+    txt += '**';
+    var children = node.childNodes,
+        childrenLength = children.length;
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+    txt += '**';
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.table', function (node, globals) {
+  'use strict';
+
+  var txt = '',
+      tableArray = [[], []],
+      headings   = node.querySelectorAll('thead>tr>th'),
+      rows       = node.querySelectorAll('tbody>tr'),
+      i, ii;
+  for (i = 0; i < headings.length; ++i) {
+    var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], globals),
+        allign = '---';
+
+    if (headings[i].hasAttribute('style')) {
+      var style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
+      switch (style) {
+        case 'text-align:left;':
+          allign = ':---';
+          break;
+        case 'text-align:right;':
+          allign = '---:';
+          break;
+        case 'text-align:center;':
+          allign = ':---:';
+          break;
+      }
+    }
+    tableArray[0][i] = headContent.trim();
+    tableArray[1][i] = allign;
+  }
+
+  for (i = 0; i < rows.length; ++i) {
+    var r = tableArray.push([]) - 1,
+        cols = rows[i].getElementsByTagName('td');
+
+    for (ii = 0; ii < headings.length; ++ii) {
+      var cellContent = ' ';
+      if (typeof cols[ii] !== 'undefined') {
+        cellContent = showdown.subParser('makeMarkdown.tableCell')(cols[ii], globals);
+      }
+      tableArray[r].push(cellContent);
+    }
+  }
+
+  var cellSpacesCount = 3;
+  for (i = 0; i < tableArray.length; ++i) {
+    for (ii = 0; ii < tableArray[i].length; ++ii) {
+      var strLen = tableArray[i][ii].length;
+      if (strLen > cellSpacesCount) {
+        cellSpacesCount = strLen;
+      }
+    }
+  }
+
+  for (i = 0; i < tableArray.length; ++i) {
+    for (ii = 0; ii < tableArray[i].length; ++ii) {
+      if (i === 1) {
+        if (tableArray[i][ii].slice(-1) === ':') {
+          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(-1), cellSpacesCount - 1, '-') + ':';
+        } else {
+          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
+        }
+      } else {
+        tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+      }
+    }
+    txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+  }
+
+  return txt.trim();
+});
+
+showdown.subParser('makeMarkdown.tableCell', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (!node.hasChildNodes()) {
+    return '';
+  }
+  var children = node.childNodes,
+      childrenLength = children.length;
+
+  for (var i = 0; i < childrenLength; ++i) {
+    txt += showdown.subParser('makeMarkdown.node')(children[i], globals, true);
+  }
+  return txt.trim();
+});
+
+showdown.subParser('makeMarkdown.txt', function (node) {
+  'use strict';
+
+  var txt = node.nodeValue;
+
+  // multiple spaces are collapsed
+  txt = txt.replace(/ +/g, ' ');
+
+  // replace the custom ¨NBSP; with a space
+  txt = txt.replace(/¨NBSP;/g, ' ');
+
+  // ", <, > and & should replace escaped html entities
+  txt = showdown.helper.unescapeHTMLEntities(txt);
+
+  // escape markdown magic characters
+  // emphasis, strong and strikethrough - can appear everywhere
+  // we also escape pipe (|) because of tables
+  // and escape ` because of code blocks and spans
+  txt = txt.replace(/([*_~|`])/g, '\\$1');
+
+  // escape > because of blockquotes
+  txt = txt.replace(/^(\s*)>/g, '\\$1>');
+
+  // hash character, only troublesome at the beginning of a line because of headers
+  txt = txt.replace(/^#/gm, '\\#');
+
+  // horizontal rules
+  txt = txt.replace(/^(\s*)([-=]{3,})(\s*)$/, '$1\\$2$3');
+
+  // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
+  txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
+
+  // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
+  txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
+
+  // images and links, ] followed by ( is problematic, so we escape it
+  txt = txt.replace(/]([\s]*)\(/g, '\\]$1\\(');
+
+  // reference URIs must also be escaped
+  txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
+
+  return txt;
+});
+
 var root = this;
 
 // AMD Loader
@@ -50047,7 +50830,7 @@ if (true) {
 
 
 /***/ }),
-/* 325 */
+/* 326 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
@@ -50066,11 +50849,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
         not_json: /[^j]/,
         text: /^[^\x25]+/,
         modulo: /^\x25{2}/,
-        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
+        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
         key: /^([a-z_][a-z_\d]*)/i,
         key_access: /^\.([a-z_][a-z_\d]*)/i,
         index_access: /^\[(\d+)\]/,
-        sign: /^[\+\-]/
+        sign: /^[+-]/
     }
 
     function sprintf(key) {
@@ -50083,42 +50866,42 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
     }
 
     function sprintf_format(parse_tree, argv) {
-        var cursor = 1, tree_length = parse_tree.length, arg, output = '', i, k, match, pad, pad_character, pad_length, is_positive, sign
+        var cursor = 1, tree_length = parse_tree.length, arg, output = '', i, k, ph, pad, pad_character, pad_length, is_positive, sign
         for (i = 0; i < tree_length; i++) {
             if (typeof parse_tree[i] === 'string') {
                 output += parse_tree[i]
             }
-            else if (Array.isArray(parse_tree[i])) {
-                match = parse_tree[i] // convenience purposes only
-                if (match[2]) { // keyword argument
+            else if (typeof parse_tree[i] === 'object') {
+                ph = parse_tree[i] // convenience purposes only
+                if (ph.keys) { // keyword argument
                     arg = argv[cursor]
-                    for (k = 0; k < match[2].length; k++) {
-                        if (!arg.hasOwnProperty(match[2][k])) {
-                            throw new Error(sprintf('[sprintf] property "%s" does not exist', match[2][k]))
+                    for (k = 0; k < ph.keys.length; k++) {
+                        if (arg == undefined) {
+                            throw new Error(sprintf('[sprintf] Cannot access property "%s" of undefined value "%s"', ph.keys[k], ph.keys[k-1]))
                         }
-                        arg = arg[match[2][k]]
+                        arg = arg[ph.keys[k]]
                     }
                 }
-                else if (match[1]) { // positional argument (explicit)
-                    arg = argv[match[1]]
+                else if (ph.param_no) { // positional argument (explicit)
+                    arg = argv[ph.param_no]
                 }
                 else { // positional argument (implicit)
                     arg = argv[cursor++]
                 }
 
-                if (re.not_type.test(match[8]) && re.not_primitive.test(match[8]) && arg instanceof Function) {
+                if (re.not_type.test(ph.type) && re.not_primitive.test(ph.type) && arg instanceof Function) {
                     arg = arg()
                 }
 
-                if (re.numeric_arg.test(match[8]) && (typeof arg !== 'number' && isNaN(arg))) {
+                if (re.numeric_arg.test(ph.type) && (typeof arg !== 'number' && isNaN(arg))) {
                     throw new TypeError(sprintf('[sprintf] expecting number but found %T', arg))
                 }
 
-                if (re.number.test(match[8])) {
+                if (re.number.test(ph.type)) {
                     is_positive = arg >= 0
                 }
 
-                switch (match[8]) {
+                switch (ph.type) {
                     case 'b':
                         arg = parseInt(arg, 10).toString(2)
                         break
@@ -50130,38 +50913,38 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
                         arg = parseInt(arg, 10)
                         break
                     case 'j':
-                        arg = JSON.stringify(arg, null, match[6] ? parseInt(match[6]) : 0)
+                        arg = JSON.stringify(arg, null, ph.width ? parseInt(ph.width) : 0)
                         break
                     case 'e':
-                        arg = match[7] ? parseFloat(arg).toExponential(match[7]) : parseFloat(arg).toExponential()
+                        arg = ph.precision ? parseFloat(arg).toExponential(ph.precision) : parseFloat(arg).toExponential()
                         break
                     case 'f':
-                        arg = match[7] ? parseFloat(arg).toFixed(match[7]) : parseFloat(arg)
+                        arg = ph.precision ? parseFloat(arg).toFixed(ph.precision) : parseFloat(arg)
                         break
                     case 'g':
-                        arg = match[7] ? String(Number(arg.toPrecision(match[7]))) : parseFloat(arg)
+                        arg = ph.precision ? String(Number(arg.toPrecision(ph.precision))) : parseFloat(arg)
                         break
                     case 'o':
                         arg = (parseInt(arg, 10) >>> 0).toString(8)
                         break
                     case 's':
                         arg = String(arg)
-                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
+                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
                         break
                     case 't':
                         arg = String(!!arg)
-                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
+                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
                         break
                     case 'T':
                         arg = Object.prototype.toString.call(arg).slice(8, -1).toLowerCase()
-                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
+                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
                         break
                     case 'u':
                         arg = parseInt(arg, 10) >>> 0
                         break
                     case 'v':
                         arg = arg.valueOf()
-                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
+                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
                         break
                     case 'x':
                         arg = (parseInt(arg, 10) >>> 0).toString(16)
@@ -50170,21 +50953,21 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
                         arg = (parseInt(arg, 10) >>> 0).toString(16).toUpperCase()
                         break
                 }
-                if (re.json.test(match[8])) {
+                if (re.json.test(ph.type)) {
                     output += arg
                 }
                 else {
-                    if (re.number.test(match[8]) && (!is_positive || match[3])) {
+                    if (re.number.test(ph.type) && (!is_positive || ph.sign)) {
                         sign = is_positive ? '+' : '-'
                         arg = arg.toString().replace(re.sign, '')
                     }
                     else {
                         sign = ''
                     }
-                    pad_character = match[4] ? match[4] === '0' ? '0' : match[4].charAt(1) : ' '
-                    pad_length = match[6] - (sign + arg).length
-                    pad = match[6] ? (pad_length > 0 ? pad_character.repeat(pad_length) : '') : ''
-                    output += match[5] ? sign + arg + pad : (pad_character === '0' ? sign + pad + arg : pad + sign + arg)
+                    pad_character = ph.pad_char ? ph.pad_char === '0' ? '0' : ph.pad_char.charAt(1) : ' '
+                    pad_length = ph.width - (sign + arg).length
+                    pad = ph.width ? (pad_length > 0 ? pad_character.repeat(pad_length) : '') : ''
+                    output += ph.align ? sign + arg + pad : (pad_character === '0' ? sign + pad + arg : pad + sign + arg)
                 }
             }
         }
@@ -50235,7 +51018,20 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
                 if (arg_names === 3) {
                     throw new Error('[sprintf] mixing positional and named placeholders is not (yet) supported')
                 }
-                parse_tree.push(match)
+
+                parse_tree.push(
+                    {
+                        placeholder: match[0],
+                        param_no:    match[1],
+                        keys:        match[2],
+                        sign:        match[3],
+                        pad_char:    match[4],
+                        align:       match[5],
+                        width:       match[6],
+                        precision:   match[7],
+                        type:        match[8]
+                    }
+                )
             }
             else {
                 throw new SyntaxError('[sprintf] unexpected placeholder')
@@ -50268,11 +51064,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
         }
     }
     /* eslint-enable quote-props */
-}()
+}(); // eslint-disable-line
 
 
 /***/ }),
-/* 326 */
+/* 327 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -50325,7 +51121,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(323);
+__webpack_require__(324);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 

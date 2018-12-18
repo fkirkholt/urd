@@ -21,15 +21,15 @@
     "jquery": "^3.3.1",
     "jquery-ui": "^1.12.1",
     "js-cookie": "^2.2.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "mithril": "^1.1.6",
-    "moment": "^2.22.1",
-    "mousetrap": "^1.6.1",
+    "moment": "^2.23.0",
+    "mousetrap": "^1.6.2",
     "npm": "^5.10.0",
     "numeral": "^2.0.6",
-    "pikaday": "^1.7.0",
-    "showdown": "^1.8.5",
-    "sprintf-js": "^1.1.1"
+    "pikaday": "^1.8.0",
+    "showdown": "^1.9.0",
+    "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
     "webpack": "^2.6.1"
