@@ -378,7 +378,7 @@ class Record {
 
         foreach ($relations as $rel) {
             foreach ($rel['records'] as $rec) {
-                $record = new Record($rel['db_name'], $rel['name'], $rec['primary_key']);
+                $record = new Record($rel['db_name'], $rel['name'], (object) $rec['primary_key']);
                 $record->delete();
             }
         }
