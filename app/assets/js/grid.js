@@ -266,6 +266,8 @@ var grid = {
 
             grid.update(ds.table, result.data);
         });
+
+        return true;
     },
 
     check_dirty: function() {

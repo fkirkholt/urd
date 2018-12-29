@@ -17548,6 +17548,8 @@ var grid = {
 
             grid.update(ds.table, result.data);
         });
+
+        return true;
     },
 
     check_dirty: function() {
@@ -20236,10 +20238,13 @@ var toolbar = {
                 m('input[type=button]', {
                     value: 'Lagre og lukk',
                     onclick: function() {
+                        var saved = true;
                         if (ds.table.dirty) {
-                            grid.save();
+                            saved = grid.save();
                         }
-                        config.edit_mode = false;
+                        if (saved) {
+                            config.edit_mode = false;
+                        }
                     }
                 }),
                 m('input[type=button]', {
