@@ -787,7 +787,12 @@ var entry = {
     view: function(vnode) {
         var rec = vnode.attrs.record;
 
-        if (!rec || !rec.table) return null;
+        if (!rec || !rec.table) {
+            return m('form[name="record"]', {
+                class: 'flex flex-column',
+                style: 'flex: 0 0 550px;'
+            });
+        }
 
         entry.validate(rec);
 
