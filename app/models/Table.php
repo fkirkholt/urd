@@ -505,7 +505,7 @@ class Table {
         $conditions = $request->condition ? explode(' AND ', $request->condition) : [];
         // ignores case. Should work for all supported platforms
         if ($search) {
-            $search = mb_strtolower($search);
+            $search = mb_strtolower($search, 'UTF-8');
             $conditions[] = "(lower($view) LIKE '%$search%')";
         }
         $betingelse = count($conditions) ? implode(' AND ', $conditions) : $value_column . ' IS NOT NULL';
