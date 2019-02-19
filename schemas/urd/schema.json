@@ -29,7 +29,7 @@
                     ]
                 }
             },
-            "filter": "user_.id not in ('admin', 'urd')",
+            "filter": "user_.id not in ('urd')",
             "description": null,
             "type": "data",
             "fields": {
