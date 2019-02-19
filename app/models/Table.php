@@ -943,7 +943,7 @@ class Table {
             $pk_column = $this->primary_key[0];
 
             $selects['count_children'] = "(SELECT count(*)
-                    FROM $this->name child_table
+                    FROM {$this->db->name}.$this->name child_table
                     WHERE $rel_column->name = $this->name.$pk_column)";
 
             // Filters on highest level if not filtered by user
