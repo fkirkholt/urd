@@ -1,4 +1,6 @@
-CREATE TABLE `database_` (
+CREATE USER 'urd'@'%' IDENTIFIED BY 'urd';CREATE DATABASE IF NOT EXISTS `urd`;GRANT ALL PRIVILEGES ON `urd`.* TO 'urd'@'%';GRANT ALL PRIVILEGES ON `urd\_%`.* TO 'urd'@'%';
+
+CREATE TABLE `urd`.`database_` (
   `name` varchar(30) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
   `alias` varchar(30) COLLATE utf8_danish_ci DEFAULT NULL,
   `platform` varchar(50) COLLATE utf8_danish_ci DEFAULT NULL,
@@ -14,9 +16,12 @@ CREATE TABLE `database_` (
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
 
+INSERT INTO urd.database_ (name,alias,platform,host,port,username,password,label,description,schema_,date_format,log) 
+VALUES
+  ('urd',NULL,'mysql',NULL,NULL,NULL,NULL,'URD',NULL,'urd',NULL,false);
 
 
-CREATE TABLE `filter` (
+CREATE TABLE `urd`.`filter` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `schema_` varchar(30) COLLATE utf8_danish_ci DEFAULT NULL,
   `table_` varchar(50) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
@@ -30,7 +35,7 @@ CREATE TABLE `filter` (
 
 
 
-CREATE TABLE `format` (
+CREATE TABLE `urd`.`format` (
   `schema_` varchar(30) COLLATE utf8_danish_ci NOT NULL,
   `table_` varchar(30) COLLATE utf8_danish_ci NOT NULL,
   `class` varchar(30) COLLATE utf8_danish_ci NOT NULL,
@@ -40,7 +45,7 @@ CREATE TABLE `format` (
 
 
 
-CREATE TABLE `message` (
+CREATE TABLE `urd`.`message` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `user_` varchar(30) COLLATE utf8_danish_ci DEFAULT NULL,
@@ -55,13 +60,13 @@ CREATE TABLE `message` (
 
 
 
-CREATE TABLE `migration` (
+CREATE TABLE `urd`.`migration` (
   `version` varchar(255) COLLATE utf8_danish_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci COMMENT='?';
 
 
 
-CREATE TABLE `organization` (
+CREATE TABLE `urd`.`organization` (
   `id` varchar(10) NOT NULL DEFAULT '',
   `name` varchar(200) NOT NULL,
   `parent` varchar(10) DEFAULT NULL,
@@ -71,16 +76,17 @@ CREATE TABLE `organization` (
 
 
 
-CREATE TABLE `role` (
+CREATE TABLE `urd`.`role` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
   `schema_` varchar(30) COLLATE utf8_danish_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
 
+INSERT INTO `urd`.`role` (`id`, `name`, `schema_`) VALUES (1, 'URD admin', 'urd');
 
 
-CREATE TABLE `role_permission` (
+CREATE TABLE `urd`.`role_permission` (
   `role` int(11) unsigned NOT NULL,
   `schema_` varchar(30) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
   `table_` varchar(30) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
@@ -92,9 +98,12 @@ CREATE TABLE `role_permission` (
   PRIMARY KEY (`role`,`schema_`,`table_`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
 
+INSERT INTO urd.role_permission (role,schema_,table_,view_,add_,edit,delete_,admin) 
+VALUES
+  (1,'urd','*',true,true,true,true,true);
 
 
-CREATE TABLE `user_` (
+CREATE TABLE `urd`.`user_` (
   `id` varchar(30) COLLATE utf8_danish_ci NOT NULL,
   `name` varchar(50) COLLATE utf8_danish_ci NOT NULL,
   `email` varchar(50) COLLATE utf8_danish_ci DEFAULT NULL,
@@ -105,12 +114,17 @@ CREATE TABLE `user_` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
 
+INSERT INTO urd.user_ (id,name,email,passord_disabled,organization,hash,active) 
+VALUES
+  ('admin','Admin',NULL,NULL,NULL,'$2y$10$EzebOh8HLEq6WtX/OxDtzOIikL7/EQS5aQstb2J7jkCG4jynE2iIK',true);
 
-
-CREATE TABLE `user_role` (
+CREATE TABLE `urd`.`user_role` (
   `user_` varchar(30) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
   `schema_` varchar(30) COLLATE utf8_danish_ci NOT NULL DEFAULT '',
   `role` int(11) NOT NULL,
   PRIMARY KEY (`user_`,`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
 
+INSERT INTO urd.user_role (user_,schema_,role) 
+VALUES
+  ('admin','urd',1);
