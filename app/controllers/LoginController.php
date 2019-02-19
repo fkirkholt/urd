@@ -50,7 +50,7 @@ class LoginController extends BaseController {
                     WHERE id = ? AND active = 1";
             $rad = dibi::fetch($sql, $brukernavn);
 
-            if (count($rad) && password_verify($passord, $rad['hash'])) {
+            if ($rad && password_verify($passord, $rad['hash'])) {
                 $success = true;
                 $_SESSION['guest'] = false;
             }
