@@ -110,7 +110,7 @@ class Database {
             ? json_decode(file_get_contents($file))
             : (object) ['tables'=>[]];
 
-        $this->tables = $database->tables;
+        $this->tables = isset($database->tables) ? $database->tables : [];
         $this->relations = isset($database->relations) ? $database->relations : [];
         $this->reports = isset($database->reports) ? $database->reports : [];
         $this->contents = isset($database->contents) ? $database->contents : null;
