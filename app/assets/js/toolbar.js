@@ -57,6 +57,8 @@ var toolbar = {
                     entry.update_field(data.value, field.name, ds.table.records[rec_idx]);
                     m.redraw();
                 }
+            }).fail(function(jqXHR, textStatus, error) {
+                alert(jqXHR.responseText);
             });
         } else if (kommunikasjon == 'dialog') {
             $('#action-dialog').load(address + '?version=1');
