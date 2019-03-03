@@ -20,7 +20,9 @@ var search = {
             }
         }).then(function(result) {
             field.relation = result.data;
-            field.relation.name = field.name;
+            field.relation.alias = field.name;
+            // mark the relation so that we don't expand more than one level deep
+            field.relation.sublevel = true;
 
             if (field.expanded) {
                 field.expanded = false;
@@ -81,12 +83,13 @@ var search = {
             label = isNaN(parseInt(label)) ? label: field.label;
             var operators = filterpanel.get_operators(field);
 
-            var filtername = field.table + '.' + field.name;
+            if (table.alias === undefined) table.alias = table.name;
+            var filtername = (table.alias || table.name) + '.' + field.name;
 
             if (!ds.table.filters[filtername]) {
                 ds.table.filters[filtername] = {
                     field: filtername,
-                    operator: field.element == 'textare' || field.element == 'input[type=text]' ? 'LIKE' : '='
+                    operator: field.element == 'textarea' || (field.element == 'input[type=text]' &&['integer', 'float'].indexOf(field.datatype) == -1) ? 'LIKE' : '='
                 }
             }
 
@@ -96,7 +99,7 @@ var search = {
             return [
                 m('tr', [
                     m('td', {class: 'tc v-top'}, [
-                        !field.foreign_key || !field.expandable ? null : m('i.fa', {
+                        !field.foreign_key || !field.expandable || table.sublevel ? null : m('i.fa', {
                             class: !field.expanded ? 'fa-angle-right' : field.expandable ? 'fa-angle-down' : '',
                             onclick: function() {
                                 search.toggle_relation(field)
