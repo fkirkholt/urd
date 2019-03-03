@@ -36823,7 +36823,7 @@ var export_dialog = {
         param.fields = JSON.stringify(fields);
 
         param.csv = true;
-        $.download('/table', param);
+        $.download('table', param);
     },
 
     export_sql: function(dialekt) {
@@ -36831,7 +36831,7 @@ var export_dialog = {
         param.dialekt = dialekt;
         param.base = ds.base.name;
         param.table = ds.table.name;
-        $.download('/table_sql', param);
+        $.download('table_sql', param);
     },
 
     view: function() {
