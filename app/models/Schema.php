@@ -57,7 +57,11 @@ class Schema {
     {
         $db = DB::get($db_name);
 
-        $reflector = $db->conn->getDriver()->getReflector();
+        if ($db->platform == 'oracle') {
+            $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
+        } else {
+            $reflector = $db->conn->getDriver()->getReflector();
+        }
 
         // Don't return keys in lowercase
         // Necessary for database reflection to work
@@ -78,7 +82,15 @@ class Schema {
         }
 
         // Finds all tables in database
-        $db_tables = $db->conn->getDatabaseInfo()->getTableNames();
+        if ($db->platform == 'oracle') {
+            $tables = $reflector->getTables();
+            $db_tables = [];
+            foreach ($tables as $table) {
+                $db_tables[] = $table['name'];
+            }
+        } else {
+            $db_tables = $db->conn->getDatabaseInfo()->getTableNames();
+        }
 
         // Removes tables that doesn't exist
         foreach ($schema['tables'] as $table_name => $table) {
@@ -89,7 +101,11 @@ class Schema {
 
         foreach ($db_tables as $tbl_name) {
 
-            $refl_table = $db->conn->getDatabaseInfo()->getTable($tbl_name);
+            if ($db->platform == 'oracle') {
+                $refl_table = new \Dibi\Reflection\Table($reflector, ['name'=> $tbl_name, 'view' => false]);
+            } else {
+                $refl_table = $db->conn->getDatabaseInfo()->getTable($tbl_name);
+            }
 
             // Updates table properties
 
@@ -140,7 +156,10 @@ class Schema {
             }
 
             // Updates foreign keys
-            {
+            if ($db->platform == 'oracle') {
+                // TODO: Fix foreign keys for oracle
+                $foreign_keys = [];
+            } else {
                 // $foreign_keys = $db->conn->getDatabaseInfo()->getTable($tbl_name)->getForeignKeys();
                 $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
