@@ -62,13 +62,13 @@ class TableController extends BaseController {
                 : array();
 
             foreach ($sok_arr as $cond) {
-                $parts = preg_split("/\s*([=<>]|!=|IN|LIKE|NOT LIKE|IS NULL|IS NOT NULL)\s*/", $cond, 2,
+                $parts = preg_split("/\s*([=<>]|!=| IN| LIKE|NOT LIKE|IS NULL|IS NOT NULL)\s*/", $cond, 2,
                     PREG_SPLIT_DELIM_CAPTURE);
                 $field = $parts[0];
                 if (strpos($field, '.') === false) {
                     $field = "$tbl->name.$field";
                 }
-                $operator = $parts[1];
+                $operator = trim($parts[1]);
                 $value = str_replace('*', '%', $parts[2]);
                 if ($operator === 'IN') {
                     $value = "('" . implode("','", explode(',', trim($value))) . "')";
