@@ -343,6 +343,8 @@ class Table {
         $select_tables = $this->extension_tables;
         $select_tables[] = $this->name;
         foreach ($select_tables as $tbl_name) {
+            // Break if connected with user who doesn't own the tables
+            if (!$repl_connection->getDatabaseInfo()->hasTable($tbl_name)) break;
             $db_columns = $repl_connection->getDatabaseInfo()->getTable($tbl_name)->getColumns();
 
             foreach ($db_columns as $col) {
