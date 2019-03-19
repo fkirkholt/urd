@@ -206,7 +206,14 @@
                     "url": "update_schema",
                     "communication": "ajax",
                     "method": "put",
-                    "description": "Oppdaterer skjema (database.json) fra databasen"
+                    "description": "Oppdaterer skjema (schema.json) fra databasen"
+                },
+                {
+                    "label": "Opprett tabeller fra skjema",
+                    "url": "create_tables",
+                    "communication": "ajax",
+                    "method": "put",
+                    "description": "Oppretter tabeller basert på beskrivelsen i schema.json"
                 }
             ],
             "form": {

@@ -49,20 +49,22 @@ class Expression {
 
     }
 
-    public function to_native_type($type, $length)
+    public function to_native_type($length)
     {
         if ($this->platform == 'mysql') {
-            switch ($type) {
+            switch ($this->expr) {
             case 'string':
-                return 'varchar';
+                return "varchar($length)";
             case 'integer':
-                return 'int';
+                return "int($length)";
             case 'float':
-                return 'float';
+                return "float($length)";
             case 'date':
                 return 'date';
+            case 'boolean':
+                return 'tinyint(1)';
             default:
-                throw new \Exception("type $type not recognized");
+                throw new \Exception("type $this->expr not recognized");
             }
         } else {
             throw new \Exception("type conversion for $this->platform not implemented");

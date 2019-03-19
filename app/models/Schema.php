@@ -416,6 +416,36 @@ class Schema {
         fwrite($fh_schema, json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
+    public function create_tables_from_schema($db_name)
+    {
+        $db = DB::get($db_name);
+
+        $schema_file = __DIR__ . '/../../schemas/' . $this->name . '/schema.json';
+
+        if (file_exists($schema_file)) {
+            $schema = json_decode(file_get_contents($schema_file), true);
+        } else {
+            return 'Finner ikke skjema-fil';
+        }
+
+        foreach ($schema['tables'] as $table) {
+            $table = (object) $table;
+
+            $sql = "create table $table->name (";
+            $columns = [];
+            
+            foreach ($table->fields as $field) {
+                $field = (object) $field;
+                $length = isset($field->length) ? $field->length : null;
+                $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($length);
+            }
+
+            $sql .= implode(', ', $columns) . ')';
+
+            error_log($sql);
+        }
+    }
+
     private function get_new_element($old_element) {
         switch ($old_element) {
         case 'textfield':

@@ -39,6 +39,17 @@ class SchemaController extends BaseController {
         $data = $schema->update_schema_from_urd_tables();
 
         return $this->response->body(json_encode(['data' => $data]));
+    }
 
+    public function create_tables()
+    {
+        $req = json_decode($this->request->getBody());
+        $pk = json_decode($req->primary_key);
+        $db_name = $pk->name;
+        $schema_name = DB::get()->conn->select('schema_')->from('database_')->where('name = ?', $db_name)->fetchSingle();
+        $schema = new Schema($schema_name);
+        $data = $schema->create_tables_from_schema($db_name);
+
+        return $this->response->body(json_encode(['data' => $data]));
     }
 }
