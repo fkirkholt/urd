@@ -428,8 +428,12 @@ class Schema {
             return 'Finner ikke skjema-fil';
         }
 
+        /// Create tables with primary key and indexes
+
         foreach ($schema['tables'] as $table) {
             $table = (object) $table;
+
+            /// Create table
 
             $sql = "create table $table->name (";
             $columns = [];
@@ -442,7 +446,65 @@ class Schema {
 
             $sql .= implode(', ', $columns) . ')';
 
-            error_log($sql);
+            $db->query($sql);
+
+            /// Add primary key
+
+            $pk_columns = [];
+            foreach ($table->primary_key as $col) {
+                $pk_columns[] = $table->fields[$col]['name'];
+            }
+            $pk = implode(',', $pk_columns);
+            $sql = "alter table $table->name add primary key ($pk)";
+
+            $db->query($sql);
+
+            /// Add indexes
+
+            foreach ($table->indexes as $index) {
+                $index = (object) $index;
+
+                if ($index->primary == true) continue;
+
+                $columns = [];
+                foreach ($index->columns as $column) {
+                    $columns[] = $table->fields[$column]['name'];
+                }
+                $columns_str = implode(', ', $columns);
+
+                $sql = "create index $index->name on $table->name ($columns_str)";
+                $db->query($sql);
+            }
+        }
+
+        /// Add foreign keys
+
+        foreach ($schema['tables'] as $table) {
+            $table = (object) $table;
+
+            foreach ($table->foreign_keys as $fk) {
+                $fk = (object) $fk;
+
+                // get foreign keys columns
+                $fk_columns = [];
+                foreach ($fk->local as $alias) {
+                    $fk_columns[] = $table->fields[$alias]['name'];
+                }
+                $fk_columns_str = implode(', ', $fk_columns);
+                $sql = "alter table $table->name add foreign key ($fk_columns_str) ";
+
+                // get reference table and columns
+                $ref_table = $schema['tables'][$fk->table]['name'];
+                $ref_columns = [];
+                foreach ($fk->foreign as $alias) {
+                    $ref_columns[] = $schema['tables'][$fk->table]['fields'][$alias]['name'];
+                }
+                $ref_columns_str = implode(', ', $ref_columns);
+
+                $sql.= "references $ref_table($ref_columns_str)";
+
+                $db->query($sql);
+            }
         }
     }
 
