@@ -3,6 +3,7 @@
 namespace URD\models;
 
 use URD\models\Expression;
+use URD\models\Schema;
 use PDO;
 use dibi;
 use ChromePhp as Log;
@@ -105,15 +106,12 @@ class Database {
         $this->connection = $this->conn;
         // $this->conn->logQueries(true);
 
-        $file = __DIR__ . '/../../schemas/' . $this->schema . '/schema.json';
-        $database = file_exists($file)
-            ? json_decode(file_get_contents($file))
-            : (object) ['tables'=>[]];
+        $schema = Schema::get($this->schema);
 
-        $this->tables = isset($database->tables) ? $database->tables : [];
-        $this->relations = isset($database->relations) ? $database->relations : [];
-        $this->reports = isset($database->reports) ? $database->reports : [];
-        $this->contents = isset($database->contents) ? $database->contents : null;
+        $this->tables = isset($schema->tables) ? $schema->tables : [];
+        $this->relations = isset($schema->relations) ? $schema->relations : [];
+        $this->reports = isset($schema->reports) ? $schema->reports : [];
+        $this->contents = isset($schema->contents) ? $schema->contents : null;
     }
 
     public static function get($db_name=null) {

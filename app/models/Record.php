@@ -172,8 +172,8 @@ class Record {
             $permission = $tbl_rel->get_user_permission();
             if ($permission->view === 0) continue;
 
-            $rel->fk_columns = $tbl_rel->foreign_keys->{$rel->foreign_key}->local;
-            $rel->ref_columns = $tbl_rel->foreign_keys->{$rel->foreign_key}->foreign;
+            $rel->fk_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->local;
+            $rel->ref_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->foreign;
 
             // Add condition to fetch only rows that link to record
             foreach ($rel->fk_columns as $i => $fk_field_alias) {

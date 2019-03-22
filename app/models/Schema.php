@@ -10,16 +10,42 @@ use PDO;
 class Schema {
 
     protected $urd_conn;
+    private static $instances;
+    public $tables;
+    public $reports;
+    public $contents;
 
     function __construct($schema_name) {
+        $file = __DIR__ . '/../../schemas/' . $schema_name . '/schema.json';
+
+        // Finds exisisting data in schema.json
+        if (file_exists($file)) {
+            $schema = json_decode(file_get_contents($file));
+        } else {
+            $schema = json_decode("{'tables': []}");
+        }
+
+        $this->tables = (array) $schema->tables;
+        $this->reports = isset($schema->reports) ? (array) $schema->reports : [];
+        $this->contents = isset($schema->contents) ? (array) $schema->contents : [];
+
+        foreach ($this->tables as $alias => $table) {
+            $table->indexes = isset($table->indexes) ? (array) $table->indexes : [];
+            $table->foreign_keys = isset($table->foreign_keys) ? (array) $table->foreign_keys : [];
+            $table->fields = (array) $table->fields;
+
+            $this->tables[$alias] = $table;
+        }
+
         $this->name = $schema_name;
     }
 
     public static function get($schema_name) {
-        $file = __DIR__ . '/../../schemas/' . $schema_name . '/schema.json';
-        $schema = json_decode(file_get_contents($file));
+        if (!isset(self::$instances[$schema_name])) {
+            self::$instances[$schema_name] = new Schema($schema_name);
+        }
 
-        return $schema;
+        return self::$instances[$schema_name];
     }
 
     public function get_db_alias() {
@@ -68,19 +94,6 @@ class Schema {
         $pdo = $db->conn->getDriver()->getResource();
         $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
 
-        if (!file_exists(__DIR__ . '/../../schemas/' . $db->schema)) {
-            mkdir(__DIR__ . '/../../schemas/' . $db->schema);
-        }
-
-        $schema_file = __DIR__ . '/../../schemas/' . $db->schema . '/schema.json';
-
-        // Finds exisisting data in schema.json
-        if (file_exists($schema_file)) {
-            $schema = json_decode(file_get_contents($schema_file), true);
-        } else {
-            $schema = ['tables' => []];
-        }
-
         // Finds all tables in database
         if ($db->platform == 'oracle') {
             $tables = $reflector->getTables();
@@ -93,9 +106,9 @@ class Schema {
         }
 
         // Removes tables that doesn't exist
-        foreach ($schema['tables'] as $table_name => $table) {
+        foreach ($this->tables as $table_name => $table) {
             if (!in_array($table_name, $db_tables)) {
-                unset($schema['tables'][$table_name]);
+                unset($this->tables[$table_name]);
             }
         }
 
@@ -119,8 +132,8 @@ class Schema {
                 }
             }
 
-            if (!array_key_exists($tbl_name, $schema['tables'])) {
-                $record = [
+            if (!array_key_exists($tbl_name, $this->tables)) {
+                $record = (object) [
                     'name' => $tbl_name,
                     'icon' => null,
                     'label' => null,
@@ -129,29 +142,29 @@ class Schema {
                     'description' => null,
                 ];
 
-                $schema['tables'][$tbl_name] = $record;
+                $this->tables[$tbl_name] = $record;
             } else {
-                $table = (object) $schema['tables'][$tbl_name];
+                $table = $this->tables[$tbl_name];
                 $table->name = $tbl_name;
                 $table->label = isset($table->label) ? $table->label : null;
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
                 $table->type = isset($table->type) ? $table->type : 'data';
 
-                $schema['tables'][$tbl_name] = (array) $table;
+                $this->tables[$tbl_name] = $table;
             }
 
             // Updates indexes
             {
                 $indexes = $reflector->getIndexes($tbl_name);
 
-                if (!isset($schema['tables'][$tbl_name]['indexes'])) {
-                    $schema['tables'][$tbl_name]['indexes'] = [];
+                if (!isset($this->tables[$tbl_name]->indexes)) {
+                    $this->tables[$tbl_name]->indexes = [];
                 }
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
                     $alias = end($index->columns);
-                    $schema['tables'][$tbl_name]['indexes'][$alias] = $index;
+                    $this->tables[$tbl_name]->indexes[$alias] = $index;
                 }
             }
 
@@ -165,45 +178,45 @@ class Schema {
 
                 error_log(json_encode($foreign_keys));
 
-                if (!isset($schema['tables'][$tbl_name]['foreign_keys'])) {
-                    $schema['tables'][$tbl_name]['foreign_keys'] = [];
+                if (!isset($this->tables[$tbl_name]->foreign_keys)) {
+                    $this->tables[$tbl_name]->foreign_keys = [];
                 }
 
                 foreach ($foreign_keys as $key) {
                     $key = (object) $key;
                     $key->schema = $this->name;
                     $key_alias = end($key->local);
-                    $schema['tables'][$tbl_name]['foreign_keys'][$key_alias] = $key;
+                    $this->tables[$tbl_name]->foreign_keys[$key_alias] = $key;
 
                     // Checks if the relation defines this as an extension table
                     if ($key->local === $pk_columns) {
-                        if (!array_key_exists($key->table, $schema['tables'])) {
-                            $schema['tables'][$key->table] = ['extension_tables' => []];
+                        if (!array_key_exists($key->table, $this->tables)) {
+                            $this->tables[$key->table] = (object) ['extension_tables' => []];
                         }
-                        if (!in_array($tbl_name, $schema['tables'][$key->table]['extension_tables'])) {
-                            $schema['tables'][$key->table]['extension_tables'][] = $tbl_name;
+                        if (!in_array($tbl_name, $this->tables[$key->table]->extension_tables)) {
+                            $this->tables[$key->table]->extension_tables[] = $tbl_name;
                         }
                     }
                 }
             }
 
             if (count($foreign_keys) == 0) {
-                $schema['tables'][$tbl_name]['type'] = 'reference';
+                $this->tables[$tbl_name]->type = 'reference';
             }
 
             // Updates column properties
 
-            if (!isset($schema['tables'][$tbl_name]['fields'])) {
-                $schema['tables'][$tbl_name]['fields'] = [];
+            if (!isset($this->tables[$tbl_name]->fields)) {
+                $this->tables[$tbl_name]->fields = [];
             }
 
-            $fields = $schema['tables'][$tbl_name]['fields'];
+            $fields = $this->tables[$tbl_name]->fields;
 
             // Fields may be defined with alias the same as name,
             // and avoid specifying the name
             if (count($fields)) {
                 foreach ($fields as $alias => $field) {
-                    if (!isset($field['name'])) $fields[$alias]['name'] = $alias;
+                    if (!isset($field->name)) $fields[$alias]->name = $alias;
                 }
             }
 
@@ -216,7 +229,7 @@ class Schema {
                 if ($type === 'integer' && $col->size === 1) $type = 'boolean';
 
                 $items = array_filter($fields, function($item) use ($col_name) {
-                    return $item['name'] === $col_name;
+                    return $item->name === $col_name;
                 });
 
                 $key = key($items);
@@ -241,33 +254,33 @@ class Schema {
                     } else {
                         $element = 'input[type=checkbox]';
                     }
-                } else if (isset($schema['tables'][$tbl_name]['foreign_keys'][$col_name])) {
+                } else if (isset($this->tables[$tbl_name]->foreign_keys[$col_name])) {
                     $element = 'select';
                     $options = null;
                 } else {
                     $element = 'input[type=text]';
                 }
 
-                $urd_col = [
+                $urd_col = (object) [
                     'name' => $col_name,
                     'element' => $element,
                     'datatype' => $type,
                     'nullable' => $col->nullable,
                 ];
                 if ($type !== 'boolean') {
-                    $urd_col['length'] = $col->size;
+                    $urd_col->length = $col->size;
                 }
                 if ($col->autoincrement) {
-                    $urd_col['extra'] = 'auto_increment';
+                    $urd_col->extra = 'auto_increment';
                 }
                 if ($element === 'select' && !empty($options)) {
-                    $urd_col['options'] = $options;
+                    $urd_col->options = $options;
                 }
 
                 if (!$key) {
-                    $schema['tables'][$tbl_name]['fields'][$col_name] = $urd_col;
+                    $this->tables[$tbl_name]->fields[$col_name] = $urd_col;
                 } else {
-                    $schema['tables'][$tbl_name]['fields'][$key] = array_merge($schema['tables'][$tbl_name]['fields'][$key], $urd_col);
+                    $this->tables[$tbl_name]->fields[$key] = (object) array_merge((array) $this->tables[$tbl_name]->fields[$key], (array) $urd_col);
                 }
             }
 
@@ -283,16 +296,22 @@ class Schema {
             $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
             $records = $db->conn->query($sql)->fetchAll();
 
-            $schema['tables'][$tbl_name]['records'] = [];
+            $this->tables[$tbl_name]->records = [];
 
             foreach ($records as $record) {
-                $schema['tables'][$tbl_name]['records'][] = $record;
+                $this->tables[$tbl_name]->records[] = $record;
             }
         }
 
+        if (!file_exists(__DIR__ . '/../../schemas/' . $db->schema)) {
+            mkdir(__DIR__ . '/../../schemas/' . $db->schema);
+        }
+
+        $schema_file = __DIR__ . '/../../schemas/' . $db->schema . '/schema.json';
+
         $fh_schema = fopen($schema_file, 'w');
         // $fh_schema = fopen(substr_replace($schema_file, '_new', strpos($schema_file, '.json'), 0), 'w');
-        fwrite($fh_schema, json_encode($schema, JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        fwrite($fh_schema, json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
         return 'success';
     }
@@ -420,18 +439,9 @@ class Schema {
     {
         $db = DB::get($db_name);
 
-        $schema_file = __DIR__ . '/../../schemas/' . $this->name . '/schema.json';
-
-        if (file_exists($schema_file)) {
-            $schema = json_decode(file_get_contents($schema_file), true);
-        } else {
-            return 'Finner ikke skjema-fil';
-        }
-
         /// Create tables with primary key and indexes
 
-        foreach ($schema['tables'] as $table) {
-            $table = (object) $table;
+        foreach ($this->tables as $table) {
 
             /// Create table
 
@@ -439,7 +449,6 @@ class Schema {
             $columns = [];
             
             foreach ($table->fields as $field) {
-                $field = (object) $field;
                 $length = isset($field->length) ? $field->length : null;
                 $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($length);
             }
@@ -452,7 +461,7 @@ class Schema {
 
             $pk_columns = [];
             foreach ($table->primary_key as $col) {
-                $pk_columns[] = $table->fields[$col]['name'];
+                $pk_columns[] = $table->fields[$col]->name;
             }
             $pk = implode(',', $pk_columns);
             $sql = "alter table $table->name add primary key ($pk)";
@@ -462,13 +471,12 @@ class Schema {
             /// Add indexes
 
             foreach ($table->indexes as $index) {
-                $index = (object) $index;
 
                 if ($index->primary == true) continue;
 
                 $columns = [];
                 foreach ($index->columns as $column) {
-                    $columns[] = $table->fields[$column]['name'];
+                    $columns[] = $table->fields[$column]->name;
                 }
                 $columns_str = implode(', ', $columns);
 
@@ -479,25 +487,23 @@ class Schema {
 
         /// Add foreign keys
 
-        foreach ($schema['tables'] as $table) {
-            $table = (object) $table;
+        foreach ($this->tables as $table) {
 
             foreach ($table->foreign_keys as $fk) {
-                $fk = (object) $fk;
 
                 // get foreign keys columns
                 $fk_columns = [];
                 foreach ($fk->local as $alias) {
-                    $fk_columns[] = $table->fields[$alias]['name'];
+                    $fk_columns[] = $table->fields[$alias]->name;
                 }
                 $fk_columns_str = implode(', ', $fk_columns);
                 $sql = "alter table $table->name add foreign key ($fk_columns_str) ";
 
                 // get reference table and columns
-                $ref_table = $schema['tables'][$fk->table]['name'];
+                $ref_table = $this->tables[$fk->table]->name;
                 $ref_columns = [];
                 foreach ($fk->foreign as $alias) {
-                    $ref_columns[] = $schema['tables'][$fk->table]['fields'][$alias]['name'];
+                    $ref_columns[] = $this->tables[$fk->table]->fields[$alias]->name;
                 }
                 $ref_columns_str = implode(', ', $ref_columns);
 

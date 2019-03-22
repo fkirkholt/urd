@@ -22,7 +22,7 @@ class Table {
     {
         $this->db = Database::get($db_name);
 
-        $tbl = $this->db->tables->{$tbl_name};
+        $tbl = $this->db->tables[$tbl_name];
 
         $tbl->label = $tbl->label ?: ucfirst(str_replace('_', ' ', $tbl_name));
         if (!isset($tbl->grid)) $tbl->grid = new \StdClass;
@@ -124,11 +124,11 @@ class Table {
         $joins = [];
         foreach ($this->fields as $alias => $field) {
             if (
-                !isset($this->foreign_keys->{$alias}) || !isset($field->view) ||
+                !isset($this->foreign_keys[$alias]) || !isset($field->view) ||
                 (isset($field->column_view) && $field->column_view === null)
             ) continue;
 
-            $fk = $this->foreign_keys->{$alias};
+            $fk = $this->foreign_keys[$alias];
 
             if (!isset($fk->schema)) $fk->schema = $this->db->schema;
 
@@ -186,20 +186,19 @@ class Table {
 
     private function supplement_fields()
     {
-        $fields = (array) $this->fields;
-        $tables = json_decode(json_encode($this->db->tables), true);
+        $fields = $this->fields;
+        $tables = $this->db->tables;
 
         // Get columns from tables with one-to-one relation
         $this->extension_tables = isset($this->extension_tables) ? $this->extension_tables : [];
         foreach ($this->extension_tables as $tbl_name) {
             $permission = $this->get_user_permission($tbl_name);
-            $rel_fields = $tables[$tbl_name]['fields'];
+            $rel_fields = $tables[$tbl_name]->fields;
             foreach ($rel_fields as $fieldname => $field) {
-                if (in_array($fieldname, $tables[$tbl_name]['primary_key'])) {
+                if (in_array($fieldname, $tables[$tbl_name]->primary_key)) {
                     unset($rel_fields[$fieldname]);
                     continue;
                 }
-                $field = (object) $field;
                 $field->editable = isset($field->editable) && $field->editable === false ? false : $permission->edit;
                 $field->table = $tbl_name;
                 $rel_fields[$fieldname] = $field;
@@ -208,8 +207,6 @@ class Table {
         }
 
         foreach ($fields as $alias => $field) {
-
-            $field = (object) $field;
 
             $field->name = isset($field->name) ? $field->name : $alias;
             $field->alias = $alias;
@@ -277,10 +274,9 @@ class Table {
             if ($this->db->schema === 'urd' && $field->name === 'table_') {
                 $admin_schemas = $this->db->get_user_admin_schemas();
                 $optgroups = array_map(function($value) {
-                    $file = __DIR__ . '/../../schemas/' . $value . '/schema.json';
+                    $schema = Schema::get($value);
                     $options = [];
                     $options[] = (object) ['value' => '*', 'label' => '*'];
-                    $schema = json_decode(file_get_contents($file));
                     foreach ($schema->tables as $tablename => $table) {
                         $options[] = (object) ['value' => $tablename, 'label' => $table->label ? $table->label : $table->name];
                     }
@@ -292,9 +288,9 @@ class Table {
                 $field->optgroup_field = 'schema_';
             }
 
-            if (!isset($this->foreign_keys->{$alias})) continue;
+            if (!isset($this->foreign_keys[$alias])) continue;
 
-            $fk = $this->foreign_keys->{$alias};
+            $fk = $this->foreign_keys[$alias];
 
             if (!isset($fk->schema) || $fk->schema === $this->db->schema) {
                 $fk->schema = $this->db->schema;
@@ -308,7 +304,7 @@ class Table {
             $field->foreign_key = $fk;
 
             $ref_schema = Schema::get($fk->schema);
-            $ref_tbl = $ref_schema->tables->{$fk->table};
+            $ref_tbl = $ref_schema->tables[$fk->table];
 
             // Make fields that link to data tables (not reference tables) expandable
             if ($ref_tbl->type === 'data' && !isset($field->expandable)) {
@@ -418,7 +414,7 @@ class Table {
     {
         $field = (object) $field;
 
-        $fk = $this->foreign_keys->{$field->alias};
+        $fk = $this->foreign_keys[$field->alias];
 
         if (!isset($fk->schema) || $fk->schema === $this->db->schema) {
             $fk->schema = $this->db->schema;
@@ -912,7 +908,7 @@ class Table {
 
             // TODO: lazy dropdown hvis feltet beror på annet felt
 
-            if (!empty($this->foreign_keys->{$field_alias}) && !empty($field->view)) {
+            if (!empty($this->foreign_keys[$field_alias]) && !empty($field->view)) {
                 $field->options = $this->get_options($field);
             }
 
@@ -920,7 +916,7 @@ class Table {
                 continue;
             }
 
-            $fk = isset($this->foreign_keys->{$field_alias}) ? $this->foreign_keys->{$field_alias} : null;
+            $fk = isset($this->foreign_keys[$field_alias]) ? $this->foreign_keys[$field_alias] : null;
 
             if (
                 isset($field->column_view) &&
@@ -1078,7 +1074,7 @@ class Table {
 
                     $tbl_rel = Table::get($rel->db_name, $rel->table);
 
-                    $field_ref = $this->relations->{$alias}->field;
+                    $field_ref = $this->relations[$alias]->field;
 
                     $rel->fk_columns = $tbl_rel->fields[$field_ref]->fk_columns;
                     $rel->ref_columns = $tbl_rel->fields[$field_ref]->ref_columns;
