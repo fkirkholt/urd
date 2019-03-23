@@ -3,13 +3,13 @@
 // Skriptet lager databasestrukturen (tabeller og kolonner) basert på beskrivelsen
 // i tabellene urd.tabell og urd.kolonne
 
-function convert_datatype($in_type, $length) {
+function convert_datatype($in_type, $size) {
     switch $in_type {
         case 'string':
-            $out_type = "varchar($length)";
+            $out_type = "varchar($size)";
             break;
         case 'integer':
-            $out_type = "int($length)";
+            $out_type = "int($size)";
             break;
         case 'date':
             $out_type = "date";

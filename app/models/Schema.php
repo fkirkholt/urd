@@ -32,7 +32,8 @@ class Schema {
         foreach ($this->tables as $alias => $table) {
             $table->indexes = isset($table->indexes) ? (array) $table->indexes : [];
             $table->foreign_keys = isset($table->foreign_keys) ? (array) $table->foreign_keys : [];
-            $table->fields = (array) $table->fields;
+            $table->fields = isset($table->fields) ? (array) $table->fields : [];
+            $table->records = isset($table->records) ? (array) $table->records : [];
 
             $this->tables[$alias] = $table;
         }
@@ -268,7 +269,7 @@ class Schema {
                     'nullable' => $col->nullable,
                 ];
                 if ($type !== 'boolean') {
-                    $urd_col->length = $col->size;
+                    $urd_col->size = $col->size;
                 }
                 if ($col->autoincrement) {
                     $urd_col->extra = 'auto_increment';
@@ -449,8 +450,8 @@ class Schema {
             $columns = [];
             
             foreach ($table->fields as $field) {
-                $length = isset($field->length) ? $field->length : null;
-                $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($length);
+                $size = isset($field->size) ? $field->size : null;
+                $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size);
             }
 
             $sql .= implode(', ', $columns) . ')';
@@ -482,6 +483,12 @@ class Schema {
 
                 $sql = "create index $index->name on $table->name ($columns_str)";
                 $db->query($sql);
+            }
+
+            /// Add records
+
+            foreach ($table->records as $rec) {
+                $db->insert($table->name, (array) $rec)->execute();
             }
         }
 

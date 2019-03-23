@@ -49,16 +49,16 @@ class Expression {
 
     }
 
-    public function to_native_type($length)
+    public function to_native_type($size)
     {
         if ($this->platform == 'mysql') {
             switch ($this->expr) {
             case 'string':
-                return "varchar($length)";
+                return "varchar($size)";
             case 'integer':
-                return "int($length)";
+                return "int($size)";
             case 'float':
-                return "float($length)";
+                return "float($size)";
             case 'date':
                 return 'date';
             case 'boolean':

@@ -8,7 +8,7 @@ class Column {
     public $kolonne;
     public $ledetekst;
     public $datatype; // date, float, integer, string
-    public $length;
+    public $size;
     public $nullable;
     public $default;
     public $unik = 0;
@@ -20,13 +20,13 @@ class Column {
     public $standard_sokeverdi;
     public $description;
 
-    function __construct($schema, $tbl, $name, $datatype, $length, $not_null=null) {
+    function __construct($schema, $tbl, $name, $datatype, $size, $not_null=null) {
         // TODO: Sett ledetekst basert på kolonnenavnet
         $this->databasemal = $schema;
         $this->tabell = $tbl;
         $this->kolonne = $name;
         $this->datatype = $datatype;
-        $this->length = $length;
+        $this->size = $size;
         if ($not_null) {
             $this->nullable = 0;
         } else {

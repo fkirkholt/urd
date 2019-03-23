@@ -358,7 +358,7 @@ class Table {
                 }
 
                 $fields[$alias]->datatype = !empty($fields[$alias]->datatype) ? $fields[$alias]->datatype : $type;
-                $fields[$alias]->length = $col->size;
+                $fields[$alias]->size = $col->size;
                 $fields[$alias]->nullable = $col->nullable;
                 $fields[$alias]->default = !empty($fields[$alias]->default) ? $fields[$alias]->default : $col->default;
                 $fields[$alias]->default = $this->db->expr()->replace_vars($fields[$alias]->default);

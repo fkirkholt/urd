@@ -629,9 +629,9 @@ var filterpanel = {
                 }
             });
         } else {
-            var width = (field.length === null || field.length > 20)
+            var width = (field.size === null || field.size > 20)
                 ? '100%'
-                : field.length + 'em';
+                : field.size + 'em';
             return m('input', {
                 name: filter.field,
                 value: filter.value !== undefined ? filter.value : '',

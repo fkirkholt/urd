@@ -114,7 +114,7 @@ XML;
                                             <value>$field->label</value>
                                         </property>
                                     </properties>
-                                    <maxLength>$field->length</maxLength>
+                                    <maxLength>$field->size</maxLength>
 XML;
         if ($field->not_null) {
             $xml += <<<XML

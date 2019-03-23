@@ -298,9 +298,9 @@ var control = {
                 }
             })
         } else {
-            var width = (field.length === null || field.length > 20)
+            var width = (field.size === null || field.size > 20)
                 ? '100%'
-                : field.length + 'em';
+                : field.size + 'em';
 
             value = typeof field.value === 'string'
                 ? field.value.replace(/\n/g, '\u21a9')
@@ -313,11 +313,11 @@ var control = {
 
             return m('input', {
                 name: field.name,
-                maxlength: field.length,
+                maxlength: field.size,
                 // required: !field.nullable && field.extra !== 'auto_increment',
                 class: [
                     !field.nullable && field.value === '' ? 'invalid' : '',
-                    field.length >= 30 ? 'w-100' : '',
+                    field.size >= 30 ? 'w-100' : '',
                     'max-w7 border-box',
                 ].join(' '),
                 style: [
@@ -358,7 +358,7 @@ var control = {
             var option = _find(field.options, value);
             value = option ? option.label : value;
         } else if (is_date_as_string) {
-            if (field.length === 8) {
+            if (field.size === 8) {
                 date_items = [
                     value.substr(0,4),
                     value.substr(4,2),
@@ -374,7 +374,7 @@ var control = {
         } else if (is_checkbox) {
             var icon = value == 0 ? 'fa-square-o' : 'fa-check-square-o';
             value = m('i', {class: 'fa ' + icon});
-        } else if (is_integer && field.length > 5) {
+        } else if (is_integer && field.size > 5) {
             numeral.locale('no');
             value = numeral(value).format();
         }
