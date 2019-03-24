@@ -344,8 +344,8 @@ class Table {
             $db_columns = $repl_connection->getDatabaseInfo()->getTable($tbl_name)->getColumns();
 
             foreach ($db_columns as $col) {
-                $type = $this->db->expr($col->nativetype)->to_urd_type();
-                if ($type === 'integer' && $col->size === 1) $type = 'boolean';
+                $type = $this->db->expr()->to_urd_type($col);
+                if ($type->name === 'integer' && $col->size === 1) $type->name = 'boolean';
 
                 $name = strtolower($col->name);
 
@@ -357,7 +357,7 @@ class Table {
                     continue;
                 }
 
-                $fields[$alias]->datatype = !empty($fields[$alias]->datatype) ? $fields[$alias]->datatype : $type;
+                $fields[$alias]->datatype = !empty($fields[$alias]->datatype) ? $fields[$alias]->datatype : $type->name;
                 $fields[$alias]->size = $col->size;
                 $fields[$alias]->nullable = $col->nullable;
                 $fields[$alias]->default = !empty($fields[$alias]->default) ? $fields[$alias]->default : $col->default;

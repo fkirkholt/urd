@@ -71,31 +71,55 @@ class Expression {
         }
     }
 
-    public function to_urd_type()
+    public function to_urd_type($column)
     {
+        $type = (object) ['name' => 'undefined', 'size' => $column->size];
         if ($this->platform == 'mysql') {
-            switch (strtolower($this->expr)) {
+            switch (strtolower($column->nativetype)) {
             case 'char':
             case 'varchar':
             case 'text':
+                $type->name = 'string';
+                return $type;
             case 'longtext':
+                $type->name = 'string';
+                $type->size = 'big';
             case 'mediumtext':
-                return 'string';
+                $type->name = 'string';
+                $type->size = 'medium';
+                return $type;
             case 'int':
             case 'tinyint':
-            case 'bigint':
             case 'smallint':
-                return 'integer';
+                $type->name = 'integer';
+                return $type;
+            case 'bigint':
+                $type->name = 'integer';
+                $type->size = 'big';
+                return $type;
             case 'float':
             case 'double':
             case 'decimal':
-                return 'float';
+                $type->name = 'float';
+                return $type;
             case 'date':
             case 'datetime':
             case 'timestamp':
-                return 'date';
+                $type->name = 'date';
+                return $type;
+            case 'blob':
+                $type->name = 'binary';
+                return $type;
+            case 'mediumblob':
+                $type->name = 'binary';
+                $type->size = 'medium';
+                return $type;
+            case 'longblob':
+                $type->name = 'binary';
+                $type->size = 'big';
+                return $type;
             default:
-                throw new \Exception("type $this->expr not recognized");
+                throw new \Exception("type $column->nativetype not recognized");
             }
         } else if ($this->platform == 'oracle') {
             switch (strtolower($this->expr)) {

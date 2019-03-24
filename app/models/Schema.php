@@ -9,8 +9,8 @@ use PDO;
 
 class Schema {
 
-    protected $urd_conn;
     private static $instances;
+    public $name;
     public $tables;
     public $reports;
     public $contents;
@@ -25,20 +25,20 @@ class Schema {
             $schema = json_decode("{'tables': []}");
         }
 
+        $this->name = $schema_name;
         $this->tables = (array) $schema->tables;
         $this->reports = isset($schema->reports) ? (array) $schema->reports : [];
         $this->contents = isset($schema->contents) ? (array) $schema->contents : [];
 
         foreach ($this->tables as $alias => $table) {
-            $table->indexes = isset($table->indexes) ? (array) $table->indexes : [];
-            $table->foreign_keys = isset($table->foreign_keys) ? (array) $table->foreign_keys : [];
             $table->fields = isset($table->fields) ? (array) $table->fields : [];
-            $table->records = isset($table->records) ? (array) $table->records : [];
+
+            if (isset($table->indexes)) $table->indexes = (array) $table->indexes;
+            if (isset($table->foreign_keys)) $table->foreign_keys = (array) $table->foreign_keys;
+            if (isset($table->records)) $table->records = (array) $table->records;
 
             $this->tables[$alias] = $table;
-        }
-
-        $this->name = $schema_name;
+        }       
     }
 
     public static function get($schema_name) {
@@ -184,24 +184,26 @@ class Schema {
                 }
 
                 foreach ($foreign_keys as $key) {
-                    $key = (object) $key;
-                    $key->schema = $this->name;
-                    $key_alias = end($key->local);
-                    $this->tables[$tbl_name]->foreign_keys[$key_alias] = $key;
+                    $urd_key = (object) $key;
+                    unset($urd_key->onDelete);
+                    unset($urd_key->onUpdate);
+                    $urd_key->schema = $this->name;
+                    $key_alias = end($urd_key->local);
+                    $this->tables[$tbl_name]->foreign_keys[$key_alias] = $urd_key;
 
                     // Checks if the relation defines this as an extension table
-                    if ($key->local === $pk_columns) {
-                        if (!array_key_exists($key->table, $this->tables)) {
-                            $this->tables[$key->table] = (object) ['extension_tables' => []];
+                    if ($urd_key->local === $pk_columns) {
+                        if (!array_key_exists($urd_key->table, $this->tables)) {
+                            $this->tables[$urd_key->table] = (object) ['extension_tables' => []];
                         }
-                        if (!in_array($tbl_name, $this->tables[$key->table]->extension_tables)) {
-                            $this->tables[$key->table]->extension_tables[] = $tbl_name;
+                        if (!in_array($tbl_name, $this->tables[$urd_key->table]->extension_tables)) {
+                            $this->tables[$urd_key->table]->extension_tables[] = $tbl_name;
                         }
                     }
                 }
             }
 
-            if (count($foreign_keys) == 0) {
+            if (!isset($table->type) && count($foreign_keys) == 0) {
                 $this->tables[$tbl_name]->type = 'reference';
             }
 
@@ -226,8 +228,8 @@ class Schema {
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
 
-                $type = $db->expr($col->nativetype)->to_urd_type();
-                if ($type === 'integer' && $col->size === 1) $type = 'boolean';
+                $type = $db->expr()->to_urd_type($col);
+                if ($type->name === 'integer' && $col->size === 1) $type->name = 'boolean';
 
                 $items = array_filter($fields, function($item) use ($col_name) {
                     return $item->name === $col_name;
@@ -237,9 +239,9 @@ class Schema {
 
                 // Desides what sort of input should be used
                 // todo: support more
-                if ($type === 'date') {
+                if ($type->name === 'date') {
                     $element = 'input[type=date]';
-                } else if ($type === 'boolean') {
+                } else if ($type->name === 'boolean') {
                     if ($col->nullable) {
                         $element = 'select';
                         $options = [
@@ -265,11 +267,11 @@ class Schema {
                 $urd_col = (object) [
                     'name' => $col_name,
                     'element' => $element,
-                    'datatype' => $type,
+                    'datatype' => $type->name,
                     'nullable' => $col->nullable,
                 ];
-                if ($type !== 'boolean') {
-                    $urd_col->size = $col->size;
+                if ($type->name !== 'boolean') {
+                    $urd_col->size = $type->size;
                 }
                 if ($col->autoincrement) {
                     $urd_col->extra = 'auto_increment';
@@ -451,7 +453,8 @@ class Schema {
             
             foreach ($table->fields as $field) {
                 $size = isset($field->size) ? $field->size : null;
-                $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size);
+                $notnull = $field->nullable ? '' : ' not null';
+                $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size) . $notnull;
             }
 
             $sql .= implode(', ', $columns) . ')';
@@ -471,6 +474,8 @@ class Schema {
 
             /// Add indexes
 
+            if (!isset($table->indexes)) $table->indexes = [];
+
             foreach ($table->indexes as $index) {
 
                 if ($index->primary == true) continue;
@@ -481,11 +486,15 @@ class Schema {
                 }
                 $columns_str = implode(', ', $columns);
 
-                $sql = "create index $index->name on $table->name ($columns_str)";
+                $unique = $index->unique ? 'unique' : '';
+
+                $sql = "create $unique index $index->name on $table->name ($columns_str)";
                 $db->query($sql);
             }
 
             /// Add records
+
+            if (!isset($table->records)) $table->records = [];
 
             foreach ($table->records as $rec) {
                 $db->insert($table->name, (array) $rec)->execute();
@@ -496,6 +505,8 @@ class Schema {
 
         foreach ($this->tables as $table) {
 
+            if (!isset($table->foreign_keys)) continue;
+
             foreach ($table->foreign_keys as $fk) {
 
                 // get foreign keys columns
@@ -504,7 +515,9 @@ class Schema {
                     $fk_columns[] = $table->fields[$alias]->name;
                 }
                 $fk_columns_str = implode(', ', $fk_columns);
-                $sql = "alter table $table->name add foreign key ($fk_columns_str) ";
+                $sql  = "alter table $table->name ";
+                $sql .= "add constraint $fk->name ";
+                $sql .= "foreign key ($fk_columns_str) ";
 
                 // get reference table and columns
                 $ref_table = $this->tables[$fk->table]->name;
