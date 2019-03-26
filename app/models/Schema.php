@@ -22,7 +22,7 @@ class Schema {
         if (file_exists($file)) {
             $schema = json_decode(file_get_contents($file));
         } else {
-            $schema = json_decode("{'tables': []}");
+            $schema = json_decode('{"tables": []}');
         }
 
         $this->name = $schema_name;
