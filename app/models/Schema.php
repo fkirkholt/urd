@@ -38,7 +38,7 @@ class Schema {
             if (isset($table->records)) $table->records = (array) $table->records;
 
             $this->tables[$alias] = $table;
-        }       
+        }
     }
 
     public static function get($schema_name) {
@@ -176,8 +176,6 @@ class Schema {
             } else {
                 // $foreign_keys = $db->conn->getDatabaseInfo()->getTable($tbl_name)->getForeignKeys();
                 $foreign_keys = $reflector->getForeignKeys($tbl_name);
-
-                error_log(json_encode($foreign_keys));
 
                 if (!isset($this->tables[$tbl_name]->foreign_keys)) {
                     $this->tables[$tbl_name]->foreign_keys = [];
@@ -452,11 +450,14 @@ class Schema {
 
             $sql = "create table $table->name (";
             $columns = [];
-            
+
+            $autoinc_column = null;
+
             foreach ($table->fields as $field) {
                 $size = isset($field->size) ? $field->size : null;
                 $notnull = $field->nullable ? '' : ' not null';
-                $columns[] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size) . $notnull;
+                if (isset($field->extra) && $field->extra == 'auto_increment') $autoinc_column = $field;
+                $columns[$field->name] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size) . $notnull;
             }
 
             $sql .= implode(', ', $columns) . ')';
@@ -473,6 +474,13 @@ class Schema {
             $sql = "alter table $table->name add primary key ($pk)";
 
             $db->query($sql);
+
+            /// Add autoinc if mysql (other databases not supported yet)
+
+            if ($db->platform == 'mysql' && $autoinc_column) {
+                $sql = "alter table $table->name modify column " . $columns[$autoinc_column->name] . " auto_increment";
+                $db->query($sql);
+            }
 
             /// Add indexes
 
