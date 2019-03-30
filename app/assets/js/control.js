@@ -446,7 +446,7 @@ var control = {
         return m('td', {
             class: [
                 control.align(list, col) === 'right' ? 'tr' : 'tl',
-                options.compressed || (field.datatype !== 'string' && field.element != 'select') || (value.length < 30) ? 'nowrap' : '',
+                options.compressed || (field.datatype !== 'string' && field.datatype !== 'binary' && field.element != 'select') || (value.length < 30) ? 'nowrap' : '',
                 options.compressed && value.length > 30 ? 'pt0 pb0' : '',
                 options.border ? 'bl b--light-gray' : '',
                 ds.table.sort_fields[col] ? 'min-w3' : 'min-w2',

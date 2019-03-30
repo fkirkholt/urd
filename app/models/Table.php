@@ -923,6 +923,8 @@ class Table {
                 ($fk === null || $field->column_view !== $fk->table . '.' . $fk->foreign[0])
             ) {
                 $selects[$field->alias] = $field->column_view;
+            } else if (($field->datatype == 'string' && ($field->size > 255 || $field->size == null)) or $field->datatype == 'binary') {
+                $selects[$field->alias] = "substr($this->name.$field->alias, 1, 256)";
             } else {
                 $selects[$field->alias] = "$this->name.$field->alias";
             }
