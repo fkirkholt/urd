@@ -54,7 +54,7 @@ class Expression {
         if ($this->platform == 'mysql') {
             switch ($this->expr) {
             case 'string':
-                return "varchar($size)";
+                return ($size) ? "varchar($size)" : "longtext";
             case 'integer':
                 return "int($size)";
             case 'float':
@@ -63,6 +63,8 @@ class Expression {
                 return 'date';
             case 'boolean':
                 return 'tinyint(1)';
+            case 'binary':
+                return 'blob';
             default:
                 throw new \Exception("type $this->expr not recognized");
             }
@@ -71,55 +73,22 @@ class Expression {
         }
     }
 
-    public function to_urd_type($column)
+    public function to_urd_type($nativetype)
     {
-        $type = (object) ['name' => 'undefined', 'size' => $column->size];
+        $nativetype = strtolower($nativetype);
         if ($this->platform == 'mysql') {
-            switch (strtolower($column->nativetype)) {
-            case 'char':
-            case 'varchar':
-            case 'text':
-                $type->name = 'string';
-                return $type;
-            case 'longtext':
-                $type->name = 'string';
-                $type->size = 'big';
-            case 'mediumtext':
-                $type->name = 'string';
-                $type->size = 'medium';
-                return $type;
-            case 'int':
-            case 'tinyint':
-            case 'smallint':
-                $type->name = 'integer';
-                return $type;
-            case 'bigint':
-                $type->name = 'integer';
-                $type->size = 'big';
-                return $type;
-            case 'float':
-            case 'double':
-            case 'decimal':
-                $type->name = 'float';
-                return $type;
-            case 'date':
-            case 'datetime':
-            case 'timestamp':
-                $type->name = 'date';
-                return $type;
-            case 'blob':
-                $type->name = 'binary';
-                return $type;
-            case 'mediumblob':
-                $type->name = 'binary';
-                $type->size = 'medium';
-                return $type;
-            case 'longblob':
-                $type->name = 'binary';
-                $type->size = 'big';
-                return $type;
-            default:
-                throw new \Exception("type $column->nativetype not recognized");
+            if (preg_match("/char|text/", $nativetype)) {
+                return "string";
+            } else if (preg_match("/int/", $nativetype)) {
+                return "integer";
+            } else if (preg_match("/float|double|decimal/", $nativetype)) {
+                return "float";
+            } else if (preg_match("/date|time/", $nativetype)) {
+                return "date";
+            } else if (preg_match("/blob/", $nativetype)) {
+                return "binary";
+            } else {
+                throw new \Exception("type $nativetype not recognized");
             }
         } else if ($this->platform == 'oracle') {
             switch (strtolower($this->expr)) {

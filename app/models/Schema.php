@@ -226,8 +226,8 @@ class Schema {
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
 
-                $type = $db->expr()->to_urd_type($col);
-                if ($type->name === 'integer' && $col->size === 1) $type->name = 'boolean';
+                $type = $db->expr()->to_urd_type($col->nativetype);
+                if ($type === 'integer' && $col->size === 1) $type = 'boolean';
 
                 $items = array_filter($fields, function($item) use ($col_name) {
                     return $item->name === $col_name;
@@ -237,9 +237,11 @@ class Schema {
 
                 // Desides what sort of input should be used
                 // todo: support more
-                if ($type->name === 'date') {
+                if (!empty($this->tables[$tbl_name]->fields[$key]->element)) {
+                    $element = $this->tables[$tbl_name]->fields[$key]->element;
+                } else if ($type === 'date') {
                     $element = 'input[type=date]';
-                } else if ($type->name === 'boolean') {
+                } else if ($type === 'boolean') {
                     if ($col->nullable) {
                         $element = 'select';
                         $options = [
@@ -258,7 +260,7 @@ class Schema {
                 } else if (isset($this->tables[$tbl_name]->foreign_keys[$col_name])) {
                     $element = 'select';
                     $options = null;
-                } else if ($type->name == 'binary' || ($type->name == 'string' && (!is_numeric($type->size) || $type->size > 60))) {
+                } else if ($type == 'binary' || ($type == 'string' && (!$col->size || $col->size > 60))) {
                     $element = 'textarea';
                 } else {
                     $element = 'input[type=text]';
@@ -267,11 +269,11 @@ class Schema {
                 $urd_col = (object) [
                     'name' => $col_name,
                     'element' => $element,
-                    'datatype' => $type->name,
+                    'datatype' => $type,
                     'nullable' => $col->nullable,
                 ];
-                if ($type->name !== 'boolean') {
-                    $urd_col->size = $type->size;
+                if ($type !== 'boolean') {
+                    $urd_col->size = $col->size;
                 }
                 if ($col->autoincrement) {
                     $urd_col->extra = 'auto_increment';
