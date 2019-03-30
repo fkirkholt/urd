@@ -18240,7 +18240,7 @@ var entry = {
         if (rec.columns && field.name in rec.columns) {
             rec.columns[field.name] =
                 field.coltext ? field.coltext :
-                field.text    ? field.text    : value;
+                field.text    ? field.text    : value.substring(0, 256);
         }
 
         rec.fields[field.name].value = value;
