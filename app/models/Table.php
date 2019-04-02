@@ -66,7 +66,7 @@ class Table {
     public function __get($p) {
         $m = "get_$p";
         if (method_exists($this, $m)) return $this->$m();
-        user_error("undefined property $p");
+        trigger_error("undefined property $p");
     }
 
     public static function get($db_name, $tbl_name) {
@@ -1076,14 +1076,14 @@ class Table {
 
                     $tbl_rel = Table::get($rel->db_name, $rel->table);
 
-                    $field_ref = $this->relations[$alias]->field;
-
-                    $rel->fk_columns = $tbl_rel->fields[$field_ref]->fk_columns;
-                    $rel->ref_columns = $tbl_rel->fields[$field_ref]->ref_columns;
+                    $fk_alias = $this->relations[$alias]->foreign_key;
+                    $fk = $tbl_rel->foreign_keys[$fk_alias];
 
                     foreach ($rel->records as $rel_rec) {
-                        foreach ($rel->fk_columns as $i => $colname) {
-                            $rel_rec->values->$colname = !empty($rec->values->{$colname}) ? $rec->values->{$colname} : end($pk);
+                        $rel_rec->values = (array) $rel_rec->values;
+
+                        foreach ($fk->local as $n => $alias) {
+                            $rel_rec->values[$alias] = !empty($rel_rec->values[$alias]) ? $rel_rec->values[$alias] : $pk->{$fk->foreign[$n]};
                         }
                     }
                 }

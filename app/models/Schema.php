@@ -36,6 +36,7 @@ class Schema {
             if (isset($table->indexes)) $table->indexes = (array) $table->indexes;
             if (isset($table->foreign_keys)) $table->foreign_keys = (array) $table->foreign_keys;
             if (isset($table->records)) $table->records = (array) $table->records;
+            if (isset($table->relations)) $table->relations = (array) $table->relations;
 
             $this->tables[$alias] = $table;
         }
@@ -141,6 +142,7 @@ class Schema {
                     'primary_key' => $pk_columns,
                     'type' => 'data',
                     'description' => null,
+                    'relations' => [],
                 ];
 
                 $this->tables[$tbl_name] = $record;
@@ -188,6 +190,19 @@ class Schema {
                     $urd_key->schema = $this->name;
                     $key_alias = end($urd_key->local);
                     $this->tables[$tbl_name]->foreign_keys[$key_alias] = $urd_key;
+
+                    // Add to relations of relation table
+                    if (!isset($this->tables[$urd_key->table])) {
+                        $this->tables[$urd_key->table] = (object) [
+                            "name" => $urd_key->table,
+                            "relations" => [],
+                        ];
+                    }
+                    $this->tables[$urd_key->table]->relations[$tbl_name] = [
+                        "table" => $tbl_name,
+                        "foreign_key" => $key_alias,
+                        "label" => $tbl_name
+                    ];
 
                     // Checks if the relation defines this as an extension table
                     if ($urd_key->local === $pk_columns) {
