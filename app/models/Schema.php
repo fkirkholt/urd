@@ -107,14 +107,20 @@ class Schema {
             $db_tables = $db->conn->getDatabaseInfo()->getTableNames();
         }
 
-        // Removes tables that doesn't exist
-        foreach ($this->tables as $table_name => $table) {
-            if (!in_array($table_name, $db_tables)) {
-                unset($this->tables[$table_name]);
+        // Build array of table aliases and remove tables that doesn't exist
+        $tbl_aliases = [];
+        foreach ($this->tables as $table_alias => $table) {
+            $tbl_aliases[$table->name] = $table_alias;
+            if (!in_array($table->name, $db_tables)) {
+                unset($this->tables[$table_alias]);
             }
         }
 
         foreach ($db_tables as $tbl_name) {
+
+            $tbl_alias = isset($tbl_aliases[$tbl_name])
+                ? $tbl_aliases[$tbl_name]
+                : strtolower($tbl_name);
 
             if ($db->platform == 'oracle') {
                 $refl_table = new \Dibi\Reflection\Table($reflector, ['name'=> $tbl_name, 'view' => false]);
@@ -134,7 +140,7 @@ class Schema {
                 }
             }
 
-            if (!array_key_exists($tbl_name, $this->tables)) {
+            if (!array_key_exists($tbl_alias, $this->tables)) {
                 $record = (object) [
                     'name' => $tbl_name,
                     'icon' => null,
@@ -145,29 +151,29 @@ class Schema {
                     'relations' => [],
                 ];
 
-                $this->tables[$tbl_name] = $record;
+                $this->tables[$tbl_alias] = $record;
             } else {
-                $table = $this->tables[$tbl_name];
+                $table = $this->tables[$tbl_alias];
                 $table->name = $tbl_name;
                 $table->label = isset($table->label) ? $table->label : null;
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
                 $table->type = isset($table->type) ? $table->type : 'data';
 
-                $this->tables[$tbl_name] = $table;
+                $this->tables[$tbl_alias] = $table;
             }
 
             // Updates indexes
             {
                 $indexes = $reflector->getIndexes($tbl_name);
 
-                if (!isset($this->tables[$tbl_name]->indexes)) {
-                    $this->tables[$tbl_name]->indexes = [];
+                if (!isset($this->tables[$tbl_alias]->indexes)) {
+                    $this->tables[$tbl_alias]->indexes = [];
                 }
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
                     $alias = end($index->columns);
-                    $this->tables[$tbl_name]->indexes[$alias] = $index;
+                    $this->tables[$tbl_alias]->indexes[$alias] = $index;
                 }
             }
 
@@ -179,8 +185,8 @@ class Schema {
                 // $foreign_keys = $db->conn->getDatabaseInfo()->getTable($tbl_name)->getForeignKeys();
                 $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
-                if (!isset($this->tables[$tbl_name]->foreign_keys)) {
-                    $this->tables[$tbl_name]->foreign_keys = [];
+                if (!isset($this->tables[$tbl_alias]->foreign_keys)) {
+                    $this->tables[$tbl_alias]->foreign_keys = [];
                 }
 
                 foreach ($foreign_keys as $key) {
@@ -189,7 +195,7 @@ class Schema {
                     unset($urd_key->onUpdate);
                     $urd_key->schema = $this->name;
                     $key_alias = end($urd_key->local);
-                    $this->tables[$tbl_name]->foreign_keys[$key_alias] = $urd_key;
+                    $this->tables[$tbl_alias]->foreign_keys[$key_alias] = $urd_key;
 
                     // Add to relations of relation table
                     if (!isset($this->tables[$urd_key->table])) {
@@ -198,10 +204,10 @@ class Schema {
                             "relations" => [],
                         ];
                     }
-                    $this->tables[$urd_key->table]->relations[$tbl_name] = [
+                    $this->tables[$urd_key->table]->relations[$tbl_alias] = [
                         "table" => $tbl_name,
                         "foreign_key" => $key_alias,
-                        "label" => $tbl_name
+                        "label" => $tbl_alias
                     ];
 
                     // Checks if the relation defines this as an extension table
@@ -209,24 +215,25 @@ class Schema {
                         if (!array_key_exists($urd_key->table, $this->tables)) {
                             $this->tables[$urd_key->table] = (object) ['extension_tables' => []];
                         }
-                        if (!in_array($tbl_name, $this->tables[$urd_key->table]->extension_tables)) {
-                            $this->tables[$urd_key->table]->extension_tables[] = $tbl_name;
+                        // TODO: Dokumenter
+                        if (!in_array($tbl_alias, $this->tables[$urd_key->table]->extension_tables)) {
+                            $this->tables[$urd_key->table]->extension_tables[] = $tbl_alias;
                         }
                     }
                 }
             }
 
             if (!isset($table->type) && count($foreign_keys) == 0) {
-                $this->tables[$tbl_name]->type = 'reference';
+                $this->tables[$tbl_alias]->type = 'reference';
             }
 
             // Updates column properties
 
-            if (!isset($this->tables[$tbl_name]->fields)) {
-                $this->tables[$tbl_name]->fields = [];
+            if (!isset($this->tables[$tbl_alias]->fields)) {
+                $this->tables[$tbl_alias]->fields = [];
             }
 
-            $fields = $this->tables[$tbl_name]->fields;
+            $fields = $this->tables[$tbl_alias]->fields;
 
             // Fields may be defined with alias the same as name,
             // and avoid specifying the name
@@ -252,8 +259,8 @@ class Schema {
 
                 // Desides what sort of input should be used
                 // todo: support more
-                if (!empty($this->tables[$tbl_name]->fields[$key]->element)) {
-                    $element = $this->tables[$tbl_name]->fields[$key]->element;
+                if (!empty($this->tables[$tbl_alias]->fields[$key]->element)) {
+                    $element = $this->tables[$tbl_alias]->fields[$key]->element;
                 } else if ($type === 'date') {
                     $element = 'input[type=date]';
                 } else if ($type === 'boolean') {
@@ -272,7 +279,7 @@ class Schema {
                     } else {
                         $element = 'input[type=checkbox]';
                     }
-                } else if (isset($this->tables[$tbl_name]->foreign_keys[$col_name])) {
+                } else if (isset($this->tables[$tbl_alias]->foreign_keys[$col_name])) {
                     $element = 'select';
                     $options = null;
                 } else if ($type == 'binary' || ($type == 'string' && (!$col->size || $col->size > 60))) {
@@ -298,17 +305,17 @@ class Schema {
                 }
 
                 if (!$key) {
-                    $this->tables[$tbl_name]->fields[$col_name] = $urd_col;
+                    $this->tables[$tbl_alias]->fields[$col_name] = $urd_col;
                 } else {
-                    $this->tables[$tbl_name]->fields[$key] = (object) array_merge((array) $this->tables[$tbl_name]->fields[$key], (array) $urd_col);
+                    $this->tables[$tbl_alias]->fields[$key] = (object) array_merge((array) $this->tables[$tbl_alias]->fields[$key], (array) $urd_col);
                 }
             }
 
             // Update records for reference tables
 
-            if (!isset($db->tables->$tbl_name)) continue;
+            if (!isset($db->tables->$tbl_alias)) continue;
 
-            $tbl = Table::get($db->name, $tbl_name);
+            $tbl = Table::get($db->name, $tbl_alias);
 
             if ($tbl->type !== 'reference') continue;
 
@@ -316,10 +323,10 @@ class Schema {
             $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
             $records = $db->conn->query($sql)->fetchAll();
 
-            $this->tables[$tbl_name]->records = [];
+            $this->tables[$tbl_alias]->records = [];
 
             foreach ($records as $record) {
-                $this->tables[$tbl_name]->records[] = $record;
+                $this->tables[$tbl_alias]->records[] = $record;
             }
         }
 
@@ -459,11 +466,11 @@ class Schema {
     {
         $db = DB::get($db_name);
 
-        /// Create tables with primary key and indexes
+        // Create tables with primary key and indexes
 
         foreach ($this->tables as $table) {
 
-            /// Create table
+            // Create table
 
             $sql = "create table $table->name (";
             $columns = [];
