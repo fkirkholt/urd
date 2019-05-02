@@ -172,7 +172,7 @@ class Schema {
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
-                    $alias = end($index->columns);
+                    $alias = strtolower(end($index->columns));
                     $this->tables[$tbl_alias]->indexes[$alias] = $index;
                 }
             }
@@ -194,7 +194,7 @@ class Schema {
                     unset($urd_key->onDelete);
                     unset($urd_key->onUpdate);
                     $urd_key->schema = $this->name;
-                    $key_alias = end($urd_key->local);
+                    $key_alias = strtolower(end($urd_key->local));
                     $this->tables[$tbl_alias]->foreign_keys[$key_alias] = $urd_key;
 
                     // Add to relations of relation table
