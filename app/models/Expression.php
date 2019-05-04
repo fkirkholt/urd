@@ -68,6 +68,19 @@ class Expression {
             default:
                 throw new \Exception("type $this->expr not recognized");
             }
+        } else if ($this->platform == 'sqlite') {
+            switch ($this->expr) {
+            case "string":
+            case "date":
+                return "text";
+            case "integer":
+            case "boolean":
+                return "integer";
+            case "float":
+                return "real";
+            case "binary":
+                return "blob";
+            }
         } else {
             throw new \Exception("type conversion for $this->platform not implemented");
         }
