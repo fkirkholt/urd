@@ -485,29 +485,56 @@ class Schema {
                 $columns[$field->name] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size) . $notnull;
             }
 
-            $sql .= implode(', ', $columns) . ')';
+            $sql .= implode(', ', $columns);
 
-            $db->query($sql);
-
-            /// Add primary key
+            // Add primary key
 
             $pk_columns = [];
             foreach ($table->primary_key as $col) {
                 $pk_columns[] = $table->fields[$col]->name;
             }
+
             $pk = implode(',', $pk_columns);
-            $sql = "alter table $table->name add primary key ($pk)";
+
+            $sql .= ", constraint {$table->name}_pk primary key ($pk)";
+
+            // Add foreign keys
+
+            foreach ($table->foreign_keys as $fk) {
+
+                // get foreign keys columns
+                $fk_columns = [];
+                foreach ($fk->local as $alias) {
+                    $fk_columns[] = $table->fields[$alias]->name;
+                }
+                $fk_columns_str = implode(', ', $fk_columns);
+                $sql .= ", constraint $fk->name ";
+                $sql .= "foreign key ($fk_columns_str) ";
+
+                // get reference table and columns
+                $ref_table = $this->tables[$fk->table]->name;
+                $ref_columns = [];
+                foreach ($fk->foreign as $alias) {
+                    $ref_columns[] = $this->tables[$fk->table]->fields[$alias]->name;
+                }
+                $ref_columns_str = implode(', ', $ref_columns);
+
+                $sql.= "references $ref_table($ref_columns_str)";
+            }
+
+            $sql .= ')';
 
             $db->query($sql);
 
-            /// Add autoinc if mysql (other databases not supported yet)
+            // Add autoinc if mysql (other databases not supported yet)
+            // SQLite doesn't need it
 
             if ($db->platform == 'mysql' && $autoinc_column) {
                 $sql = "alter table $table->name modify column " . $columns[$autoinc_column->name] . " auto_increment";
                 $db->query($sql);
             }
 
-            /// Add indexes
+            // Add indexes
 
             if (!isset($table->indexes)) $table->indexes = [];
 
@@ -527,44 +554,12 @@ class Schema {
                 $db->query($sql);
             }
 
-            /// Add records
+            // Add records
 
             if (!isset($table->records)) $table->records = [];
 
             foreach ($table->records as $rec) {
                 $db->insert($table->name, (array) $rec)->execute();
-            }
-        }
-
-        /// Add foreign keys
-
-        foreach ($this->tables as $table) {
-
-            if (!isset($table->foreign_keys)) continue;
-
-            foreach ($table->foreign_keys as $fk) {
-
-                // get foreign keys columns
-                $fk_columns = [];
-                foreach ($fk->local as $alias) {
-                    $fk_columns[] = $table->fields[$alias]->name;
-                }
-                $fk_columns_str = implode(', ', $fk_columns);
-                $sql  = "alter table $table->name ";
-                $sql .= "add constraint $fk->name ";
-                $sql .= "foreign key ($fk_columns_str) ";
-
-                // get reference table and columns
-                $ref_table = $this->tables[$fk->table]->name;
-                $ref_columns = [];
-                foreach ($fk->foreign as $alias) {
-                    $ref_columns[] = $this->tables[$fk->table]->fields[$alias]->name;
-                }
-                $ref_columns_str = implode(', ', $ref_columns);
-
-                $sql.= "references $ref_table($ref_columns_str)";
-
-                $db->query($sql);
             }
         }
     }
