@@ -136,13 +136,13 @@ class Schema {
             $pk_columns = [];
             if ($pk) {
                 foreach ($pk->columns as $column) {
-                    $pk_columns[] = $column->getName();
+                    $pk_columns[] = strtolower($column->getName());
                 }
             }
 
             if (!array_key_exists($tbl_alias, $this->tables)) {
                 $record = (object) [
-                    'name' => $tbl_name,
+                    'name' => strtolower($tbl_name),
                     'icon' => null,
                     'label' => null,
                     'primary_key' => $pk_columns,
@@ -154,7 +154,7 @@ class Schema {
                 $this->tables[$tbl_alias] = $record;
             } else {
                 $table = $this->tables[$tbl_alias];
-                $table->name = $tbl_name;
+                $table->name = strtolower($tbl_name);
                 $table->label = isset($table->label) ? $table->label : null;
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
                 $table->type = isset($table->type) ? $table->type : 'data';
@@ -172,7 +172,8 @@ class Schema {
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
-                    $alias = strtolower(end($index->columns));
+                    $index->columns = array_map('strtolower', $index->columns);
+                    $alias = end($index->columns);
                     $this->tables[$tbl_alias]->indexes[$alias] = $index;
                 }
             }
@@ -194,7 +195,10 @@ class Schema {
                     unset($urd_key->onDelete);
                     unset($urd_key->onUpdate);
                     $urd_key->schema = $this->name;
-                    $key_alias = strtolower(end($urd_key->local));
+                    $urd_key->table = strtolower($urd_key->table);
+                    $urd_key->local = array_map('strtolower', $urd_key->local);
+                    $urd_key->foreign = array_map('strtolower', $urd_key->foreign);
+                    $key_alias = end($urd_key->local);
                     $this->tables[$tbl_alias]->foreign_keys[$key_alias] = $urd_key;
 
                     // Add to relations of relation table
@@ -208,7 +212,7 @@ class Schema {
                             "extension_tables" => [],
                         ];
                     }
-                    $this->tables[$urd_key->table]->relations[$tbl_alias] = [
+                    $this->tables[$key_table_alias]->relations[$tbl_alias] = [
                         "table" => $tbl_name,
                         "foreign_key" => $key_alias,
                         "label" => $tbl_alias
