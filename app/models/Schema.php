@@ -198,10 +198,14 @@ class Schema {
                     $this->tables[$tbl_alias]->foreign_keys[$key_alias] = $urd_key;
 
                     // Add to relations of relation table
-                    if (!isset($this->tables[$urd_key->table])) {
-                        $this->tables[$urd_key->table] = (object) [
+                    $key_table_alias = isset($tbl_aliases[$urd_key->table])
+                        ? $tbl_aliases[$urd_key->table]
+                        : $urd_key->table;
+                    if (!isset($this->tables[$key_table_alias])) {
+                        $this->tables[$key_table_alias] = (object) [
                             "name" => $urd_key->table,
                             "relations" => [],
+                            "extension_tables" => [],
                         ];
                     }
                     $this->tables[$urd_key->table]->relations[$tbl_alias] = [
@@ -212,12 +216,9 @@ class Schema {
 
                     // Checks if the relation defines this as an extension table
                     if ($urd_key->local === $pk_columns) {
-                        if (!array_key_exists($urd_key->table, $this->tables)) {
-                            $this->tables[$urd_key->table] = (object) ['extension_tables' => []];
-                        }
                         // TODO: Dokumenter
-                        if (!in_array($tbl_alias, $this->tables[$urd_key->table]->extension_tables)) {
-                            $this->tables[$urd_key->table]->extension_tables[] = $tbl_alias;
+                        if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
+                            $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
                         }
                     }
                 }

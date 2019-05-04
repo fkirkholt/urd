@@ -567,7 +567,7 @@ class Table {
                               $betingelse
                               $order_by) tab) tab2
               $record_condition";
-        } else if ($db->platform == 'sqlite') {
+        } else if ($this->db->platform == 'sqlite') {
             $betingelse_count = '';
             $sort_fields = $this->get_sort_fields($selects);
             foreach ($sort_fields as $key=>$sort) {
