@@ -146,7 +146,6 @@ class Schema {
                     'icon' => null,
                     'label' => null,
                     'primary_key' => $pk_columns,
-                    'type' => 'data',
                     'description' => null,
                     'relations' => [],
                 ];
@@ -157,7 +156,6 @@ class Schema {
                 $table->name = strtolower($tbl_name);
                 $table->label = isset($table->label) ? $table->label : null;
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
-                $table->type = isset($table->type) ? $table->type : 'data';
 
                 $this->tables[$tbl_alias] = $table;
             }
@@ -228,8 +226,12 @@ class Schema {
                 }
             }
 
-            if (!isset($table->type) && count($foreign_keys) == 0) {
+            if (!isset($table->type) && substr($tbl_name, 0, 4) === 'ref_') {
                 $this->tables[$tbl_alias]->type = 'reference';
+            } else if (!isset($table->type) && in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
+                $this->tables[$tbl_alias]->type = 'cross-reference';
+            } else {
+                $this->tables[$tbl_alias]->type = 'data';
             }
 
             // Updates column properties
