@@ -173,6 +173,15 @@ class Schema {
                     $index->columns = array_map('strtolower', $index->columns);
                     $alias = end($index->columns);
                     $this->tables[$tbl_alias]->indexes[$alias] = $index;
+
+                    // Defines grid if this index name indicates it is used in sorting
+                    if ($index->name === $tbl_name . '_sort_idx') {
+                        $size = count($index->columns) > 3 ? 3 : count($index->columns);
+                        $this->tables[$tbl_alias]->grid = [
+                            'columns' => $index->columns,
+                            'sort_columns' => array_slice($index->columns, 0, $size)
+                        ];
+                    }
                 }
             }
 
