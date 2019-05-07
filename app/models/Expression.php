@@ -104,7 +104,7 @@ class Expression {
                 throw new \Exception("type $nativetype not recognized");
             }
         } else if ($this->platform == 'oracle') {
-            switch (strtolower($this->expr)) {
+            switch (strtolower($nativetype)) {
             case 'char':
             case 'varchar2':
                 return 'string';
@@ -117,12 +117,14 @@ class Expression {
                 throw new \Exception("type $this->expr not recognized");
             }
         } else {
-            switch (strtolower($this->expr)) {
+            switch (strtolower($nativetype)) {
             case 'varchar':
             case 'text':
                 return 'string';
             case 'integer':
                 return 'integer';
+            case 'blob':
+                return 'binary';
             default:
                 throw new \Exception("type $this->expr not recognized");
             }

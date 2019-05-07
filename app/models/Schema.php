@@ -93,8 +93,10 @@ class Schema {
 
         // Don't return keys in lowercase
         // Necessary for database reflection to work
-        $pdo = $db->conn->getDriver()->getResource();
-        $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+        if ($db->platform !== 'sqlite') {
+            $pdo = $db->conn->getDriver()->getResource();
+            $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+        }
 
         // Finds all tables in database
         if ($db->platform == 'oracle') {
@@ -130,7 +132,9 @@ class Schema {
 
             // Updates table properties
 
-            $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_NATURAL);
+            if ($db->platform !== 'sqlite') {
+                $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_NATURAL);
+            }
             $pk = $refl_table->getPrimaryKey();
 
             $pk_columns = [];
@@ -171,8 +175,7 @@ class Schema {
                 foreach ($indexes as $index) {
                     $index = (object) $index;
                     $index->columns = array_map('strtolower', $index->columns);
-                    $alias = end($index->columns);
-                    $this->tables[$tbl_alias]->indexes[$alias] = $index;
+                    $this->tables[$tbl_alias]->indexes[$index->name] = $index;
 
                     // Defines grid if this index name indicates it is used in sorting
                     if ($index->name === $tbl_name . '_sort_idx') {
