@@ -264,6 +264,8 @@ class Schema {
 
             $db_columns = $refl_table->getColumns();
 
+            $col_groups = [];
+
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
 
@@ -328,7 +330,36 @@ class Schema {
                 } else {
                     $this->tables[$tbl_alias]->fields[$key] = (object) array_merge((array) $this->tables[$tbl_alias]->fields[$key], (array) $urd_col);
                 }
+
+                // Group fields according to first part of field name
+                $parts = explode('_', $col_name);
+                $group = $parts[0];
+                if (!isset($col_groups[$group])) $col_groups[$group] = [];
+                $col_groups[$group][] = $col_name;
             }
+
+            // Make form
+
+            $form = [
+                'items' => []
+            ];
+            foreach ($col_groups as $i => $group) {
+                if (count($group) == 1) {
+                    $form['items'][$i] = $group[0];
+                } else {
+                    $form['items'][$i] = [
+                        'items' => $group
+                    ];
+                }
+            }
+
+            if (isset($this->tables[$tbl_alias]->relations)) {
+                foreach ($this->tables[$tbl_alias]->relations as $alias => $relation) {
+                    $form['items'][$alias] = 'relations.'.$alias;
+                }
+            }
+
+            $this->tables[$tbl_alias]->form = $form;
 
             // Update records for reference tables
 
