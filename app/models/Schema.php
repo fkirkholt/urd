@@ -222,10 +222,13 @@ class Schema {
                             "extension_tables" => [],
                         ];
                     }
+
+                    $label = preg_replace('/^(?:fk_)?' . $urd_key->table . '_/', '', $urd_key->name);
+
                     $this->tables[$key_table_alias]->relations[$tbl_alias] = [
                         "table" => $tbl_name,
                         "foreign_key" => $key_alias,
-                        "label" => $tbl_alias
+                        "label" => $label,
                     ];
 
                     // Checks if the relation defines this as an extension table
