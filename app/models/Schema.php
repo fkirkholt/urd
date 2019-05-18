@@ -412,7 +412,7 @@ class Schema {
         // $fh_schema = fopen(substr_replace($schema_file, '_new', strpos($schema_file, '.json'), 0), 'w');
         fwrite($fh_schema, json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
-        return 'success';
+        return ['success' => true, 'msg' => 'Skjema oppdatert'];
     }
 
     /*

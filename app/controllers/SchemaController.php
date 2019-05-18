@@ -23,9 +23,9 @@ class SchemaController extends BaseController {
         $db_name = $pk->name;
         $schema_name = DB::get($db_name)->schema;
         $schema = new Schema($schema_name);
-        $data = $schema->update_schema_from_database($db_name);
+        $result = $schema->update_schema_from_database($db_name);
 
-        return $this->response->body(json_encode(['data' => $data]));
+        return $this->response->body(json_encode($result));
     }
 
     public function schema_from_urd_tables()

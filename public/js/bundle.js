@@ -20135,11 +20135,14 @@ var toolbar = {
                     table: ds.table.name,
                     primary_key: prim_nokler_json
                 })
-            }).done(function(data) {
+            }).done(function(result) {
                 if (action.update_field) {
                     var field = ds.table.records[rec_idx].fields[action.update_field];
-                    entry.update_field(data.value, field.name, ds.table.records[rec_idx]);
+                    entry.update_field(result.value, field.name, ds.table.records[rec_idx]);
                     m.redraw();
+                }
+                if (result.msg) {
+                    alert(result.msg);
                 }
             }).fail(function(jqXHR, textStatus, error) {
                 alert(jqXHR.responseText);
