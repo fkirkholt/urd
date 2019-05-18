@@ -1,5 +1,5 @@
 {
-    "name": "fkirkholt/URD",
+    "name": "fkirkholt/urd",
     "description": "Universal Relational Database",
     "license": "LGPL",
     "require": {
