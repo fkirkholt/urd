@@ -125,6 +125,8 @@ class Schema {
             $meta = [];
         }
 
+        $tbl_groups = [];
+
         foreach ($db_tables as $tbl_name) {
 
             $tbl_alias = isset($tbl_aliases[$tbl_name])
@@ -403,6 +405,13 @@ class Schema {
 
             $this->tables[$tbl_alias]->form = $form;
 
+            // Group tables
+            $parts = explode('_', $tbl_alias);
+            $group = $parts[0];
+            $label = isset($meta[$group.'_']) ? $meta[$group.'_']['label'] : $group;
+            if (!isset($tbl_groups[$label])) $tbl_groups[$label] = [];
+            $tbl_groups[$label][] = 'tables.' . $tbl_alias;
+
             // Update records for reference tables
 
             if (!isset($db->tables->$tbl_alias)) continue;
@@ -420,7 +429,28 @@ class Schema {
             foreach ($records as $record) {
                 $this->tables[$tbl_alias]->records[] = $record;
             }
+
         }
+
+        // Makes contents
+        $contents = [
+            'Tabeller' => [
+                'items' => []
+            ]
+        ];
+
+        foreach ($tbl_groups as $i => $group) {
+            if (count($group) == 1) {
+                $contents['Tabeller']['items'][$i] = $group[0];
+            } else {
+                $contents['Tabeller']['items'][$i] = [
+                    'items' => $group
+                ];
+            }
+        }
+
+        $this->contents = $contents;
+
 
         if (!file_exists(__DIR__ . '/../../schemas/' . $db->schema)) {
             mkdir(__DIR__ . '/../../schemas/' . $db->schema);
