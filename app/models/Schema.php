@@ -378,8 +378,12 @@ class Schema {
 
                 $parts = explode('_', $col_name);
                 $group = $parts[0];
-                if (!isset($col_groups[$group])) $col_groups[$group] = [];
-                $col_groups[$group][] = $col_name;
+                $label = isset($meta[$group.'_']) ? $meta[$group.'_']['label'] : $group;
+                if ($group == 'periode') {
+                    error_log(json_encode($meta));
+                }
+                if (!isset($col_groups[$label])) $col_groups[$label] = [];
+                $col_groups[$label][] = $col_name;
             }
 
             // Make form
