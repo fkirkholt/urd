@@ -223,7 +223,9 @@ class Schema {
                         ];
                     }
 
-                    $label = preg_replace('/^(?:fk_)?' . $urd_key->table . '_/', '', $urd_key->name);
+                    $label = in_array('meta_description', $db_tables)
+                        ? preg_replace('/^(?:fk_)?' . $urd_key->table . '_/', '', $urd_key->name)
+                        : $tbl_alias;
 
                     $this->tables[$key_table_alias]->relations[$tbl_alias] = [
                         "table" => $tbl_name,
@@ -241,12 +243,20 @@ class Schema {
                 }
             }
 
-            if (!isset($table->type) && substr($tbl_name, 0, 4) === 'ref_') {
-                $this->tables[$tbl_alias]->type = 'reference';
-            } else if (!isset($table->type) && in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
-                $this->tables[$tbl_alias]->type = 'cross-reference';
+            if (in_array('meta_description', $db_tables)) {
+                if (!isset($table->type) && substr($tbl_name, 0, 4) === 'ref_') {
+                    $this->tables[$tbl_alias]->type = 'reference';
+                } else if (!isset($table->type) && in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
+                    $this->tables[$tbl_alias]->type = 'cross-reference';
+                } else {
+                    $this->tables[$tbl_alias]->type = 'data';
+                }
             } else {
-                $this->tables[$tbl_alias]->type = 'data';
+                if (!isset($table->type) && count($foreign_keys) == 0) {
+                    $this->tables[$tbl_alias]->type = 'reference'; 
+                } else {
+                    $this->tables[$tbl_alias]->type = 'data';
+                }
             }
 
             // Updates column properties
