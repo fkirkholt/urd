@@ -118,6 +118,13 @@ class Schema {
             }
         }
 
+        if (in_array('urd_meta', $db_tables)) {
+            $sql = "select * from urd_item";
+            $meta = $db->conn->query($sql)->fetchAssoc('name');
+        } else {
+            $meta = [];
+        }
+
         foreach ($db_tables as $tbl_name) {
 
             $tbl_alias = isset($tbl_aliases[$tbl_name])
@@ -148,9 +155,9 @@ class Schema {
                 $record = (object) [
                     'name' => strtolower($tbl_name),
                     'icon' => null,
-                    'label' => null,
+                    'label' => isset($meta[$tbl_name]) ? $meta[$tbl_name]['label'] : null,
                     'primary_key' => $pk_columns,
-                    'description' => null,
+                    'description' => isset($meta[$tbl_name]) ? $meta[$tbl_name]['description'] : null,
                     'relations' => [],
                 ];
 
@@ -158,7 +165,14 @@ class Schema {
             } else {
                 $table = $this->tables[$tbl_alias];
                 $table->name = strtolower($tbl_name);
-                $table->label = isset($table->label) ? $table->label : null;
+                $table->label = isset($meta[$tbl_name])
+                    ? $meta[$tbl_name]['label'] : (
+                        isset($table->label) ? $table->label : null
+                    );
+                $table->description = isset($meta[$tbl_name]) 
+                    ? $meta[$tbl_name]['description'] : (
+                        isset($table->description) ? $table->description : null
+                    );
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
 
                 $this->tables[$tbl_alias] = $table;
@@ -327,6 +341,12 @@ class Schema {
                     'element' => $element,
                     'datatype' => $type,
                     'nullable' => $col->nullable,
+                    'label' => isset($meta["$tbl_name.$col_name"])
+                        ? $meta["$tbl_name.$col_name"]['label']
+                        : null,
+                    'description' => isset($meta["$tbl_name.$col_name"])
+                        ? $meta["$tbl_name.$col_name"]['description']
+                        : null,
                 ];
                 if ($type !== 'boolean') {
                     $urd_col->size = $col->size;
