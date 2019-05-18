@@ -118,7 +118,7 @@ class Schema {
             }
         }
 
-        if (in_array('urd_meta', $db_tables)) {
+        if (in_array('urd_item', $db_tables)) {
             $sql = "select * from urd_item";
             $meta = $db->conn->query($sql)->fetchAssoc('name');
         } else {
