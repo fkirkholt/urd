@@ -180,7 +180,7 @@ class Schema {
                     // Defines grid if this index name indicates it is used in sorting
                     if ($index->name === $tbl_name . '_sort_idx') {
                         $size = count($index->columns) > 3 ? 3 : count($index->columns);
-                        $this->tables[$tbl_alias]->grid = [
+                        $this->tables[$tbl_alias]->grid = (object) [
                             'columns' => $index->columns,
                             'sort_columns' => array_slice($index->columns, 0, $size)
                         ];
@@ -335,6 +335,15 @@ class Schema {
                 }
 
                 // Group fields according to first part of field name
+
+                // Don't add column to form if it's part of primary key but not shown in grid
+                if (
+                    in_array($col_name, $pk_columns)
+                    && isset($this->tables[$tbl_alias]->grid)
+                    && !in_array($col_name, $this->tables[$tbl_alias]->grid->columns)
+                ) continue;
+
+
                 $parts = explode('_', $col_name);
                 $group = $parts[0];
                 if (!isset($col_groups[$group])) $col_groups[$group] = [];
