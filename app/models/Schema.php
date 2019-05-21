@@ -435,17 +435,34 @@ class Schema {
 
         // Makes contents
         $contents = [
-            'Tabeller' => [
+            'Innhold' => [
                 'items' => []
             ]
         ];
 
-        foreach ($tbl_groups as $i => $group) {
-            if (count($group) == 1) {
-                $contents['Tabeller']['items'][$i] = $group[0];
+        foreach ($tbl_groups as $group_name => $table_names) {
+            if (count($table_names) == 1 && $group_name != 'meta') {
+                $table_alias = $table_names[0];
+                $label = isset($terms[$table_alias]) 
+                    ? $terms[$table_alias]['label']
+                    : ucfirst(str_replace('_', ' ', $table_alias));
+                $contents['Innhold']['items'][$label] = 'tables.' . $table_alias;
             } else {
-                $contents['Tabeller']['items'][$i] = [
-                    'items' => $group
+                // Remove group prefix from label
+                foreach ($table_names as $i => $table_alias) {
+                    unset($table_names[$i]);
+                    $rest = str_replace($group_name . '_', '', $table_alias);
+                    $label = isset($terms[$rest]) 
+                        ? $terms[$rest]['label']
+                        : ucfirst(str_replace('_', ' ', $rest));
+                    $table_names[$label] = 'tables.' . $table_alias;
+                }
+                $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
+                if ($label === 'Ref') $label = 'Referansetabeller';
+                $contents['Innhold']['items'][$label] = [
+                    'class_label' => 'b', 
+                    'class_content' => 'ml3',
+                    'items' => $table_names
                 ];
             }
         }
