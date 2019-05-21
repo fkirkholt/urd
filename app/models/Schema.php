@@ -118,11 +118,11 @@ class Schema {
             }
         }
 
-        if (in_array('urd_item', $db_tables)) {
-            $sql = "select * from urd_item";
-            $meta = $db->conn->query($sql)->fetchAssoc('name');
+        if (in_array('meta_terminology', $db_tables)) {
+            $sql = "select * from meta_terminology";
+            $terms = $db->conn->query($sql)->fetchAssoc('name');
         } else {
-            $meta = [];
+            $terms = [];
         }
 
         $tbl_groups = [];
@@ -157,9 +157,9 @@ class Schema {
                 $record = (object) [
                     'name' => strtolower($tbl_name),
                     'icon' => null,
-                    'label' => isset($meta[$tbl_name]) ? $meta[$tbl_name]['label'] : null,
+                    'label' => isset($terms[$tbl_name]) ? $terms[$tbl_name]['label'] : null,
                     'primary_key' => $pk_columns,
-                    'description' => isset($meta[$tbl_name]) ? $meta[$tbl_name]['description'] : null,
+                    'description' => isset($terms[$tbl_name]) ? $terms[$tbl_name]['description'] : null,
                     'relations' => [],
                 ];
 
@@ -167,12 +167,12 @@ class Schema {
             } else {
                 $table = $this->tables[$tbl_alias];
                 $table->name = strtolower($tbl_name);
-                $table->label = isset($meta[$tbl_name])
-                    ? $meta[$tbl_name]['label'] : (
+                $table->label = isset($terms[$tbl_name])
+                    ? $terms[$tbl_name]['label'] : (
                         isset($table->label) ? $table->label : null
                     );
-                $table->description = isset($meta[$tbl_name]) 
-                    ? $meta[$tbl_name]['description'] : (
+                $table->description = isset($terms[$tbl_name]) 
+                    ? $terms[$tbl_name]['description'] : (
                         isset($table->description) ? $table->description : null
                     );
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
@@ -239,7 +239,7 @@ class Schema {
                         ];
                     }
 
-                    $label = in_array('meta_description', $db_tables)
+                    $label = in_array('meta_terminology', $db_tables)
                         ? preg_replace('/^(?:fk_)?' . $urd_key->table . '_/', '', $urd_key->name)
                         : $tbl_alias;
 
@@ -259,10 +259,10 @@ class Schema {
                 }
             }
 
-            if (in_array('meta_description', $db_tables)) {
-                if (!isset($table->type) && substr($tbl_name, 0, 4) === 'ref_') {
+            if (in_array('meta_terminology', $db_tables)) {
+                if (substr($tbl_name, 0, 4) === 'ref_' || substr($tbl_name, 0, 5) === 'meta_') {
                     $this->tables[$tbl_alias]->type = 'reference';
-                } else if (!isset($table->type) && in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
+                } else if (in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
                     $this->tables[$tbl_alias]->type = 'cross-reference';
                 } else {
                     $this->tables[$tbl_alias]->type = 'data';
@@ -343,11 +343,11 @@ class Schema {
                     'element' => $element,
                     'datatype' => $type,
                     'nullable' => $col->nullable,
-                    'label' => isset($meta["$tbl_name.$col_name"])
-                        ? $meta["$tbl_name.$col_name"]['label']
+                    'label' => isset($terms[$col_name])
+                        ? $terms[$col_name]['label']
                         : null,
-                    'description' => isset($meta["$tbl_name.$col_name"])
-                        ? $meta["$tbl_name.$col_name"]['description']
+                    'description' => isset($terms[$col_name])
+                        ? $terms[$col_name]['description']
                         : null,
                 ];
                 if ($type !== 'boolean') {
@@ -378,10 +378,7 @@ class Schema {
 
                 $parts = explode('_', $col_name);
                 $group = $parts[0];
-                $label = isset($meta[$group.'_']) ? $meta[$group.'_']['label'] : $group;
-                if ($group == 'periode') {
-                    error_log(json_encode($meta));
-                }
+                $label = isset($terms[$group]) ? $terms[$group]['label'] : $group;
                 if (!isset($col_groups[$label])) $col_groups[$label] = [];
                 $col_groups[$label][] = $col_name;
             }
@@ -412,9 +409,9 @@ class Schema {
             // Group tables
             $parts = explode('_', $tbl_alias);
             $group = $parts[0];
-            $label = isset($meta[$group.'_']) ? $meta[$group.'_']['label'] : $group;
-            if (!isset($tbl_groups[$label])) $tbl_groups[$label] = [];
-            $tbl_groups[$label][] = 'tables.' . $tbl_alias;
+            
+            if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
+            $tbl_groups[$group][] = $tbl_alias;
 
             // Update records for reference tables
 
