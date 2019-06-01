@@ -2,6 +2,16 @@ html {
     line-height: normal;
 }
 
+tr:focus {
+    outline: 0;
+    background-color: #F4F4F4;
+    border: 1px solid green;
+}
+
+tr.bg-light-blue:focus {
+    background-color: #96CCFF
+}
+
 .sans-serif {
     font-family: 'Open Sans', sans-serif;
 }
