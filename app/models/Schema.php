@@ -120,7 +120,7 @@ class Schema {
 
         if (in_array('meta_terminology', $db_tables)) {
             $sql = "select * from meta_terminology";
-            $terms = $db->conn->query($sql)->fetchAssoc('name');
+            $terms = $db->conn->query($sql)->fetchAssoc('term');
         } else {
             $terms = [];
         }
@@ -154,7 +154,7 @@ class Schema {
             }
 
             if (!array_key_exists($tbl_alias, $this->tables)) {
-                $record = (object) [
+                $table = (object) [
                     'name' => strtolower($tbl_name),
                     'icon' => null,
                     'label' => isset($terms[$tbl_name]) ? $terms[$tbl_name]['label'] : null,
@@ -163,7 +163,6 @@ class Schema {
                     'relations' => [],
                 ];
 
-                $this->tables[$tbl_alias] = $record;
             } else {
                 $table = $this->tables[$tbl_alias];
                 $table->name = strtolower($tbl_name);
@@ -176,8 +175,6 @@ class Schema {
                         isset($table->description) ? $table->description : null
                     );
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
-
-                $this->tables[$tbl_alias] = $table;
             }
 
             // Updates indexes
@@ -185,18 +182,18 @@ class Schema {
                 $indexes = $reflector->getIndexes($tbl_name);
 
                 if (!isset($this->tables[$tbl_alias]->indexes)) {
-                    $this->tables[$tbl_alias]->indexes = [];
+                    $table->indexes = [];
                 }
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
                     $index->columns = array_map('strtolower', $index->columns);
-                    $this->tables[$tbl_alias]->indexes[$index->name] = $index;
+                    $table->indexes[$index->name] = $index;
 
                     // Defines grid if this index name indicates it is used in sorting
                     if ($index->name === $tbl_name . '_sort_idx') {
                         $size = count($index->columns) > 3 ? 3 : count($index->columns);
-                        $this->tables[$tbl_alias]->grid = (object) [
+                        $table->grid = (object) [
                             'columns' => $index->columns,
                             'sort_columns' => array_slice($index->columns, 0, $size)
                         ];
@@ -212,8 +209,8 @@ class Schema {
                 // $foreign_keys = $db->conn->getDatabaseInfo()->getTable($tbl_name)->getForeignKeys();
                 $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
-                if (!isset($this->tables[$tbl_alias]->foreign_keys)) {
-                    $this->tables[$tbl_alias]->foreign_keys = [];
+                if (!isset($table->foreign_keys)) {
+                    $table->foreign_keys = [];
                 }
 
                 foreach ($foreign_keys as $key) {
@@ -225,7 +222,7 @@ class Schema {
                     $urd_key->local = array_map('strtolower', $urd_key->local);
                     $urd_key->foreign = array_map('strtolower', $urd_key->foreign);
                     $key_alias = end($urd_key->local);
-                    $this->tables[$tbl_alias]->foreign_keys[$key_alias] = $urd_key;
+                    $table->foreign_keys[$key_alias] = $urd_key;
 
                     // Add to relations of relation table
                     $key_table_alias = isset($tbl_aliases[$urd_key->table])
@@ -261,33 +258,31 @@ class Schema {
 
             if (in_array('meta_terminology', $db_tables)) {
                 if (substr($tbl_name, 0, 4) === 'ref_' || substr($tbl_name, 0, 5) === 'meta_') {
-                    $this->tables[$tbl_alias]->type = 'reference';
+                    $table->type = 'reference';
                 } else if (in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
-                    $this->tables[$tbl_alias]->type = 'cross-reference';
+                    $table->type = 'cross-reference';
                 } else {
-                    $this->tables[$tbl_alias]->type = 'data';
+                    $table->type = 'data';
                 }
             } else {
                 if (!isset($table->type) && count($foreign_keys) == 0) {
-                    $this->tables[$tbl_alias]->type = 'reference'; 
+                    $table->type = 'reference'; 
                 } else {
-                    $this->tables[$tbl_alias]->type = 'data';
+                    $table->type = 'data';
                 }
             }
 
             // Updates column properties
 
-            if (!isset($this->tables[$tbl_alias]->fields)) {
-                $this->tables[$tbl_alias]->fields = [];
+            if (!isset($table->fields)) {
+                $table->fields = [];
             }
-
-            $fields = $this->tables[$tbl_alias]->fields;
 
             // Fields may be defined with alias the same as name,
             // and avoid specifying the name
-            if (count($fields)) {
-                foreach ($fields as $alias => $field) {
-                    if (!isset($field->name)) $fields[$alias]->name = $alias;
+            if (count($table->fields)) {
+                foreach ($table->fields as $alias => $field) {
+                    if (!isset($field->name)) $table->fields[$alias]->name = $alias;
                 }
             }
 
@@ -301,7 +296,7 @@ class Schema {
                 $type = $db->expr()->to_urd_type($col->nativetype);
                 if ($type === 'integer' && $col->size === 1) $type = 'boolean';
 
-                $items = array_filter($fields, function($item) use ($col_name) {
+                $items = array_filter($table->fields, function($item) use ($col_name) {
                     return $item->name === $col_name;
                 });
 
@@ -309,8 +304,8 @@ class Schema {
 
                 // Desides what sort of input should be used
                 // todo: support more
-                if (!empty($this->tables[$tbl_alias]->fields[$key]->element)) {
-                    $element = $this->tables[$tbl_alias]->fields[$key]->element;
+                if (!empty($table->fields[$key]->element)) {
+                    $element = $table->fields[$key]->element;
                 } else if ($type === 'date') {
                     $element = 'input[type=date]';
                 } else if ($type === 'boolean') {
@@ -329,7 +324,7 @@ class Schema {
                     } else {
                         $element = 'input[type=checkbox]';
                     }
-                } else if (isset($this->tables[$tbl_alias]->foreign_keys[$col_name])) {
+                } else if (isset($table->foreign_keys[$col_name])) {
                     $element = 'select';
                     $options = null;
                 } else if ($type == 'binary' || ($type == 'string' && (!$col->size || $col->size > 60))) {
@@ -361,9 +356,12 @@ class Schema {
                 }
 
                 if (!$key) {
-                    $this->tables[$tbl_alias]->fields[$col_name] = $urd_col;
+                    $table->fields[$col_name] = $urd_col;
                 } else {
-                    $this->tables[$tbl_alias]->fields[$key] = (object) array_merge((array) $this->tables[$tbl_alias]->fields[$key], (array) $urd_col);
+                    $table->fields[$key] = (object) array_merge(
+                        (array) $table->fields[$key],
+                        (array) $urd_col
+                    );
                 }
 
                 // Group fields according to first part of field name
@@ -371,8 +369,8 @@ class Schema {
                 // Don't add column to form if it's part of primary key but not shown in grid
                 if (
                     in_array($col_name, $pk_columns)
-                    && isset($this->tables[$tbl_alias]->grid)
-                    && !in_array($col_name, $this->tables[$tbl_alias]->grid->columns)
+                    && isset($table->grid)
+                    && !in_array($col_name, $table->grid->columns)
                 ) continue;
 
 
@@ -398,13 +396,14 @@ class Schema {
                 }
             }
 
-            if (isset($this->tables[$tbl_alias]->relations)) {
-                foreach ($this->tables[$tbl_alias]->relations as $alias => $relation) {
+            if (isset($table->relations)) {
+                foreach ($table->relations as $alias => $relation) {
                     $form['items'][$alias] = 'relations.'.$alias;
                 }
             }
 
-            $this->tables[$tbl_alias]->form = $form;
+            $table->form = $form;
+            $this->tables[$table_alias] = $table;
 
             // Group tables
             $parts = explode('_', $tbl_alias);
