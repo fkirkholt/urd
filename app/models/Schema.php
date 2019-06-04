@@ -386,12 +386,20 @@ class Schema {
             $form = [
                 'items' => []
             ];
-            foreach ($col_groups as $i => $group) {
-                if (count($group) == 1) {
-                    $form['items'][$i] = $group[0];
+            foreach ($col_groups as $group_name => $col_names) {
+                if (count($col_names) == 1) {
+                    $form['items'][$group_name] = $col_names[0];
                 } else {
-                    $form['items'][$i] = [
-                        'items' => $group
+                    foreach ($col_names as $i => $col_name) {
+                        unset($col_names[$i]);
+                        $rest = str_replace($group_name . '_', '', $col_name);
+                        $label = isset($terms[$rest])
+                            ? $terms[$rest]['label']
+                            : ucfirst(str_replace('_', ' ', $rest));
+                        $col_names[$label] = $col_name;
+                    }
+                    $form['items'][$group_name] = [
+                        'items' => $col_names
                     ];
                 }
             }
@@ -403,7 +411,7 @@ class Schema {
             }
 
             $table->form = $form;
-            $this->tables[$table_alias] = $table;
+            $this->tables[$tbl_alias] = $table;
 
             // Group tables
             $parts = explode('_', $tbl_alias);
