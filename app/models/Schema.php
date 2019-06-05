@@ -388,7 +388,8 @@ class Schema {
             ];
             foreach ($col_groups as $group_name => $col_names) {
                 if (count($col_names) == 1) {
-                    $form['items'][$group_name] = $col_names[0];
+                    $label = ucfirst(str_replace('_', ' ', $col_names[0]));
+                    $form['items'][$label] = $col_names[0];
                 } else {
                     foreach ($col_names as $i => $col_name) {
                         unset($col_names[$i]);
