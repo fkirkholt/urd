@@ -189,15 +189,27 @@ class Schema {
                     $index = (object) $index;
                     $index->columns = array_map('strtolower', $index->columns);
                     $table->indexes[$index->name] = $index;
+                }
 
-                    // Defines grid if this index name indicates it is used in sorting
-                    if ($index->name === $tbl_name . '_sort_idx') {
-                        $size = count($index->columns) > 3 ? 3 : count($index->columns);
-                        $table->grid = (object) [
-                            'columns' => $index->columns,
-                            'sort_columns' => array_slice($index->columns, 0, $size)
-                        ];
-                    }
+                $grid_idx = isset($table->indexes[$tbl_name . '_grid_idx'])
+                    ? $table->indexes[$tbl_name . '_grid_idx']
+                    : ( isset($table->indexes[$tbl_name . '_sort_idx'])
+                        ? $table->indexes[$tbl_name . '_sort_idx']
+                        : null
+                    );
+
+                $sort_cols = isset($table->indexes[$tbl_name . '_sort_idx'])
+                    ? $table->indexes[$tbl_name . '_sort_idx']->columns
+                    : ( $grid_idx
+                        ? array_slice($grid_idx->columns, 0, 3)
+                        : null
+                    );
+                
+                if ($grid_idx) {
+                    $table->grid = (object) [
+                        'columns' => $grid_idx->columns,
+                        'sort_columns' => $sort_cols
+                    ];
                 }
             }
 
