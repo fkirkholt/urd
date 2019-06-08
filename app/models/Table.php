@@ -313,7 +313,7 @@ class Table {
 
             if (!isset($field->view) && isset($ref_tbl->indexes)) {
                 foreach ($ref_tbl->indexes as $index) {
-                    if ($index->unique && !$index->primary) {
+                    if (strpos($index->name, '_sort_idx') !== false) {
                         $columns = array_map(function($col) use ($alias) {
                             return "$alias.$col";
                         }, $index->columns);
