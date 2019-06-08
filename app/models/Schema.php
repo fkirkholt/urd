@@ -431,7 +431,19 @@ class Schema {
             $group = $parts[0];
             
             if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
-            $tbl_groups[$group][] = $tbl_alias;
+
+            // Find if the table is subordinate to other tables
+            // i.e. it has an other table's name as prefix
+            $parent_tables = array_filter($db_tables, function($name) use ($tbl_name) {
+                // add underscore to $name if it doesn't end with underscore
+                $name = substr($name, -1) === '_' ? $name : $name . '_';
+                return ($name != $tbl_name && substr($tbl_name, 0, strlen($name)) === $name);
+            });
+
+            // Only add tables that are not subordinate to other tables
+            if (!count($parent_tables)) {
+                $tbl_groups[$group][] = $tbl_alias;
+            }
 
             // Update records for reference tables
 
