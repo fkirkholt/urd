@@ -126,6 +126,7 @@ class Schema {
         }
 
         $tbl_groups = [];
+        $warnings = [];
 
         foreach ($db_tables as $tbl_name) {
 
@@ -226,30 +227,39 @@ class Schema {
                 }
 
                 foreach ($foreign_keys as $key) {
-                    $urd_key = (object) $key;
-                    unset($urd_key->onDelete);
-                    unset($urd_key->onUpdate);
-                    $urd_key->schema = $this->name;
-                    $urd_key->table = strtolower($urd_key->table);
-                    $urd_key->local = array_map('strtolower', $urd_key->local);
-                    $urd_key->foreign = array_map('strtolower', $urd_key->foreign);
-                    $key_alias = end($urd_key->local);
-                    $table->foreign_keys[$key_alias] = $urd_key;
+                    $key = (object) $key;
+                    unset($key->onDelete);
+                    unset($key->onUpdate);
+                    $key->schema = $this->name;
+                    $key->table = strtolower($key->table);
+                    $key->local = array_map('strtolower', $key->local);
+                    $key->foreign = array_map('strtolower', $key->foreign);
+                    $key_alias = end($key->local);
+                    $table->foreign_keys[$key_alias] = $key;
+
+                    // Warn if foreign key is not on expected format
+                    if (
+                        in_array('meta_terminology', $db_tables) &&
+                        substr($key->name, 0, strlen($key->table)) !== $key->table &&
+                        substr($key->name, 0, strlen($key->table) + 3) !== 'fk_' . $key->table
+                    ) {
+                        $warnings[] = "FK $key->name starter ikke med navn på referert tabell $key->table";
+                    }
 
                     // Add to relations of relation table
-                    $key_table_alias = isset($tbl_aliases[$urd_key->table])
-                        ? $tbl_aliases[$urd_key->table]
-                        : $urd_key->table;
+                    $key_table_alias = isset($tbl_aliases[$key->table])
+                        ? $tbl_aliases[$key->table]
+                        : $key->table;
                     if (!isset($this->tables[$key_table_alias])) {
                         $this->tables[$key_table_alias] = (object) [
-                            "name" => $urd_key->table,
+                            "name" => $key->table,
                             "relations" => [],
                             "extension_tables" => [],
                         ];
                     }
 
                     $label = in_array('meta_terminology', $db_tables)
-                        ? preg_replace('/^(?:fk_)?' . $urd_key->table . '_/', '', $urd_key->name)
+                        ? preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name)
                         : $tbl_alias;
 
                     $this->tables[$key_table_alias]->relations[$tbl_alias] = [
@@ -259,7 +269,7 @@ class Schema {
                     ];
 
                     // Checks if the relation defines this as an extension table
-                    if ($urd_key->local === $pk_columns) {
+                    if ($key->local === $pk_columns) {
                         // TODO: Dokumenter
                         if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
                             $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
@@ -512,7 +522,7 @@ class Schema {
         // $fh_schema = fopen(substr_replace($schema_file, '_new', strpos($schema_file, '.json'), 0), 'w');
         fwrite($fh_schema, json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
-        return ['success' => true, 'msg' => 'Skjema oppdatert'];
+        return ['success' => true, 'msg' => 'Skjema oppdatert', 'warn' => $warnings];
     }
 
     /*
