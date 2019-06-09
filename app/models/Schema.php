@@ -279,10 +279,12 @@ class Schema {
             }
 
             if (in_array('meta_terminology', $db_tables)) {
-                if (substr($tbl_name, 0, 4) === 'ref_' || substr($tbl_name, 0, 5) === 'meta_') {
+                if (
+                    substr($tbl_name, 0, 4) === 'ref_' ||
+                    substr($tbl_name, -4) === '_ref' ||
+                    substr($tbl_name, 0, 5) === 'meta_'
+                ) {
                     $table->type = 'reference';
-                } else if (in_array(substr($tbl_name, 0, 5), ['xref_', 'link_'])) {
-                    $table->type = 'cross-reference';
                 } else {
                     $table->type = 'data';
                 }
