@@ -258,22 +258,29 @@ class Schema {
                         ];
                     }
 
+                    // Checks if the relation defines this as an extension table
+                    if ($key->local === $pk_columns) {
+                        // TODO: Dokumenter
+                        if (!isset($this->tables[$key_table_alias]->extension_tables)) {
+                            $this->tables[$key_table_alias]->extension_tables = [];
+                        }
+                        if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
+                            $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
+                        }
+
+                        $table->extends = $key->table;
+                    }
+
                     $label = in_array('meta_terminology', $db_tables)
                         ? preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name)
                         : $tbl_alias;
 
-                    $this->tables[$key_table_alias]->relations[$tbl_alias] = [
-                        "table" => $tbl_name,
-                        "foreign_key" => $key_alias,
-                        "label" => $label,
-                    ];
-
-                    // Checks if the relation defines this as an extension table
-                    if ($key->local === $pk_columns) {
-                        // TODO: Dokumenter
-                        if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
-                            $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
-                        }
+                    if (!isset($table->extends)) {
+                        $this->tables[$key_table_alias]->relations[$tbl_alias] = [
+                            "table" => $tbl_name,
+                            "foreign_key" => $key_alias,
+                            "label" => $label,
+                        ];
                     }
                 }
             }
@@ -393,13 +400,22 @@ class Schema {
                 // Don't add column to form if it's part of primary key but not shown in grid
                 if (
                     in_array($col_name, $pk_columns)
-                    && isset($table->grid)
-                    && !in_array($col_name, $table->grid->columns)
+                    && (
+                        (isset($table->grid) && !in_array($col_name, $table->grid->columns))
+                        || !isset($table->grid)
+                    )
                 ) continue;
 
+                if (isset($table->extends)) {
+                    // For extension tables we just use the table name as group
+                    // and don't support grouping by prefix
+                    $group = str_replace($table->extends . '_', '', $tbl_name);
+                } else {
+                    // Group by prefix
+                    $parts = explode('_', $col_name);
+                    $group = $parts[0];
+                }
 
-                $parts = explode('_', $col_name);
-                $group = $parts[0];
                 $label = isset($terms[$group]) ? $terms[$group]['label'] : $group;
                 if (!isset($col_groups[$label])) $col_groups[$label] = [];
                 $col_groups[$label][] = $col_name;
@@ -423,19 +439,23 @@ class Schema {
                             : ucfirst(str_replace('_', ' ', $rest));
                         $col_names[$label] = $col_name;
                     }
+                    $group_name = ucfirst($group_name);
                     $form['items'][$group_name] = [
                         'items' => $col_names
                     ];
                 }
             }
 
-            if (isset($table->relations)) {
-                foreach ($table->relations as $alias => $relation) {
-                    $form['items'][$alias] = 'relations.'.$alias;
-                }
+
+            if (isset($table->extends)) {
+                $this->tables[$table->extends]->form["items"] = array_merge(
+                    $this->tables[$table->extends]->form["items"],
+                    $form["items"]
+                );
+            } else {
+                $table->form = $form;
             }
 
-            $table->form = $form;
             $this->tables[$tbl_alias] = $table;
 
             // Group tables
@@ -476,6 +496,18 @@ class Schema {
             }
 
         }
+
+        // Add relations to form
+        foreach ($this->tables as $tbl_alias => $table) {
+            if (isset($table->relations)) {
+                foreach ($table->relations as $alias => $relation) {
+                    $table->form['items'][$alias] = 'relations.'.$alias;
+                }
+            }
+
+            $this->tables[$tbl_alias] = $table;
+        }
+
 
         // Makes contents
         $contents = [
