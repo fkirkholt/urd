@@ -190,6 +190,7 @@ class Schema {
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
+                    $index->name = strtolower($index->name);
                     $index->columns = array_map('strtolower', $index->columns);
                     $table->indexes[$index->name] = $index;
                 }
