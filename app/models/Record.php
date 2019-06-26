@@ -52,14 +52,18 @@ class Record {
         foreach ($this->primary_key as $field_name => $value) {
             $conditions[] = "{$this->tbl->name}.$field_name = '$value'";
         }
-        $where = 'WHERE ' . implode(' AND ', $conditions);
+        $cond = implode(' AND ', $conditions);
+        // Must use pure sql so that dibi doesn't strip single quotes
+        // round numbers. We want numbers with leading zero as strings in database,
+        // but there must be a bug i dibi that strips quotes even if we use %s
+        $where = 'WHERE %SQL'; // . implode(' AND ', $conditions);
 
         $sql = "SELECT $select_sql
                 FROM   $view {$this->tbl->name}
                        $join
                 $where";
 
-        $row = $this->db->query($sql)->setFormat(Type::DATETIME, 'Y-m-d H:i:s')->fetch();
+        $row = $this->db->conn->query($sql, $cond)->setFormat(Type::DATETIME, 'Y-m-d H:i:s')->fetch();
 
 
         // Build array over fields, with value and other properties
@@ -97,7 +101,7 @@ class Record {
                 $join
                 $where";
 
-            $row = $this->db->query($sql_view)->fetch();
+            $row = $this->db->conn->query($sql_view, $cond)->fetch();
 
             foreach ($row as $field_name => $value) {
                 $field = $fields[$field_name];

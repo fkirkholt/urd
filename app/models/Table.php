@@ -660,12 +660,12 @@ class Table {
         $sql = "SELECT $kolonner_sql
                 FROM   $view $this->name
                 $join
-                $condition
+                %SQL
                 $order
                 %lmt %ofs";
 
         $this->sql = $sql;
-        $rader = $this->db->conn->query($sql, $this->limit, $this->offset)->setFormat(Type::DATETIME, 'Y-m-d H:i:s')->fetchAll();
+        $rader = $this->db->conn->query($sql, $condition, $this->limit, $this->offset)->setFormat(Type::DATETIME, 'Y-m-d H:i:s')->fetchAll();
 
         // Henter ut array med assosiative nøkler:
         $i = 0;
@@ -690,7 +690,7 @@ class Table {
             $join
             $condition";
 
-        $count_records = $this->db->conn->query($sql)->fetch()->ant;
+        $count_records = $this->db->conn->nativeQuery($sql)->fetch()->ant;
         return $count_records;
     }
 
