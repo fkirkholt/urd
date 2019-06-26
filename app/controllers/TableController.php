@@ -31,7 +31,9 @@ class TableController extends BaseController {
             $tbl->add_condition("
             (SELECT count(*)
             FROM role_permission rp
-            WHERE rp.schema_ = database_.schema_ AND view_ = 1 AND role IN ($user_role_list) > 0)
+            WHERE (rp.schema_ = database_.schema_ or rp.schema_ = '*')
+              AND view_ = 1
+              AND role IN ($user_role_list) > 0)
             OR database_.schema_ = 'urd' AND (SELECT count(*) FROM role_permission rp2 WHERE rp2.admin = 1 AND role IN ($user_role_list) > 0)"
             );
         }

@@ -227,7 +227,7 @@ class Database {
         $rows = dibi::select('table_, view_')
             ->from('role_permission r')
             ->where('role')->in($user_roles)
-            ->where('schema_ = ?', $this->schema)
+            ->where("(schema_ = '*' or schema_ = ?)", $this->schema)
             ->fetchAssoc('table_');
 
         $standard_filters = dibi::select('table_, expression')

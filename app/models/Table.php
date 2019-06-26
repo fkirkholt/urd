@@ -800,7 +800,7 @@ class Table {
             (
                 select max(schema_) schema_, max(role) role, max(table_) table_
                 from role_permission
-                where schema_ = %s", $this->db->schema, "
+                where schema_ in (?)", [$this->db->schema, '*'], "
                   and table_ in (?)", [$tbl_name, '*'], "
                   and role in (?)", $roles ?: [0], "
                 group by role
