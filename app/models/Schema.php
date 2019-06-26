@@ -215,73 +215,69 @@ class Schema {
             }
 
             // Updates foreign keys
-            if ($db->platform == 'oracle') {
-                // TODO: Fix foreign keys for oracle
-                $foreign_keys = [];
-            } else {
-                // $foreign_keys = $db->conn->getDatabaseInfo()->getTable($tbl_name)->getForeignKeys();
-                $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
-                if (!isset($table->foreign_keys)) {
-                    $table->foreign_keys = [];
-                }
+            $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
-                foreach ($foreign_keys as $key) {
-                    $key = (object) $key;
-                    unset($key->onDelete);
-                    unset($key->onUpdate);
-                    $key->schema = $this->name;
-                    $key->table = strtolower($key->table);
-                    $key->local = array_map('strtolower', $key->local);
-                    $key->foreign = array_map('strtolower', $key->foreign);
-                    $key_alias = end($key->local);
-                    $table->foreign_keys[$key_alias] = $key;
+            if (!isset($table->foreign_keys)) {
+                $table->foreign_keys = [];
+            }
+
+            foreach ($foreign_keys as $key) {
+                $key = (object) $key;
+                unset($key->onDelete);
+                unset($key->onUpdate);
+                $key->name = strtolower($key->name);
+                $key->schema = $this->name;
+                $key->table = strtolower($key->table);
+                $key->local = array_map('strtolower', $key->local);
+                $key->foreign = array_map('strtolower', $key->foreign);
+                $key_alias = end($key->local);
+                $table->foreign_keys[$key_alias] = $key;
 
                     // Warn if foreign key is not on expected format
-                    if (
-                        in_array('meta_terminology', $db_tables) &&
-                        substr($key->name, 0, strlen($key->table)) !== $key->table &&
-                        substr($key->name, 0, strlen($key->table) + 3) !== 'fk_' . $key->table
-                    ) {
-                        $warnings[] = "FK $key->name starter ikke med navn på referert tabell $key->table";
-                    }
+                if (
+                    in_array('meta_terminology', $db_tables) &&
+                    substr($key->name, 0, strlen($key->table)) !== $key->table &&
+                    substr($key->name, 0, strlen($key->table) + 3) !== 'fk_' . $key->table
+                ) {
+                    $warnings[] = "FK $key->name starter ikke med navn på referert tabell $key->table";
+                }
 
                     // Add to relations of relation table
-                    $key_table_alias = isset($tbl_aliases[$key->table])
-                        ? $tbl_aliases[$key->table]
-                        : $key->table;
-                    if (!isset($this->tables[$key_table_alias])) {
-                        $this->tables[$key_table_alias] = (object) [
-                            "name" => $key->table,
-                            "relations" => [],
-                            "extension_tables" => [],
-                        ];
-                    }
+                $key_table_alias = isset($tbl_aliases[$key->table])
+                ? $tbl_aliases[$key->table]
+                : $key->table;
+                if (!isset($this->tables[$key_table_alias])) {
+                    $this->tables[$key_table_alias] = (object) [
+                        "name" => $key->table,
+                        "relations" => [],
+                        "extension_tables" => [],
+                    ];
+                }
 
                     // Checks if the relation defines this as an extension table
-                    if ($key->local === $pk_columns) {
+                if ($key->local === $pk_columns) {
                         // TODO: Dokumenter
-                        if (!isset($this->tables[$key_table_alias]->extension_tables)) {
-                            $this->tables[$key_table_alias]->extension_tables = [];
-                        }
-                        if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
-                            $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
-                        }
-
-                        $table->extends = $key->table;
+                    if (!isset($this->tables[$key_table_alias]->extension_tables)) {
+                        $this->tables[$key_table_alias]->extension_tables = [];
+                    }
+                    if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
+                        $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
                     }
 
-                    $label = in_array('meta_terminology', $db_tables)
-                        ? preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name)
-                        : $tbl_alias;
+                    $table->extends = $key->table;
+                }
 
-                    if (!isset($table->extends)) {
-                        $this->tables[$key_table_alias]->relations[$tbl_alias] = [
-                            "table" => $tbl_name,
-                            "foreign_key" => $key_alias,
-                            "label" => $label,
-                        ];
-                    }
+                $label = in_array('meta_terminology', $db_tables)
+                ? preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name)
+                : $tbl_alias;
+
+                if (!isset($table->extends)) {
+                    $this->tables[$key_table_alias]->relations[$tbl_alias] = [
+                        "table" => $tbl_name,
+                        "foreign_key" => $key_alias,
+                        "label" => $label,
+                    ];
                 }
             }
 
