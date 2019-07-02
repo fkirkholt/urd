@@ -333,32 +333,39 @@ class Database {
         return new Expression($this->platform, $string);
     }
 
-    public function query($sql) {
-        return $this->conn->query($sql);
+    public function query($args) {
+        $args = func_get_args();
+        return $this->conn->query($args);
     }
 
     public function fetch_row($res) {
         return $this->conn->fetch_row($res);
     }
 
-    public function fetchAssoc($sql) {
-        return $this->conn->query($sql)->fetchAssoc($res);
+    public function fetchAssoc($args) {
+        $args = func_get_args();
+        return $this->conn->query($args)->fetchAssoc();
     }
 
-    public function fetch($sql) {
-        return $this->conn->query($sql)->fetch();
+    public function fetch($args) {
+        $args = func_get_args();
+        return $this->conn->query($args)->fetch();
     }
 
-    public function fetchAll($sql) {
-        return $this->conn->query($sql)->fetchAll();
+    public function fetchAll($args) {
+        $args = func_get_args();
+        return $this->conn->query($args)->fetchAll();
     }
 
-    public function fetchSingle($sql) {
-        return $this->conn->query($sql)->fetchSingle();
+    public function fetchSingle($args) {
+        
+        $args = func_get_args();
+        return $this->conn->query($args)->fetchSingle();
     }
 
-    public function fetchPairs($sql) {
-        return $this->conn->query($sql)->fetchPairs();
+    public function fetchPairs($args) {
+        $args = func_get_args();
+        return $this->conn->query($args)->fetchPairs();
     }
 
     public function last_insert_id() {
@@ -366,6 +373,7 @@ class Database {
     }
 
     public function select($args) {
+        $args = func_get_args();
         return $this->conn->select($args);
     }
 
