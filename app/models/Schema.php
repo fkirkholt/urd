@@ -546,12 +546,20 @@ class Schema {
 
 
         if (!file_exists(__DIR__ . '/../../schemas/' . $db->schema)) {
-            mkdir(__DIR__ . '/../../schemas/' . $db->schema);
+            try {
+                mkdir(__DIR__ . '/../../schemas/' . $db->schema);
+            } catch (\Exception $e) {
+                return ['success' => false, 'msg' => 'Feilet: PHP-brukeren har ikke skriverettigheter'];
+            }
         }
 
         $schema_file = __DIR__ . '/../../schemas/' . $db->schema . '/schema.json';
 
-        $fh_schema = fopen($schema_file, 'w');
+        try {
+            $fh_schema = fopen($schema_file, 'w');
+        } catch (\Exception $e) {
+            return ['success' => false, 'msg' => 'Feilet: PHP-brukeren har ikke skriverettigheter'];
+        }
         // $fh_schema = fopen(substr_replace($schema_file, '_new', strpos($schema_file, '.json'), 0), 'w');
         fwrite($fh_schema, json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
