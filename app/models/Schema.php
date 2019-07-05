@@ -553,6 +553,12 @@ class Schema {
             }
         }
 
+        $json_string = json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        if ($json_string === false) {
+            return ['success' => false, 'msg' => json_last_error_msg()];
+        }
+
         $schema_file = __DIR__ . '/../../schemas/' . $db->schema . '/schema.json';
 
         try {
@@ -560,8 +566,8 @@ class Schema {
         } catch (\Exception $e) {
             return ['success' => false, 'msg' => 'Feilet: PHP-brukeren har ikke skriverettigheter'];
         }
-        // $fh_schema = fopen(substr_replace($schema_file, '_new', strpos($schema_file, '.json'), 0), 'w');
-        fwrite($fh_schema, json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+        fwrite($fh_schema, $json_string);
 
         return ['success' => true, 'msg' => 'Skjema oppdatert', 'warn' => $warnings];
     }
