@@ -17,10 +17,36 @@ var toolbar = {
         mousetrap(document.body).bind('esc', function(e) {
             $('#urdgrid tr.focus').focus();
         });
+
+        $('#progress [value="OK"]').on('click', function() {
+            $(this).hide();
+            $('#progress [name="message"]').text('');
+            $('#progress').hide();
+            $('.curtain').hide();
+        });
     },
 
     onremove: function() {
         mousetrap.reset();
+    },
+
+    track_progress: function() {
+        m.request({
+            method: "get",
+            url: "track_progress",
+            background: true
+        }).then(function(response) {
+            $('#progress [name="percent"]').text(response.progress + '%');
+            if (response.progress < 100) {
+                $('#progress [value="OK"]').hide();
+                setTimeout(toolbar.track_progress, 1000);
+            } else {
+                $btn = $('#progress [value="OK"]');
+                $btn.show("fast", function() {
+                   $btn[0].focus(); 
+                });
+            }
+        }); 
     },
 
     run_action: function(action) {
@@ -50,7 +76,8 @@ var toolbar = {
                     base: ds.base.name,
                     table: ds.table.name,
                     primary_key: prim_nokler_json
-                })
+                }),
+                background: true
             }).done(function(result) {
                 if (action.update_field) {
                     var field = ds.table.records[rec_idx].fields[action.update_field];
@@ -58,11 +85,16 @@ var toolbar = {
                     m.redraw();
                 }
                 if (result.msg) {
-                    alert(result.msg);
+                    $('#progress [name=message]').text(result.msg);
                 }
             }).fail(function(jqXHR, textStatus, error) {
                 alert(jqXHR.responseText);
             });
+
+            // show progress bar
+            $('div.curtain').show();
+            $('#progress').show().children('[name="percent"]').text('0%');
+            this.track_progress();
         } else if (kommunikasjon == 'dialog') {
             $('#action-dialog').load(address + '?version=1');
             $('div.curtain').show();

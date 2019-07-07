@@ -85,6 +85,8 @@ class Schema {
     {
         ini_set('max_execution_time', 600); // 10 minutes
 
+        $_SESSION['progress'] = 0;
+
         $db = DB::get($db_name);
 
         if ($db->platform == 'oracle') {
@@ -130,7 +132,15 @@ class Schema {
         $tbl_groups = [];
         $warnings = [];
 
+        $total = count($db_tables);
+        $processed = -1;
+
         foreach ($db_tables as $tbl_name) {
+
+            $processed++;
+            $_SESSION['progress'] = floor($processed/$total * 100);
+            session_write_close();
+            session_start();
 
             $tbl_alias = isset($tbl_aliases[$tbl_name])
                 ? $tbl_aliases[$tbl_name]
@@ -543,6 +553,10 @@ class Schema {
         }
 
         $this->contents = $contents;
+
+        $_SESSION['progress'] = 100;
+        session_write_close();
+        session_start();
 
 
         if (!file_exists(__DIR__ . '/../../schemas/' . $db->schema)) {

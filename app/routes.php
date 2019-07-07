@@ -22,6 +22,12 @@ $app->put('/urd/update_schema', 'URD\controllers\SchemaController:update_schema'
 $app->put('/urd/schema_from_urd', 'URD\controllers\SchemaController:schema_from_urd_tables');
 $app->put('/urd/create_tables', 'URD\controllers\SchemaController:create_tables');
 
+$app->get('/track_progress', function() use ($app) {
+
+	$progress = isset($_SESSION['progress']) ? $_SESSION['progress'] : 100;
+	return $app->response->body(json_encode(['progress' => $progress]));
+});
+
 $app->get('/printable_table', function() {
     require __DIR__ . '/../schemas/urd/actions/utskriftsvisning/utskriftsvisning.php';
 });
