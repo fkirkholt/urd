@@ -137,6 +137,7 @@ class Schema {
 
         foreach ($db_tables as $tbl_name) {
 
+            // Tracks progress
             $processed++;
             $_SESSION['progress'] = floor($processed/$total * 100);
             session_write_close();
@@ -188,6 +189,26 @@ class Schema {
                         isset($table->description) ? $table->description : null
                     );
                 $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
+            }
+
+            $colnames = $refl_table->getColumnNames();
+
+            if (in_array('meta_terminology', $db_tables)) {
+                if (
+                    substr($tbl_name, 0, 4) === 'ref_' ||
+                    substr($tbl_name, -4) === '_ref' ||
+                    substr($tbl_name, 0, 5) === 'meta_'
+                ) {
+                    $table->type = 'reference';
+                } else {
+                    $table->type = 'data';
+                }
+            } else {
+                if (!isset($table->type) && count($colnames) < 4) {
+                    $table->type = 'reference'; 
+                } else {
+                    $table->type = 'data';
+                }
             }
 
             // Updates indexes
@@ -247,7 +268,7 @@ class Schema {
                 $key_alias = end($key->local);
                 $table->foreign_keys[$key_alias] = $key;
 
-                    // Warn if foreign key is not on expected format
+                // Warn if foreign key is not on expected format
                 if (
                     in_array('meta_terminology', $db_tables) &&
                     substr($key->name, 0, strlen($key->table)) !== $key->table &&
@@ -256,7 +277,7 @@ class Schema {
                     $warnings[] = "FK $key->name starter ikke med navn på referert tabell $key->table";
                 }
 
-                    // Add to relations of relation table
+                // Add to relations of relation table
                 $key_table_alias = isset($tbl_aliases[$key->table])
                 ? $tbl_aliases[$key->table]
                 : $key->table;
@@ -268,9 +289,9 @@ class Schema {
                     ];
                 }
 
-                    // Checks if the relation defines this as an extension table
+                // Checks if the relation defines this as an extension table
                 if ($key->local === $pk_columns) {
-                        // TODO: Dokumenter
+                    // TODO: Dokumenter
                     if (!isset($this->tables[$key_table_alias]->extension_tables)) {
                         $this->tables[$key_table_alias]->extension_tables = [];
                     }
@@ -294,23 +315,6 @@ class Schema {
                 }
             }
 
-            if (in_array('meta_terminology', $db_tables)) {
-                if (
-                    substr($tbl_name, 0, 4) === 'ref_' ||
-                    substr($tbl_name, -4) === '_ref' ||
-                    substr($tbl_name, 0, 5) === 'meta_'
-                ) {
-                    $table->type = 'reference';
-                } else {
-                    $table->type = 'data';
-                }
-            } else {
-                if (!isset($table->type) && count($foreign_keys) == 0) {
-                    $table->type = 'reference'; 
-                } else {
-                    $table->type = 'data';
-                }
-            }
 
             // Updates column properties
 
@@ -441,12 +445,14 @@ class Schema {
                     $form['items'][$label] = $col_names[0];
                 } else {
                     foreach ($col_names as $i => $col_name) {
-                        unset($col_names[$i]);
+                        // removes group name prefix from column name and use the rest as label
                         $rest = str_replace($group_name . '_', '', $col_name);
                         $label = isset($terms[$rest])
                             ? $terms[$rest]['label']
                             : ucfirst(str_replace('_', ' ', $rest));
+                        // replace indexed key in array with named key
                         $col_names[$label] = $col_name;
+                        unset($col_names[$i]);
                     }
                     $group_name = ucfirst($group_name);
                     $form['items'][$group_name] = [
