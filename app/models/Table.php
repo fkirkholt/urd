@@ -323,8 +323,6 @@ class Table {
                 }
             }
 
-            if (empty($field->column_view)) $field->column_view = isset($field->view) ? $field->view : null;
-
             $fields[$alias] = $field;
         }
 
@@ -497,8 +495,8 @@ class Table {
 
         $value_column = isset($request->key) ? end($request->key) : end($this->primary_key);
 
-        $view = isset($request->view) ? $request->view : $value_column;
-        $column_view = isset($request->column_view) ? $request->column_view : $value_column;
+        $view = !empty($request->view) ? $request->view : $value_column;
+        $column_view = !empty($request->column_view) ? $request->column_view : $value_column;
 
         $conditions = $request->condition ? explode(' AND ', $request->condition) : [];
         // ignores case. Should work for all supported platforms
