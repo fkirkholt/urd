@@ -419,15 +419,9 @@ class Schema {
                     )
                 ) continue;
 
-                if (isset($table->extends)) {
-                    // For extension tables we just use the table name as group
-                    // and don't support grouping by prefix
-                    $group = str_replace($table->extends . '_', '', $tbl_name);
-                } else {
-                    // Group by prefix
-                    $parts = explode('_', $col_name);
-                    $group = $parts[0];
-                }
+                // Group by prefix
+                $parts = explode('_', $col_name);
+                $group = $parts[0];
 
                 $label = isset($terms[$group]) ? $terms[$group]['label'] : $group;
                 if (!isset($col_groups[$label])) $col_groups[$label] = [];
@@ -461,15 +455,7 @@ class Schema {
                 }
             }
 
-
-            if (isset($table->extends)) {
-                $this->tables[$table->extends]->form["items"] = array_merge(
-                    $this->tables[$table->extends]->form["items"],
-                    $form["items"]
-                );
-            } else {
-                $table->form = $form;
-            }
+            $table->form = $form;
 
             $this->tables[$tbl_alias] = $table;
 
@@ -512,8 +498,21 @@ class Schema {
 
         }
 
-        // Add relations to form
+
+        // Add form data from associated tables
         foreach ($this->tables as $tbl_alias => $table) {
+
+            // Add fields from expansion tables
+            if (!empty($table->extension_tables)) {
+                foreach ($table->extension_tables as $ext) {
+                    $label = ucfirst(str_replace($table->name . '_', '', $ext));
+                    $table->form["items"][$label] = [
+                        "items"=> $this->tables[$ext]->form["items"]
+                    ];
+                }
+            }
+
+            // Add relations to form
             if (isset($table->relations)) {
                 foreach ($table->relations as $alias => $relation) {
                     $table->form['items'][$alias] = 'relations.'.$alias;
