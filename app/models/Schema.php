@@ -467,10 +467,11 @@ class Schema {
 
             // Find if the table is subordinate to other tables
             // i.e. it has an other table's name as prefix
-            $parent_tables = array_filter($db_tables, function($name) use ($tbl_name) {
+            $parent_tables = array_filter($db_tables, function($name) use ($tbl_name, $table) {
                 // add underscore to $name if it doesn't end with underscore
-                $name = substr($name, -1) === '_' ? $name : $name . '_';
-                return ($name != $tbl_name && substr($tbl_name, 0, strlen($name)) === $name);
+                $name_ = substr($name, -1) === '_' ? $name : $name . '_';
+                return ($name != $tbl_name && substr($tbl_name, 0, strlen($name_)) === $name_)
+                    || (!empty($table->extends) && $table->extends === $name);
             });
 
             // Only add tables that are not subordinate to other tables
