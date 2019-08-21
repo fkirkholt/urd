@@ -27,7 +27,15 @@ class Table {
         $tbl->label = $tbl->label ?: ucfirst(str_replace('_', ' ', $tbl_name));
         if (!isset($tbl->grid)) $tbl->grid = new \StdClass;
         $keys = array_keys((array) $tbl->fields);
-        $tbl->grid->columns = isset($tbl->grid->columns) ? $tbl->grid->columns : array_slice(array_keys((array) $tbl->fields), 0, 5);
+        $tbl->grid->columns = isset($tbl->grid->columns) 
+            ? $tbl->grid->columns
+            // use first 5 columns excluding autoinc column
+            : array_slice(array_keys(array_filter((array) $tbl->fields, function($field) use ($tbl) {
+                // an autoinc column is an integer column that is also primary key (like in SQLite)
+                return !($field->datatype == 'integer' && [$field->name] == $tbl->primary_key)
+                       // but we show autoinc columns for reference tables
+                       || $tbl->type == 'reference';
+            })), 0, 5);
         $tbl->grid->sort_columns = isset($tbl->grid->sort_columns) ? $tbl->grid->sort_columns : $tbl->primary_key;
 
         foreach ($tbl as $attr => $value) {
