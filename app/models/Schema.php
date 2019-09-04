@@ -303,8 +303,8 @@ class Schema {
                 }
 
                 $label = in_array('meta_terminology', $db_tables)
-                ? preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name)
-                : $tbl_alias;
+                ? ucfirst(preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name))
+                : ucfirst($tbl_alias);
 
                 if (!isset($table->extends)) {
                     $this->tables[$key_table_alias]->relations[$tbl_alias] = [
@@ -516,7 +516,8 @@ class Schema {
             // Add relations to form
             if (isset($table->relations)) {
                 foreach ($table->relations as $alias => $relation) {
-                    $table->form['items'][$alias] = 'relations.'.$alias;
+                    $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
+                    $table->form['items'][$label] = 'relations.'.$alias;
                 }
             }
 
