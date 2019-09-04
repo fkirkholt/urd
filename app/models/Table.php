@@ -326,6 +326,7 @@ class Table {
                             return "$alias.$col";
                         }, $index->columns);
                         $field->view = $this->db->expr()->concat_ws(', ', $columns);
+                        $field->column_view = $field->view;
                         break;
                     }
                 }
