@@ -99,6 +99,7 @@ class OracleReflector implements \Dibi\Reflector
                AND ra.position = a.position
             WHERE c.constraint_type = 'R'
             AND   a.table_name = '$table'
+            ORDER BY a.position
         ");
 
         $foreignKeys = [];
