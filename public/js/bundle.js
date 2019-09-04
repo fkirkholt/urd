@@ -21454,6 +21454,9 @@ var control = {
                         }),
                         !field.attr || !field.attr.href ? '' : m('a', {
                             href: sprintf(field.attr.href, field.value)
+                        }, m('i', {class: 'icon-crosshairs light-blue hover-blue pointer'})),
+                        rec.table.type != 'database' || field.name != 'name' ? '' : m('a', {
+                            href: '#/' + (rec.columns.alias ? rec.columns.alias : rec.columns.name)
                         }, m('i', {class: 'icon-crosshairs light-blue hover-blue pointer'}))
                     ])
                 ]),
