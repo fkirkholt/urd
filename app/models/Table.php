@@ -13,6 +13,7 @@ class Table {
 
     private static $instances = array();
     private $conditions = array();
+    private $client_conditions = array();
     public $foreign_keys;
     private $view;
     public $limit = 30;
@@ -184,12 +185,16 @@ class Table {
         return $joins;
     }
 
-    public function add_condition($condition) {
+    public function add_condition($condition, $client=true) {
         $this->conditions[] = $condition;
+
+        if ($client) {
+            $this->client_conditions[] = $condition;
+        }
     }
 
     public function get_conditions() {
-        return $this->conditions;
+        return $this->client_conditions;
     }
 
     private function supplement_fields()
@@ -829,7 +834,10 @@ class Table {
 
             if (count($admin_schemas)) {
                 if (in_array($this->name, ['filter', 'format', 'role', 'role_permission', 'user_role'])) {
-                    $this->add_condition("$this->name.schema_ IN ('" . implode("','", $admin_schemas) . "')");
+                    $this->add_condition(
+                        "$this->name.schema_ IN ('" . implode("','", $admin_schemas) . "')", 
+                        false
+                    );
                 }
 
                 if (in_array($this->name, ['filter', 'format', 'role', 'role_permission', 'user_', 'user_role'])) {
@@ -1041,7 +1049,7 @@ class Table {
         $data['offset'] = $this->offset;
         $data['selection'] = $row_idx;
         $data['sql'] = $this->sql;
-        $data['conditions'] = $this->conditions;
+        $data['conditions'] = $this->client_conditions;
         $data['date_as_string'] = isset($this->date_as_string) ? $this->date_as_string : ["separator" => "-"];
         $data['expansion_column'] = isset($this->expansion_column) ? $this->expansion_column : null;
         $data['relations'] = $this->get_relations();
