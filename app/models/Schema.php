@@ -240,12 +240,7 @@ class Schema {
                         : null
                     );
                 
-                if ($grid_idx) {
-                    $table->grid = (object) [
-                        'columns' => $grid_idx->columns,
-                        'sort_columns' => $sort_cols
-                    ];
-                }
+                
             }
 
             // Updates foreign keys
@@ -332,8 +327,6 @@ class Schema {
 
             $db_columns = $refl_table->getColumns();
 
-            $col_groups = [];
-
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
 
@@ -407,32 +400,55 @@ class Schema {
                         (array) $urd_col
                     );
                 }
-
-                // Group fields according to first part of field name
-
-                // Don't add column to form if it's part of primary key but not shown in grid
-                if (
-                    in_array($col_name, $pk_columns)
-                    && (
-                        (isset($table->grid) && !in_array($col_name, $table->grid->columns))
-                        || !isset($table->grid)
-                    )
-                ) continue;
-
-                // Group by prefix
-                $parts = explode('_', $col_name);
-                $group = $parts[0];
-
-                $label = isset($terms[$group]) ? $terms[$group]['label'] : $group;
-                if (!isset($col_groups[$label])) $col_groups[$label] = [];
-                $col_groups[$label][] = $col_name;
             }
+
+            if ($grid_idx) {
+                $table->grid = (object) [
+                    'columns' => $grid_idx->columns,
+                    'sort_columns' => $sort_cols
+                ];
+            } else {
+                $table->grid = (object) [
+                    'columns' => array_slice(array_keys(array_filter((array) $table->fields, function($field) use ($table) {
+                        // an autoinc column is an integer column that is also primary key (like in SQLite)
+                        return !($field->datatype == 'integer' && [$field->name] == $table->primary_key)
+                               // but we show autoinc columns for reference tables
+                               || $table->type == 'reference';
+                    })), 0, 5),
+                    'sort_columns' => $sort_cols
+                ];
+            }
+
+            
 
             // Make form
 
             $form = [
                 'items' => []
             ];
+
+            $col_groups = [];
+
+            // Group fields according to first part of field name
+            foreach ($table->fields as $field) {
+                // Don't add column to form if it's part of primary key but not shown in grid
+                if (
+                    in_array($field->name, $pk_columns)
+                    && (
+                        (isset($table->grid) && !in_array($field->name, $table->grid->columns))
+                        || !isset($table->grid)
+                    )
+                ) continue;
+
+                // Group by prefix
+                $parts = explode('_', $field->name);
+                $group = $parts[0];
+
+                $label = isset($terms[$group]) ? $terms[$group]['label'] : $group;
+                if (!isset($col_groups[$label])) $col_groups[$label] = [];
+                $col_groups[$label][] = $field->name;
+            }
+
             foreach ($col_groups as $group_name => $col_names) {
                 if (count($col_names) == 1) {
                     $label = ucfirst(str_replace('_', ' ', $col_names[0]));
