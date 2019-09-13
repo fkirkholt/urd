@@ -91,6 +91,8 @@ class Schema {
 
         if ($db->platform == 'oracle') {
             $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
+        } else if ($db->platform == 'mysql') {
+            $reflector = new \URD\lib\MySqlReflector($db->conn->getDriver());
         } else {
             $reflector = $db->conn->getDriver()->getReflector();
         }
