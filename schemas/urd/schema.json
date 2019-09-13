@@ -205,6 +205,7 @@
                     "label": "Oppdater skjema fra database",
                     "url": "update_schema",
                     "communication": "ajax",
+                    "track_progress": true,
                     "method": "put",
                     "description": "Oppdaterer skjema (schema.json) fra databasen"
                 },

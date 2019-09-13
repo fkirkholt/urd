@@ -40,12 +40,7 @@ var toolbar = {
             if (response.progress < 100) {
                 $('#progress [value="OK"]').hide();
                 setTimeout(toolbar.track_progress, 1000);
-            } else {
-                $btn = $('#progress [value="OK"]');
-                $btn.show("fast", function() {
-                   $btn[0].focus(); 
-                });
-            }
+            } 
         }); 
     },
 
@@ -85,16 +80,22 @@ var toolbar = {
                     m.redraw();
                 }
                 if (result.msg) {
-                    $('#progress [name=message]').text(result.msg);
+                    $('#progress').show().children('[name=message]').text(result.msg);
+                    $btn = $('#progress [value="OK"]');
+                    $btn.show("fast", function() {
+                       $btn[0].focus(); 
+                    });
                 }
             }).fail(function(jqXHR, textStatus, error) {
                 alert(jqXHR.responseText);
             });
 
             // show progress bar
-            $('div.curtain').show();
-            $('#progress').show().children('[name="percent"]').text('0%');
-            this.track_progress();
+            if (action.track_progress) {
+                $('div.curtain').show();
+                $('#progress').show().children('[name="percent"]').text('0%');
+                this.track_progress();
+            }
         } else if (kommunikasjon == 'dialog') {
             $('#action-dialog').load(address + '?version=1');
             $('div.curtain').show();

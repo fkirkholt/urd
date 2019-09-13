@@ -24,7 +24,8 @@ $app->put('/urd/create_tables', 'URD\controllers\SchemaController:create_tables'
 
 $app->get('/track_progress', function() use ($app) {
 
-	$progress = isset($_SESSION['progress']) ? $_SESSION['progress'] : 100;
+	$progress = isset($_SESSION['progress']) ? $_SESSION['progress'] : 0;
+	if ($progress == 100) $_SESSION['progress'] = 0;
 	return $app->response->body(json_encode(['progress' => $progress]));
 });
 
