@@ -16,6 +16,10 @@ Et URD-skjema trenger minimum to filer: `schema.json` og `composer.json`.
 
 I tillegg kan det opprettes rapporter og handlinger. Det må da defineres opp en fil `routes.php` slik at URD vet hvordan det skal rutes til disse rapportene og handlingene, jf. under.
 
+Et skjema kan opprettes direkte fra en database. Man kan vise alle databaser i admingrensesnitt, markere en, og velge handlingen "Oppdater skjema fra database".
+
+Hvis databasen er definert på en spesiell måte, kan URD generere et skjema som man ikke behøver å redigere manuelt etterpå - all relevant info ligger i databasen, jf. [innsynsdatabaser](./innsynsdatabaser.md).
+
 ### schema.json
 
 Denne filen definerer opp databasestrukturen til et skjema, samt hvordan dataene skal presenteres. Her følger en gjennomgang av oppbygningen av skjemaet.
