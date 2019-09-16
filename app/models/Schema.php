@@ -167,6 +167,8 @@ class Schema {
                 foreach ($pk->columns as $column) {
                     $pk_columns[] = strtolower($column->getName());
                 }
+            } else {
+                $warnings[] = "Tabell $tbl_name mangler primærnøkkel";
             }
 
             if (!array_key_exists($tbl_alias, $this->tables)) {

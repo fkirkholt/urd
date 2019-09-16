@@ -20170,6 +20170,13 @@ var toolbar = {
                        $btn[0].focus(); 
                     });
                 }
+                if (result.warn) {
+                    txt = $('#progress').show().children('[name=message]').text();
+                    txt += '<br><br><b>Advarsler:</b><ul class="tl"><li>';
+                    txt += result.warn.join('</li><li>');
+                    txt += '</li></ul>';
+                    $('#progress').show().children('[name=message]').html(txt);
+                }
             }).fail(function(jqXHR, textStatus, error) {
                 alert(jqXHR.responseText);
             });
