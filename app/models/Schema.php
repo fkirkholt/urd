@@ -448,9 +448,8 @@ class Schema {
                 $parts = explode('_', $field->name);
                 $group = $parts[0];
 
-                $label = isset($terms[$group]) ? $terms[$group]['label'] : $group;
-                if (!isset($col_groups[$label])) $col_groups[$label] = [];
-                $col_groups[$label][] = $field->name;
+                if (!isset($col_groups[$group])) $col_groups[$group] = [];
+                $col_groups[$group][] = $field->name;
             }
 
             foreach ($col_groups as $group_name => $col_names) {
@@ -468,8 +467,10 @@ class Schema {
                         $col_names[$label] = $col_name;
                         unset($col_names[$i]);
                     }
-                    $group_name = ucfirst($group_name);
-                    $form['items'][$group_name] = [
+                    $group_label = isset($terms[$group_name]) 
+                        ? $terms[$group_name]['label'] 
+                        : ucfirst($group_name);
+                    $form['items'][$group_label] = [
                         'items' => $col_names
                     ];
                 }
@@ -526,7 +527,8 @@ class Schema {
             // Add fields from expansion tables
             if (!empty($table->extension_tables)) {
                 foreach ($table->extension_tables as $ext) {
-                    $label = ucfirst(str_replace($table->name . '_', '', $ext));
+                    $rest = str_replace($table->name . '_', '', $ext);
+                    $label = isset($terms[$rest]) ? $terms[$rest]['label'] : ucfirst($rest);
                     $table->form["items"][$label] = [
                         "items"=> $this->tables[$ext]->form["items"]
                     ];
