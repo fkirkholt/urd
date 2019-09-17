@@ -86,7 +86,7 @@ var toolbar = {
                        $btn[0].focus(); 
                     });
                 }
-                if (result.warn) {
+                if (result.warn && result.warn.length) {
                     txt = $('#progress').show().children('[name=message]').text();
                     txt += '<br><br><b>Advarsler:</b><ul class="tl"><li>';
                     txt += result.warn.join('</li><li>');
