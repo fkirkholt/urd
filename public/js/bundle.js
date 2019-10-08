@@ -21153,7 +21153,7 @@ var control = {
             value = m('i', {class: 'fa ' + icon});
         } else if (is_integer && field.size > 5) {
             numeral.locale('no');
-            value = numeral(value).format();
+            value = value === null ? null : numeral(value).format();
         }
 
         return value;
