@@ -137,6 +137,10 @@ class Schema {
         $total = count($db_tables);
         $processed = -1;
 
+        $urd_structure = !empty(array_filter($db_tables, function($tbl_name) {
+            return strpos($tbl_name, 'ref_') !== false || strpos($tbl_name, '_ref');
+        }));
+
         foreach ($db_tables as $tbl_name) {
 
             // Tracks progress
@@ -197,7 +201,7 @@ class Schema {
 
             $colnames = $refl_table->getColumnNames();
 
-            if (in_array('meta_terminology', $db_tables)) {
+            if ($urd_structure) {
                 if (
                     substr($tbl_name, 0, 4) === 'ref_' ||
                     substr($tbl_name, -4) === '_ref' ||
@@ -269,7 +273,7 @@ class Schema {
 
                 // Warn if foreign key is not on expected format
                 if (
-                    in_array('meta_terminology', $db_tables) &&
+                    $urd_structure &&
                     substr($key->name, 0, strlen($key->table)) !== $key->table &&
                     substr($key->name, 0, strlen($key->table) + 3) !== 'fk_' . $key->table
                 ) {
@@ -301,7 +305,7 @@ class Schema {
                     $table->extends = $key->table;
                 }
 
-                $label = in_array('meta_terminology', $db_tables)
+                $label = $urd_structure
                 ? ucfirst(preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name))
                 : ucfirst($tbl_alias);
 
