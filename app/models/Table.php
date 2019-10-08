@@ -337,6 +337,24 @@ class Table {
                 }
             }
 
+            if (!isset($field->view)) {
+                // Show first two columns not part of primary key
+                
+                $ref_fields = array_map(function($element) {
+                    return $element->name;
+                }, array_values(array_filter((array) $ref_tbl->fields, function($fld) use ($ref_tbl) {
+                    return !in_array($fld->name, $ref_tbl->primary_key);
+                })));
+
+                if (count($ref_fields)) {
+                    $columns = array_map(function($col) use ($alias) {
+                        return "$alias.$col";
+                    }, array_slice($ref_fields, 0, 2));
+                    $field->view = $this->db->expr()->concat_ws(', ', $columns);
+                    $field->column_view = $field->view;
+                }
+            }
+
             $fields[$alias] = $field;
         }
 
