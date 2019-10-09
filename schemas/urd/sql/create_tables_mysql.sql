@@ -83,7 +83,7 @@ CREATE TABLE `urd`.`role` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
 
-INSERT INTO `urd`.`role` (`id`, `name`, `schema_`) VALUES (1, 'URD admin', 'urd');
+INSERT INTO `urd`.`role` (`id`, `name`, `schema_`) VALUES (1, 'Admin', '*');
 
 
 CREATE TABLE `urd`.`role_permission` (
@@ -100,7 +100,8 @@ CREATE TABLE `urd`.`role_permission` (
 
 INSERT INTO urd.role_permission (role,schema_,table_,view_,add_,edit,delete_,admin) 
 VALUES
-  (1,'urd','*',true,true,true,true,true);
+  (1,'urd','*',true,true,true,true,true),
+  (1,'*','*',true,false,false,false,true);
 
 
 CREATE TABLE `urd`.`user_` (
