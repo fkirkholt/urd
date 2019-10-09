@@ -340,10 +340,10 @@ class Table {
             if (!isset($field->view)) {
                 // Show first two columns not part of primary key
                 
-                $ref_fields = array_map(function($element) {
-                    return $element->name;
-                }, array_values(array_filter((array) $ref_tbl->fields, function($fld) use ($ref_tbl) {
-                    return !in_array($fld->name, $ref_tbl->primary_key);
+                $ref_fields = array_map(function($fieldname) {
+                    return $fieldname;
+                }, array_values(array_filter(array_keys($ref_tbl->fields), function($fld) use ($ref_tbl) {
+                    return !in_array($fld, $ref_tbl->primary_key);
                 })));
 
                 if (count($ref_fields)) {
