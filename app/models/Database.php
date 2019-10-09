@@ -162,8 +162,8 @@ class Database {
             $is_admin = dibi::query('
                 SELECT count(*)
                 FROM   role_permission
-                WHERE  role in (?)', $user_roles ?: [0], '
-                AND    schema_ = ?', $this->schema, '
+                WHERE  role in (?)', $user_roles ?: [0], "
+                AND    (schema_ = '*' or schema_ = ?)", $this->schema, '
                 AND    admin = 1')->fetchSingle();
         }
 
