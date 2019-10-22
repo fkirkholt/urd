@@ -271,15 +271,6 @@ class Schema {
                 $key_alias = end($key->local);
                 $table->foreign_keys[$key_alias] = $key;
 
-                // Warn if foreign key is not on expected format
-                if (
-                    $urd_structure &&
-                    substr($key->name, 0, strlen($key->table)) !== $key->table &&
-                    substr($key->name, 0, strlen($key->table) + 3) !== 'fk_' . $key->table
-                ) {
-                    $warnings[] = "FK $key->name starter ikke med navn på referert tabell $key->table";
-                }
-
                 // Add to relations of relation table
                 $key_table_alias = isset($tbl_aliases[$key->table])
                 ? $tbl_aliases[$key->table]
@@ -305,12 +296,27 @@ class Schema {
                     $table->extends = $key->table;
                 }
 
-                $label = $urd_structure
-                ? ucfirst(preg_replace('/^(?:fk_)?' . $key->table . '_/', '', $key->name))
-                : ucfirst($tbl_alias);
+                $key_index = array_reduce($table->indexes, function($carry, $index) use ($key) {
+                    if (!$carry && $index->columns === $key->local) {
+                        $carry = $index;
+                    }
+                    return $carry;
+                });
+
+                if (!$key_index) continue;
+
+                $patterns = [];
+                $patterns[] = '/^(?:fk_|idx_)?(?:' . $key->table . '_)?/';
+                $patterns[] = '/(?:_' . implode('_', $key->local) . ')?(?:_fk|_idx)?$/';
+
+                $replacements = ['', '', '', ''];
+
+                $label = $urd_structure 
+                    ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
+                    : ucfirst($tbl_alias);
 
                 if (!isset($table->extends)) {
-                    $this->tables[$key_table_alias]->relations[$tbl_alias] = [
+                    $this->tables[$key_table_alias]->relations[$key->name] = [
                         "table" => $tbl_name,
                         "foreign_key" => $key_alias,
                         "label" => $label,
@@ -542,6 +548,7 @@ class Schema {
             // Add relations to form
             if (isset($table->relations)) {
                 foreach ($table->relations as $alias => $relation) {
+                    $relation = (object) $relation;
                     $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
                     $table->form['items'][$label] = 'relations.'.$alias;
                 }

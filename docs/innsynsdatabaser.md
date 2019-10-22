@@ -50,9 +50,9 @@ Eks: Hvis man har to kolonner `dato_fra` og `dato_til`, vises de slik (skjematis
 
 Overskriften utledes fra prefixet, enten ved at prefixet vises som overskrift, eller at prefixet er angitt i tabellen `meta_terminology`. Da vises som overskrift det som er satt som `label` der.
 
-## Indexer
+## Indekser
 
-Indexer brukes til å angi hvilke kolonner som skal vises, sortering, og visningsverdi til felter som representerer fremmednøkler. Dette representeres av kun to indexer.
+Indekser brukes til å angi hvilke kolonner som skal vises, sortering, visningsverdi til felter som representerer fremmednøkler, samt visning av har-mange-relasjoner.
 
 ### `<tabellnavn>_grid_idx`
 
@@ -70,37 +70,46 @@ Denne indexen brukes også til å angi hvilke kolonner man ser som visningsverdi
 
 Eksempel: Hvis man har referanse til saksansvarlig på en sak, vil man som regel se navnet på saksansvarlig. Og når man ser på persontabellen, vil man som regel ha standardsortering etter navn.
 
-## Fremmednøkler
+### Indeks for relasjoner (har-mange-relasjoner)
 
-Fremmednøkler brukes i en database til å knytte sammen poster fra ulike tabeller. De samme nøklene brukes i URD til å vise sammenhengene i databasen.
+Relasjoner angis i en relasjonsdatabase med foreign keys (jf. under). Men når man står på en post i en tabell, og skal finne alle poster i en annen tabell som peker på denne posten (f.eks. alle dokumenter tilhørende en sak), er det en fordel å ha indeks på fremmednøkkel-kolonnen(e) i den refererende tabellen. Indeksen brukes altså til å finne alle disse postene. Derfor krever URD at fremmednøkler er knytta til en indeks, hvis relasjoner skal vises andre veien (fra referert tabell).
 
-### Navngivning
+Ettersom indeksen representerer denne har-mange-relasjonen, brukes også navnet på indeksen til å lage overskrift for relasjonen.
 
-Det er innført en spesiell navngivning av fremmednøkler slik at URD skal vite hva en relasjon skal kalles når man skal hente opp liste over poster fra andre tabeller som refererer til aktuell post.
+Ofte vil en relasjon kalles det samme som tabellen til de postene som refererer til aktuell post. Hvis man f.eks. står på en sak, vil man nok at journalpostene skal refereres til som nettopp "Journalposter". Slik er det ofte tabellnavnet til refererende tabell man vil vise som overskrift for relasjonen.
 
-Ofte vil en relasjon kalles det samme som tabellen til de postene som refererer til aktuell post. Hvis man f.eks. står på en sak, vil man nok at journalpostene skal refereres til som nettopp "Journalposter". Og kalles tabellen med journalposter for `journalposter`, er det nettopp det man ser.
+Man bruker da navnet på indeksen til å bestemme hva som skal vises som overskrift/ledetekst. Dermed må indeksene bygges opp etter et spesielt mønster. Det er forsøkt å bygge dette opp slik at man i stor grad kan bruke mønstre som allerede er utbredt for navngivning av indekser.
+
+En veldig utbredt måte å angi indekser på er å bruke mønsteret `<prefix>_<tabellnavn>_<kolonnenavn>`, hvor `<prefix>` betegner typen indeks. Foreløpig gjenkjenner URD kun `idx` som prefiks for indekstype. Så da kan man f.eks. lage indeksen `idx_journalpost_saksnummer` som kan brukes til å finne alle journalposter tilhørende en sak. For å lage ledeteksten/overskriften til alle journalpostene når man står på en sak, kuttes prefikset og kolonnenavnet, og man står igjen med "Journalpost" som ledetekst, som altså er det vi vil ha.
 
 Men det er ikke alltid så enkelt. En person kan f.eks. ha flere relasjoner til saker. Han/hun kan være saksansvarlig for en rekke saker, men også registrert som den som sist har gjort endringer på noen saker.
 
 Når man står på en person, vil man derfor kunne ha to relasjoner til sakstabellen, hvor den ene betegner de sakene vedkommende har saksansvar for, og den andre betegner de sakene vedkommende sist har oppdatert. Begge disse relasjonene kan ikke kalles "Saker".
 
-Derfor er det gjort slik at betegnelsen på relasjonen kan hentes ut fra navn på fremmednøkkelen. Dette er ikke en helt ulogisk måte å gjøre det på, da fremmednøkkelen nettopp betegner relasjonen, og å ha en slags beskrivelse av relasjonen i navnet på fremmednøkkelen gir jo mening.
+Vi kan navngi indeksene på følgende måte for å få de ledetekstene vi ønsker:
+- `idx_person_har_saksansvar_for`
+- `idx_person_har_oppdatert_sak`
 
-Malen er på følgende format:
-`fk_<referert_tabell>_<navn_på_relasjon>_<refererende_tabell>` (prefix `fk_` er valgfritt)
+Her har vi brukt mønsteret `<prefix>_<referert_tabell>_<ledetekst>`, som altså URD gjenkjenner. Både prefikset og navn på referert tabell fjernes, og vi står igjen med ledeteksten. Ved at vi setter navn på referert tabell etter prefikset, ser vi straks hva indeksen brukes til - den brukes til å finne saker som en person har relasjoner til.
 
-Fremmednøklene i eksemplene over kan da navngis slik:
-`fk_saker_journalposter`
-`fk_person_har_saksansvar_for_saker`
-`fk_person_har_sist_oppdatert_saker`
+Det generelle mønsteret som URD gjenkjenner er som følger:
 
-Når URD da skal finne relasjonsteksten, fjernes første del av navnet, dvs. `fk_<referert_tabell>_`, og så brukes siste del som ledetekst for relasjonen.
+`<prefix>_<referert_tabell>_<ledetekst>_<refererende_felt>_<suffix>`
 
-Står man på en person, får man altså følgende overskrifter for relasjonene:
-- "Har saksansvar for saker"
-- "Har sist oppdatert saker"
+`<prefix>` er valgritt. Det kan være enten `idx` eller `fk`. Førstnevnte er mye brukt som prefiks for indekser, mens sistnevnte er tatt med fordi MySQL automatisk oppretter en indeks (hvis det ikke eksisterer en fra før som kan brukes) når man oppretter en fremmednøkkel. Da denne indeksen får samme navn som fremmednøkkelen, og det er vanlig å ha prefiks `fk_` på fremmednøkler, tillates altså dette prefikset.
 
-Denne måten å navngi fremmednøkler på likner litt på en meget utbredt måte å navngi fremmednøkler på, nemlig `fk_<refererende_tabell>_<referert_tabell>`. Dvs. at i URD snur man om på rekkefølgen av de to tabellene, og legger til relasjonstekst mellom. Rekkefølgen snus om fordi det er fra referert tabell vi trenger relasjonsteksten (fra refererende tabell utledes den jo bare fra kolonnenavnet til fremmednøkkelen).
+`<referert_tabell>` er også valgfritt. Det er tatt med fordi det blir enklere å lage navn som viser hvilken relasjon indeksen brukes til å finne.
+
+`<ledetekst>` er obligatorisk, og er den teksten som vises som overskrift for relasjonen. Denne vil ofte være lik tabellnavnet til refererende tabell.
+
+`<refererende_felt>` er valgfritt, og betegner det feltet som representerer fremmednøkkelen.
+
+`<suffix>` er valgfritt, og kan være `idx` eller `fk`. Det kan brukes istedenfor prefiks.
+
+
+## Fremmednøkler
+
+Fremmednøkler brukes i en database til å knytte sammen poster fra ulike tabeller. De samme nøklene brukes i URD til å vise sammenhengene i databasen.
 
 ## Tabellen `meta_terminology`
 
