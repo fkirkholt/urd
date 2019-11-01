@@ -196,7 +196,7 @@ class Schema {
                     ? $terms[$tbl_name]['description'] : (
                         isset($table->description) ? $table->description : null
                     );
-                $table->primary_key = isset($table->primary_key) ? $table->primary_key : $pk_columns;
+                $table->primary_key = !empty($pk_columns) ? $pk_columns : $table->primary_key;
             }
 
             $colnames = $refl_table->getColumnNames();
