@@ -125,6 +125,8 @@ class Expression {
                 return 'integer';
             case 'blob':
                 return 'binary';
+            case 'date':
+                return 'date';
             default:
                 throw new \Exception("type $this->expr not recognized");
             }
