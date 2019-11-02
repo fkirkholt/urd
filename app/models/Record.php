@@ -358,10 +358,10 @@ class Record {
         foreach ($tbl_values as $tbl_name => $tbl_values) {
             // Check if field is in 1:1 relation table and that record exists
             $primary_key = $this->get_pk_values($tbl_name);
-            $count = $this->db->select('count(*)')
+            $count = $this->db->select('*')
                 ->from($tbl_name)
                 ->where((array) $primary_key)
-                ->fetchSingle();
+                ->count();
 
             if ($count === 0) {
                 // If a record doesn't exist in extension table, we make an insert
