@@ -598,34 +598,23 @@ class Table {
                               $order_by) tab) tab2
               $record_condition";
         } else if ($this->db->platform == 'sqlite') {
-            $betingelse_count = '';
-            $sort_fields = $this->get_sort_fields($selects);
-            foreach ($sort_fields as $key=>$sort) {
-                if ($sort['order'] == 'DESC') {
-                    $operator = '>';
-                } else {
-                    $operator = '<';
-                }
-                $sortfields = explode('.',$sort['field']);
-                $sortfield = $sortfields[1];
-                $betingelse_count .= ' AND '.$sort['field'].$operator
-                                  ."'".$record->$sortfield."'";
+            $sqlite_version = \SQLITE3::version()['versionNumber'];
+            
+            if ($sqlite_version >= 3025000) {
+            
+                $sql = "SELECT rownum 
+                        FROM   (SELECT row_number () over ($order_by) as rownum,
+                                       $this->name.*
+                                FROM $view $this->name
+                                $join
+                                $betingelse) tab
+                        $record_condition";
+            } else {
+                $sql = "SELECT 1";
             }
-            foreach ($tbl->primary_key as $nokkel) {
-                if ($record->$nokkel !== null) {
-                    $betingelse_count .= " AND $tbl->name.$nokkel < {$record->$nokkel}";
-                    $add = 1;
-                } else {
-                    $add = 0;
-                }
-            }
-            $betingelse_count = $betingelse . $betingelse_count;
-            $sql = "SELECT count(*)+$add
-              FROM $tbl->view $tbl->name $join
-              $betingelse_count";
+            
         }
 
-        // trigger_error($sql);
         $idx = $this->db->fetchSingle($sql);
 
         if ($idx !== false) {
