@@ -227,9 +227,12 @@ class Schema {
                     $table->indexes = [];
                 }
 
+                $index_names = [];
+
                 foreach ($indexes as $index) {
                     $index = (object) $index;
                     $index->name = strtolower($index->name);
+                    $index_names[] = $index->name;
                     $index->columns = array_map('strtolower', $index->columns);
                     $table->indexes[$index->name] = $index;
                 }
@@ -248,6 +251,12 @@ class Schema {
                         : null
                     );
                 
+                // Remove dropped indexes
+                foreach ($table->indexes as $alias => $index) {
+                    if (!in_array($index->name, $index_names)) {
+                        unset($table->indexes[$alias]);
+                    }
+                }
                 
             }
 
