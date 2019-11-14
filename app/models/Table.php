@@ -303,6 +303,8 @@ class Table {
 
             if (!isset($this->foreign_keys[$alias])) continue;
 
+            // Handle foreign key columns
+
             $fk = $this->foreign_keys[$alias];
 
             if (!isset($fk->schema) || $fk->schema === $this->db->schema) {
@@ -334,24 +336,6 @@ class Table {
                         $field->column_view = $field->view;
                         break;
                     }
-                }
-            }
-
-            if (!isset($field->view)) {
-                // Show first two columns not part of primary key
-                
-                $ref_fields = array_map(function($fieldname) {
-                    return $fieldname;
-                }, array_values(array_filter(array_keys($ref_tbl->fields), function($fld) use ($ref_tbl) {
-                    return !in_array($fld, $ref_tbl->primary_key);
-                })));
-
-                if (count($ref_fields)) {
-                    $columns = array_map(function($col) use ($alias) {
-                        return "$alias.$col";
-                    }, array_slice($ref_fields, 0, 2));
-                    $field->view = $this->db->expr()->concat_ws(', ', $columns);
-                    $field->column_view = $field->view;
                 }
             }
 
