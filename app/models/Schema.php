@@ -240,7 +240,6 @@ class Schema {
                 $grid_idx = isset($table->indexes[$tbl_name . '_grid_idx'])
                     ? $table->indexes[$tbl_name . '_grid_idx']
                     : null;
-                    );
 
                 $sort_cols = isset($table->indexes[$tbl_name . '_sort_idx'])
                     ? $table->indexes[$tbl_name . '_sort_idx']->columns
