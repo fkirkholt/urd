@@ -275,6 +275,14 @@ class Schema {
                 $key->local = array_map('strtolower', $key->local);
                 $key->foreign = array_map('strtolower', $key->foreign);
                 $key_alias = end($key->local);
+
+                // Checks if reference table exists.
+                // This might not be the case if foreign key check is disabled
+                if (!in_array($key->table, $db_tables)) {
+                    $warnings[] = "Fremmednøkkel $key->name er ugyldig";
+                    continue;
+                }
+
                 $table->foreign_keys[$key_alias] = $key;
 
                 // Add to relations of relation table
