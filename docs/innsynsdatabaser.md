@@ -52,7 +52,7 @@ Overskriften utledes fra prefixet, enten ved at prefixet vises som overskrift, e
 
 ## Indekser
 
-Indekser brukes til å angi hvilke kolonner som skal vises, sortering, visningsverdi til felter som representerer fremmednøkler, samt visning av har-mange-relasjoner.
+Indekser brukes til å angi hvilke kolonner som skal vises, sortering, visningsverdi til felter som representerer fremmednøkler, visning av har-mange-relasjoner, samt angivelse av felter som representerer filbaner.
 
 ### `<tabellnavn>_grid_idx`
 
@@ -69,6 +69,12 @@ Det støttes ikke avtakende (descending) sortering ennå, men det er planer om �
 Denne indexen brukes også til å angi hvilke kolonner man ser som visningsverdi for fremmednøkkel-felter. Det er valgt gjort slik fordi det i de aller fleste tilfeller vil være samsvar mellom de verdiene man ønsker å se fra en tabell og de kolonnene man ønsker å sortere tabellen etter. Visningsverdien skal jo identifisere en post i tabellen, og som standardsortering vil man som regel ha kolonner som identifiserer en post.
 
 Eksempel: Hvis man har referanse til saksansvarlig på en sak, vil man som regel se navnet på saksansvarlig. Og når man ser på persontabellen, vil man som regel ha standardsortering etter navn.
+
+### `<tabellnavn>_file_path_idx`
+
+Man kan angi at felter representerer filbaner ved å opprette en index med navn `<tabellnavn>_file_path_idx`. Da kan man også sette sammen filbaner vha. flere felter. F.eks. kan ett felt angi mappe, og ett kan angi filnavn. URD bygger opp filbanen ved å sette inn en slash - `/` - mellom verdiene angitt av de ulike kolonnene i indeksen.
+
+Det støttes både absolutte og relative filbaner. URD detekterer selv om en filbane er absolutt eller relativ. Hvis man angir relativ filbane, må man definere `fileroot` i config-filen. Da bygges filbanen opp på følgende måte: `<fileroot>/<databasenavn>/<relativ_filbane>`. Man må altså ha en mappe for hver database under filrot.
 
 ### Indeks for relasjoner (har-mange-relasjoner)
 

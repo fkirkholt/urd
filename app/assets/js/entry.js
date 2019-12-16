@@ -602,6 +602,7 @@ var entry = {
     draw_relation_list: function(rel, record) {
         var count_columns = 0;
         var group = rel.gruppe;
+        rel.base = ds.base;
 
         return m('tr', [
             m('td', {
@@ -641,6 +642,8 @@ var entry = {
                     ]),
                     // draw records
                     rel.records.map(function(rec, rowidx) {
+                        rec.base_name = rel.base.name;
+                        rec.table_name = rel.name;
                         return [
                             m('tr', {
                                 class: config.relation_view === 'column' && _isEqual(rec, record.active_relation) ? 'bg-blue white' : '',
@@ -676,6 +679,7 @@ var entry = {
                                         var parts = field_name.split('.');
                                         var action_name = parts[1];
                                         var action = rel.actions[action_name];
+                                        action.alias = action_name;
 
                                         return control.draw_action_button(rec, action);
                                     }

@@ -17650,6 +17650,7 @@ var grid = {
                     var parts = col.split('.');
                     var action_name = parts[1];
                     var action = ds.table.actions[action_name];
+                    action.alias = action_name;
 
                     return control.draw_action_button(record, action);
                 }
@@ -17693,6 +17694,8 @@ var grid = {
             ]),
             m('tbody', {class: 'db overflow-y-auto overflow-x-hidden'}, [
                 ds.table.records.map(function(record, idx) {
+                    record.base_name = ds.base.name;
+                    record.table_name = ds.table.name;
                     if (record.dirty) entry.validate(record);
 
                     return record.hidden ? '' : grid.draw_row(record, idx, 0);
@@ -18339,6 +18342,7 @@ var entry = {
     draw_relation_list: function(rel, record) {
         var count_columns = 0;
         var group = rel.gruppe;
+        rel.base = ds.base;
 
         return m('tr', [
             m('td', {
@@ -18378,6 +18382,8 @@ var entry = {
                     ]),
                     // draw records
                     rel.records.map(function(rec, rowidx) {
+                        rec.base_name = rel.base.name;
+                        rec.table_name = rel.name;
                         return [
                             m('tr', {
                                 class: config.relation_view === 'column' && _isEqual(rec, record.active_relation) ? 'bg-blue white' : '',
@@ -18413,6 +18419,7 @@ var entry = {
                                         var parts = field_name.split('.');
                                         var action_name = parts[1];
                                         var action = rel.actions[action_name];
+                                        action.alias = action_name;
 
                                         return control.draw_action_button(rec, action);
                                     }
@@ -21244,14 +21251,29 @@ var control = {
     },
 
     draw_action_button: function(rec, action) {
-        return m('td', [
+
+        // If disabled status for the action is based on an expression
+        // then we get the status from a column with same name as alias of action
+        if (action.alias && rec.columns[action.alias] !== undefined) {
+            action.disabled = rec.columns[action.alias];
+        }
+
+        return action.disabled ? '' : m('td', [
             m('i', {
                 class: 'fa fa-' + action.icon,
                 onclick: function(e) {
+                    var data = {};
                     if (action.communication === 'download') {
-                        var data = rec.primary_key;
-                        var address = ds.base.schema + (action.url[0] === '/' ? '' : '/') + action.url;
-                        $.download(address, data);
+                        // Don't break schema 'budsjett'
+                        if (ds.base.schema === 'budsjett') {
+                            data = rec.primary_key;
+                        } else {
+                            data.base = rec.base_name;
+                            data.table = rec.table_name;
+                            data.primary_key = JSON.stringify(rec.primary_key);
+                        }
+                        var address = (action.url[0] === '/') ? action.url.substr(1) : ds.base.schema + '/' + action.url;
+                        $.download(address, data, '_blank');
                     }
                     e.stopPropagation();
                 }
@@ -36835,7 +36857,7 @@ var jQuery = __webpack_require__(1);
  * Dual licensed under the MIT (filamentgroup.com/examples/mit-license.txt) and GPL (filamentgroup.com/examples/gpl-license.txt) licenses.
  * --------------------------------------------------------------------
  */
-jQuery.download = function(url, data, method){
+jQuery.download = function(url, data, target){
     //url and data options required
     if( url && data ){
         //data can be string of parameters or array/object
@@ -36848,7 +36870,7 @@ jQuery.download = function(url, data, method){
             inputs+='<input type="hidden" name="'+ pair[0] +'" value="'+ pair[1] +'" />';
         });
         //send request
-        jQuery('<form action="'+ url +'" method="'+ (method||'get') +'">'+inputs+'</form>')
+        jQuery('<form action="'+ url +'" method="get" target="' + (target||'_self') + '">'+inputs+'</form>')
             .appendTo('body').submit().remove();
     };
 };

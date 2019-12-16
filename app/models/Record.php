@@ -7,6 +7,7 @@ use URD\models\Database as DB;
 use URD\models\Table;
 use URD\models\Expression;
 use Dibi\Type;
+use Symfony\Component\Filesystem\Filesystem;
 
 class Record {
 
@@ -215,7 +216,6 @@ class Record {
                 $tbl_rel->csv = false;
 
                 $relation = $tbl_rel->hent_tabell();
-                $relation['db_name'] = $rel->db_name;
 
                 // Finds condition for relation
                 $values = [];
@@ -416,6 +416,48 @@ class Record {
         }
 
         return (object) $prim_key;
+    }
+
+    public function get_file_path()
+    {
+        $columns = [];
+        foreach ($this->tbl->indexes as $index) {
+            if ($index->name == $this->tbl->name . '_file_path_idx') {
+                foreach ($index->columns as $col_name) {
+                    $columns[] = $col_name;
+                }
+            }
+        }
+
+        $select = implode("|| '/' ||", $columns);
+
+        $conditions = array();
+        foreach ($this->primary_key as $field_name => $value) {
+            $conditions[] = "{$this->tbl->name}.$field_name = '$value'";
+        }
+        $cond = implode(' AND ', $conditions);
+
+
+        $sql = "SELECT $select
+                FROM {$this->tbl->name}
+                WHERE %SQL";
+
+        $path = $this->db->query($sql, $cond)->fetchSingle();
+
+        $fs = new Filesystem;
+
+        $abs = $fs->isAbsolutePath($path);
+
+        if (!$abs) {
+            $app = \Slim\Slim::getInstance();
+            $fileroot = $app->config('fileroot');
+            if (!$fileroot) {
+                return false;
+            }
+            $path = $fileroot . '/' . $this->db->name . '/' . $path;
+        }
+
+        return $path;
     }
 
 }

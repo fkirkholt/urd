@@ -958,6 +958,17 @@ class Table {
             }
         }
 
+        // Make select to get disabled status for actions
+        if (isset($this->actions)) {
+            foreach ($this->actions as $alias => $action) {
+                if (!isset($action->disabled)) continue;
+                if (is_bool($action->disabled)) continue;
+                if (is_int($alias)) continue;
+
+                $selects[$alias] = $action->disabled;
+            }
+        }
+
         $joins = $this->get_joins();
 
         // todo: Must take search filters into consideration when filtering keys

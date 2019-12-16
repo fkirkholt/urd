@@ -467,14 +467,29 @@ var control = {
     },
 
     draw_action_button: function(rec, action) {
-        return m('td', [
+
+        // If disabled status for the action is based on an expression
+        // then we get the status from a column with same name as alias of action
+        if (action.alias && rec.columns[action.alias] !== undefined) {
+            action.disabled = rec.columns[action.alias];
+        }
+
+        return action.disabled ? '' : m('td', [
             m('i', {
                 class: 'fa fa-' + action.icon,
                 onclick: function(e) {
+                    var data = {};
                     if (action.communication === 'download') {
-                        var data = rec.primary_key;
-                        var address = ds.base.schema + (action.url[0] === '/' ? '' : '/') + action.url;
-                        $.download(address, data);
+                        // Don't break schema 'budsjett'
+                        if (ds.base.schema === 'budsjett') {
+                            data = rec.primary_key;
+                        } else {
+                            data.base = rec.base_name;
+                            data.table = rec.table_name;
+                            data.primary_key = JSON.stringify(rec.primary_key);
+                        }
+                        var address = (action.url[0] === '/') ? action.url.substr(1) : ds.base.schema + '/' + action.url;
+                        $.download(address, data, '_blank');
                     }
                     e.stopPropagation();
                 }

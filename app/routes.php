@@ -1,5 +1,7 @@
 <?php
 
+use URD\models\Record;
+
 $app->get('/', 'URD\controllers\Homepage:show');
 $app->get('/database', 'URD\controllers\DatabaseController:get_info');
 $app->get('/table', 'URD\controllers\TableController:get_table');
@@ -31,6 +33,22 @@ $app->get('/track_progress', function() use ($app) {
 
 $app->get('/printable_table', function() {
     require __DIR__ . '/../schemas/urd/actions/utskriftsvisning/utskriftsvisning.php';
+});
+
+$app->get('/file', function() use ($app) {
+	$req = (object) $app->request->params();
+	$prim_key = json_decode(urldecode($req->primary_key), true);
+
+	$rec = new Record($req->base, $req->table, $prim_key);
+
+	$filepath = $rec->get_file_path();
+
+	if ($filepath) {
+		$file = new URD\models\File($filepath);
+		$file->get();
+	} else {
+		echo 'Det må settes fileroot i config';
+	}
 });
 
 $dir = getcwd();

@@ -247,7 +247,7 @@ class Schema {
                         ? array_slice($grid_idx->columns, 0, 3)
                         : null
                     );
-                
+
                 // Remove dropped indexes
                 foreach ($table->indexes as $alias => $index) {
                     if (!in_array($index->name, $index_names)) {
@@ -445,6 +445,25 @@ class Schema {
                     })), 0, 5),
                     'sort_columns' => $sort_cols
                 ];
+            }
+
+            if (isset($table->indexes[$tbl_name . '_file_path_idx'])) {
+
+                $last_col = end($table->indexes[$tbl_name . '_file_path_idx']->columns);
+
+                $action = (object) [
+                    "label" => "Vis fil",
+                    "url" => "/file",
+                    "icon" => "external-link",
+                    "communication" => "download",
+                    "disabled" => '(' . $last_col . ' is null)'
+                ];
+
+                $table->actions = (object) [
+                    "vis_fil" => $action
+                ];
+
+                $table->grid->columns[] = 'actions.vis_fil';
             }
 
             

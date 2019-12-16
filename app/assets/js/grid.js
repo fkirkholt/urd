@@ -368,6 +368,7 @@ var grid = {
                     var parts = col.split('.');
                     var action_name = parts[1];
                     var action = ds.table.actions[action_name];
+                    action.alias = action_name;
 
                     return control.draw_action_button(record, action);
                 }
@@ -411,6 +412,8 @@ var grid = {
             ]),
             m('tbody', {class: 'db overflow-y-auto overflow-x-hidden'}, [
                 ds.table.records.map(function(record, idx) {
+                    record.base_name = ds.base.name;
+                    record.table_name = ds.table.name;
                     if (record.dirty) entry.validate(record);
 
                     return record.hidden ? '' : grid.draw_row(record, idx, 0);

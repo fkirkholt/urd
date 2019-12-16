@@ -31,4 +31,5 @@ return [
     // Defualt organization for user logged in via ldap
     // and that are not registered in the database
     'default_roles' => [],
+    'fileroot' => '',
 ];
