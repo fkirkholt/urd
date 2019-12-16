@@ -1,7 +1,7 @@
 {
   "name": "urd",
   "version": "1.0.0",
-  "description": "",
+  "description": "URD er et system utviklet for å kunne vise fram, registrere og søke i data fra relasjonsdatabaser.",
   "main": "test.js",
   "scripts": {
     "start": "webpack app/assets/js/index.js public/js/bundle.js --watch"
@@ -18,20 +18,23 @@
   },
   "homepage": "https://github.com/arkivverket/urd#readme",
   "dependencies": {
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
-    "js-cookie": "^2.2.0",
-    "lodash": "^4.17.11",
-    "mithril": "^1.1.6",
-    "moment": "^2.23.0",
-    "mousetrap": "^1.6.2",
+    "js-cookie": "^2.2.1",
+    "lodash": "^4.17.13",
+    "mithril": "^1.1.7",
+    "moment": "^2.24.0",
+    "mousetrap": "^1.6.3",
     "npm": "^6.13.4",
     "numeral": "^2.0.6",
     "pikaday": "^1.8.0",
-    "showdown": "^1.9.0",
+    "showdown": "^1.9.1",
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
     "webpack": "^2.6.1"
+  },
+  "directories": {
+    "doc": "docs"
   }
 }
