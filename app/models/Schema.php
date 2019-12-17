@@ -582,8 +582,15 @@ class Schema {
             if (isset($table->relations)) {
                 foreach ($table->relations as $alias => $relation) {
                     $relation = (object) $relation;
-                    $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
-                    $table->form['items'][$label] = 'relations.'.$alias;
+                    $fk = $this->tables[$relation->table]->foreign_keys[$relation->foreign_key];
+
+                    $indexes = array_filter($this->tables[$relation->table]->indexes, function($index) use ($fk) {
+                        return $index->columns === $fk->local;
+                    });
+                    if (count($indexes)) {
+                        $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
+                        $table->form['items'][$label] = 'relations.'.$alias;
+                    }
                 }
             }
 
