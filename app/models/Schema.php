@@ -196,7 +196,12 @@ class Schema {
                     ? $terms[$tbl_name]['description'] : (
                         isset($table->description) ? $table->description : null
                     );
-                $table->primary_key = !empty($pk_columns) ? $pk_columns : $table->primary_key;
+                $table->primary_key = !empty($pk_columns)
+                    ? $pk_columns 
+                    : (isset($table->primary_key)
+                        ? $table->primary_key
+                        : []
+                    );
             }
 
             $colnames = $refl_table->getColumnNames();
@@ -355,11 +360,25 @@ class Schema {
 
             $db_columns = $refl_table->getColumns();
 
+            // Delete columns that doesn't exist anymore
+            foreach ($table->fields as $alias => $field) {
+                // Keep virtual columns
+                if (isset($field->source)) continue;
+
+                if (!in_array($field->name, $colnames)) {
+                    unset($table->fields[$alias]);
+                }
+            }
+
+
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
 
                 $type = $db->expr()->to_urd_type($col->nativetype);
-                if ($type === 'integer' && $col->size === 1) $type = 'boolean';
+                if (
+                    $type === 'integer' && $col->size === 1 &&
+                    !isset($table->foreign_keys[$col_name])
+                ) $type = 'boolean';
 
                 $items = array_filter($table->fields, function($item) use ($col_name) {
                     return $item->name === $col_name;
@@ -438,6 +457,8 @@ class Schema {
             } else {
                 $table->grid = (object) [
                     'columns' => array_slice(array_keys(array_filter((array) $table->fields, function($field) use ($table) {
+                        // Don't show hidden columns
+                        if (substr($field->name, 0, 1) === '_') return false;
                         // an autoinc column is an integer column that is also primary key (like in SQLite)
                         return !($field->datatype == 'integer' && [$field->name] == $table->primary_key)
                                // but we show autoinc columns for reference tables
@@ -490,6 +511,13 @@ class Schema {
                 // Group by prefix
                 $parts = explode('_', $field->name);
                 $group = $parts[0];
+
+                // Don't add fields that start with _
+                // They are treated as hidden fields
+                if ($group == '') {
+                    $field->element = 'input[type=hidden]';
+                    continue;
+                }
 
                 if (!isset($col_groups[$group])) $col_groups[$group] = [];
                 $col_groups[$group][] = $field->name;
