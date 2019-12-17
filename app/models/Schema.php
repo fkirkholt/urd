@@ -352,6 +352,17 @@ class Schema {
 
             $db_columns = $refl_table->getColumns();
 
+            // Delete columns that doesn't exist anymore
+            foreach ($table->fields as $alias => $field) {
+                // Keep virtual columns
+                if (isset($field->source)) continue;
+
+                if (!in_array($field->name, $colnames)) {
+                    unset($table->fields[$alias]);
+                }
+            }
+
+
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
 
