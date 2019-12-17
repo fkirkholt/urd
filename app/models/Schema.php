@@ -449,6 +449,8 @@ class Schema {
             } else {
                 $table->grid = (object) [
                     'columns' => array_slice(array_keys(array_filter((array) $table->fields, function($field) use ($table) {
+                        // Don't show hidden columns
+                        if (substr($field->name, 0, 1) === '_') return false;
                         // an autoinc column is an integer column that is also primary key (like in SQLite)
                         return !($field->datatype == 'integer' && [$field->name] == $table->primary_key)
                                // but we show autoinc columns for reference tables
@@ -482,6 +484,13 @@ class Schema {
                 // Group by prefix
                 $parts = explode('_', $field->name);
                 $group = $parts[0];
+
+                // Don't add fields that start with _
+                // They are treated as hidden fields
+                if ($group == '') {
+                    $field->element = 'input[type=hidden]';
+                    continue;
+                }
 
                 if (!isset($col_groups[$group])) $col_groups[$group] = [];
                 $col_groups[$group][] = $field->name;
