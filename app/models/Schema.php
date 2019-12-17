@@ -367,7 +367,10 @@ class Schema {
                 $col_name = strtolower($col->name);
 
                 $type = $db->expr()->to_urd_type($col->nativetype);
-                if ($type === 'integer' && $col->size === 1) $type = 'boolean';
+                if (
+                    $type === 'integer' && $col->size === 1 &&
+                    !isset($table->foreign_keys[$col_name])
+                ) $type = 'boolean';
 
                 $items = array_filter($table->fields, function($item) use ($col_name) {
                     return $item->name === $col_name;
