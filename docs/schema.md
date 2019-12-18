@@ -63,16 +63,18 @@ Denne filen definerer opp databasestrukturen til et skjema, samt hvordan dataene
                 - `label`: Hva relasjonen skal kalles i brukergrensesnittet
                 - `table`: Hvilken tabell relasjonen kommer fra.
                 - `foreing_key`: Referanse til fremmednøkkelen.
+        - `actions`: Definerer handlinger for tabellen. Disse kan nås via tannhjul-ikonet i verktøylinje, eller knyttes til knapper i registreringsskjemaet.
+            - `<alias>`: Alias til handlingen.
+                - `label`: Tekst som vises for handlingen i grensesnittet.
+                - `icon`: Evt. ikon man vil knytte til handlingen. Her kan brukes ikoner fra Fontawesome
+                - `url`: Adressen til handlingen. Er definer i `routes.php`.
+                - `communication`: Angir hvordan handlingen kalles. Tillatte verdier er `ajax`, `submit`, `dialog` og `download`. TODO: beskriv hva disse gjør.
+                - `disabled`: Kan settes til `true/false`, eller kan være et sql-uttrykk. Hvis det er et sql-uttrykk, hentes verdien ut sammen med kolonner for aktuell tabell. Slik kan man vite om handlingen skal være aktiv for hver enkelt post.
 - `reports`: Oversikt over alle rapporter i skjemaet. TODO: mer
     - `<alias>`: Alias til rapporten.
         - `url`: Adresse til rapporten. Definert i `routes.php`
         - `label`: Benevnelse på rapporten i innholdsfortegnelsen.
-- `actions`: Definerer handlinger for skjemaet. Disse kan nås via tannhjul-ikonet i verktøylinje, eller knyttes til knapper i registreringsskjemaet.
-    - `<alias>`: Alias til handlingen.
-        - `label`: Tekst som vises for handlingen i grensesnittet.
-        - `icon`: Evt. ikon man vil knytte til handlingen. Her kan brukes ikoner fra Fontawesome
-        - `url`: Adressen til handlingen. Er definer i `routes.php`.
-        - `communication`: Angir hvordan handlingen kalles. Tillatte verdier er `ajax`, `submit`, `dialog` og `download`. TODO: beskriv hva disse gjør.
+
 - `contents`: Definerer innholds-fortegnelsen til databaser basert på skjemaet. Her kan man ha overskrifter på så mange nivåer man ønsker, og lenke til tabeller og rapporter som skal vises.
     - `<overskrift>`: Overskriften som skal vises.
         - `items`: Hvilke tabeller eller rapporter man vil vise under overskriften. Kan enten være et objekt med nye overskrifter, eller en array med referanse til tabeller og rapporter. Det refereres da ved `tables.<alias>` eller `reports.<alias>`.
