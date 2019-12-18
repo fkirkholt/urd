@@ -38,6 +38,8 @@ Dette vil ofte gjelde mange tabeller i en større database - også kryssreferans
 
 På samme måte som tabellnavn, brukes kolonnenavnene direkte til ledetekster. Man kan her også skille ord vha. understrek (`_`).
 
+Kolonner som starter med understrek, behandles som usynlige/skjulte, dvs. de vises ikke i tabellen eller i postvisningen til høyre.
+
 ### Gruppering av kolonner
 
 Kolonner kan grupperes vha. prefix (liksom tabeller). Felter med samme prefix havner under samme overskrift (som kan lukkes og ekspanderes i grensesnittet).
