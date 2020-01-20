@@ -14,14 +14,10 @@ class Homepage {
     }
 
     public function show() {
+		$version = '';
         $git_version = exec('git describe --tags');
         if ($git_version) {
-            $parts = explode('-', $git_version);
-            $version = $parts[0];
-            $revision = $parts[1];
-        }
-        else {
-            $version = '0.5.0';
+            $version = $git_version;
         }
 
         if (isset($_SESSION['user_id'])) {
