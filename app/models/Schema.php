@@ -87,6 +87,10 @@ class Schema {
 
         $_SESSION['progress'] = 0;
 
+        $report = [];
+
+        $drops = [];
+
         $db = DB::get($db_name);
 
         if ($db->platform == 'oracle') {
@@ -143,6 +147,10 @@ class Schema {
 
         foreach ($db_tables as $tbl_name) {
 
+            $report[$tbl_name] = [];
+            $report[$tbl_name]['empty_columns'] = [];
+            $report[$tbl_name]['almost_empty_columns'] = [];
+
             // Tracks progress
             $processed++;
             $_SESSION['progress'] = floor($processed/$total * 100);
@@ -192,12 +200,12 @@ class Schema {
                     ? $terms[$tbl_name]['label'] : (
                         isset($table->label) ? $table->label : null
                     );
-                $table->description = isset($terms[$tbl_name]) 
+                $table->description = isset($terms[$tbl_name])
                     ? $terms[$tbl_name]['description'] : (
                         isset($table->description) ? $table->description : null
                     );
                 $table->primary_key = !empty($pk_columns)
-                    ? $pk_columns 
+                    ? $pk_columns
                     : (isset($table->primary_key)
                         ? $table->primary_key
                         : []
@@ -218,7 +226,7 @@ class Schema {
                 }
             } else {
                 if (!isset($table->type) && count($colnames) < 4) {
-                    $table->type = 'reference'; 
+                    $table->type = 'reference';
                 } else {
                     $table->type = 'data';
                 }
@@ -259,7 +267,7 @@ class Schema {
                         unset($table->indexes[$alias]);
                     }
                 }
-                
+
             }
 
             // Updates foreign keys
@@ -330,7 +338,7 @@ class Schema {
 
                 $replacements = ['', '', '', ''];
 
-                $label = $urd_structure 
+                $label = $urd_structure
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
                     : ucfirst($tbl_alias);
 
@@ -343,6 +351,9 @@ class Schema {
                 }
             }
 
+            // Count table rows
+            $count_rows = $db->select('*')->from($tbl_name)->count();
+            $report[$tbl_name]['rows'] = $count_rows;
 
             // Updates column properties
 
@@ -373,12 +384,118 @@ class Schema {
 
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
+                $tbl_col = "$tbl_name.$col_name";
 
                 $type = $db->expr()->to_urd_type($col->nativetype);
                 if (
                     $type === 'integer' && $col->size === 1 &&
                     !isset($table->foreign_keys[$col_name])
                 ) $type = 'boolean';
+
+                $drop_me = false;
+                $ratio_comment = '';
+
+                // Find if column is (largly) empty
+                {
+                    $count = $db->select('*')
+                        ->from($tbl_name)
+                        ->where($col_name . ' IS NOT NULL')
+                        ->count();
+
+                    if ($count_rows && $count/$count_rows < 0.1) {
+                        // for setting comment in front of drop statements for not empty columns
+                        $comment = $count > 0 ? '--' : '';
+                        // for setting ratio of columns with value behind drop statements
+                        $ratio_comment = $count ? '-- ' . $col->nativetype . "($col->size)  Brukt: " . $count. '/' . $count_rows : '';
+
+                        if ($count == 0) {
+                            $report[$tbl_name]['empty_columns'][] = $col_name;
+                        } else {
+                            $report[$tbl_name]['almost_empty_columns'][] = $col_name;
+                        }
+
+                        $drop_me = true;
+                    }
+                }
+
+                // Find distinct values for some column types
+                $comments = [];
+                $values = [];
+                do {
+                    if ($count_rows < 2) break;
+                    if (!in_array($type, ['integer', 'float', 'boolean', 'string'])) break;
+                    if ($type == 'string' && ($col->size > 12 && $count/$count_rows > 0.1)) break;
+                    if (in_array($col_name, $report[$tbl_name]['empty_columns'])) break;
+                    if (in_array($col_name, $pk_columns)) break;
+
+                    $sql = "select count(*) as count, $col_name as value
+                            from $tbl_name
+                            group by $col_name";
+                    $distincts = $db->query($sql);
+
+                    foreach ($distincts as $distinct) {
+                        if ($distinct->count/$count_rows > 0.9) {
+                            $drop_me = true;
+                        }
+
+                        $value = $distinct->value === null ? 'NULL' : $distinct->value;
+                        $comments[] = $value . ' (' . $distinct->count . ')';
+                        if ($value === '101,2') {
+                            error_log('Kolonne: ' . $tbl_name . '.' . $col_name);
+                        }
+                        $values[] = $distinct->value;
+                    }
+                } while (false);
+
+                if ($drop_me) {
+
+                    // If column is in a fk, drop the fk before dropping column
+                    $rec_comment = '';
+                    $sub = [];
+                    foreach ($table->foreign_keys as $key) {
+                        if (in_array($col_name, $key->local)) {
+                            if ($db->platform === 'mysql') {
+                                $sub[] = "drop foreign key $key->name";
+                            } else {
+                                $sub[] = "drop constraint $key->name";
+                            }
+
+                            if (count($values) < 5) {
+
+                                $conditions = [];
+                                foreach ($key->local as $i => $field_name) {
+                                    $conditions[] = 'l.'.$field_name . ' = ' . 'f.' . $key->foreign[$i];
+                                }
+                                $on_clause = implode(' AND ', $conditions);
+
+                                $sql = "select distinct f.* from $key->table f
+                                        join $tbl_name l on $on_clause
+                                        where l.$col_name in (?)";
+
+                                $records = $db->query($sql, $values);
+
+                                foreach ($records as $rec) {
+                                    $rec_comment .= '   -- -- Rec: ' . (json_encode($rec)) . "\n";
+                                }
+                            }
+
+                        }
+                    }
+
+                    $sub[] = "drop column $col_name; $ratio_comment\n";
+                    $drops[$tbl_col] = "-- alter table $tbl_name " . implode(', ', $sub);
+
+                    if ($type == 'string' && $col->size > 12) {
+                        for ($i = 0; $i < 4; $i++) {
+                            if (!isset($comments[$i])) break;
+                            if (substr($comments[$i], 0, 4) === 'NULL') continue;
+                            $drops[$tbl_col] .= "   -- -- Eks: '$comments[$i]'\n";
+                        }
+                    } else if (count($comments)) {
+                        $drops[$tbl_col] .= "   -- -- Distinkte verdier: " . implode(", ", $comments) . "\n";
+                    }
+                    if ($rec_comment) $drops[$tbl_col] .= $rec_comment;
+                }
 
                 $items = array_filter($table->fields, function($item) use ($col_name) {
                     return $item->name === $col_name;
@@ -487,7 +604,7 @@ class Schema {
                 $table->grid->columns[] = 'actions.vis_fil';
             }
 
-            
+
 
             // Make form
 
@@ -538,8 +655,8 @@ class Schema {
                         $col_names[$label] = $col_name;
                         unset($col_names[$i]);
                     }
-                    $group_label = isset($terms[$group_name]) 
-                        ? $terms[$group_name]['label'] 
+                    $group_label = isset($terms[$group_name])
+                        ? $terms[$group_name]['label']
                         : ucfirst($group_name);
                     $form['items'][$group_label] = [
                         'items' => $col_names
@@ -554,7 +671,7 @@ class Schema {
             // Group tables
             $parts = explode('_', $tbl_alias);
             $group = $parts[0];
-            
+
             if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
 
             // Find if the table is subordinate to other tables
@@ -622,8 +739,46 @@ class Schema {
                 }
             }
 
+            // Add drop table statement if less than 2 rows
+            $rows = $report[$tbl_alias]['rows'];
+            if ($rows < 2) {
+                // drop foreign key constraints first
+                $statements = [];
+                $records = [];
+                foreach ($table->relations as $alias => $rel) {
+                    $rel = (object) $rel;
+                    $tbl_col_fk = $rel->table . "." . $rel->foreign_key;
+                    if (!isset($drops[$tbl_col_fk])) continue;
+                    $new_statements = explode("\n", $drops[$tbl_col_fk]);
+                    foreach ($new_statements as $i => $stmt) {
+                        if (strpos($stmt, '{') !== false) {
+                            $records[] = $stmt;
+                            unset($new_statements[$i]);
+                        }
+                    }
+                    $new_statements = array_filter($new_statements);
+                    $statements = array_merge($statements, $new_statements);
+
+                    unset($drops[$tbl_col_fk]);
+                }
+
+                array_unshift($statements, "\n-- -- -- $tbl_alias ($rows rader) - drop -- -- --");
+                $comment = $rows == 0 ? '' : '-- ';
+                $statements[] = $comment . "drop table $table->name;";
+
+                $records = array_unique($records);
+                $statements = array_merge($statements, $records);
+
+                $drops[$tbl_alias] = implode("\n", $statements) . "\n";
+
+            } else {
+                $drops[$tbl_alias] = "\n-- -- -- $tbl_alias ($rows rader) -- -- --\n";
+            }
+
             $this->tables[$tbl_alias] = $table;
         }
+
+        ksort($drops);
 
 
         // Makes contents
@@ -636,7 +791,7 @@ class Schema {
         foreach ($tbl_groups as $group_name => $table_names) {
             if (count($table_names) == 1 && $group_name != 'meta') {
                 $table_alias = $table_names[0];
-                $label = isset($terms[$table_alias]) 
+                $label = isset($terms[$table_alias])
                     ? $terms[$table_alias]['label']
                     : ucfirst(str_replace('_', ' ', $table_alias));
                 $contents['Innhold']['items'][$label] = 'tables.' . $table_alias;
@@ -645,7 +800,7 @@ class Schema {
                 foreach ($table_names as $i => $table_alias) {
                     unset($table_names[$i]);
                     $rest = str_replace($group_name . '_', '', $table_alias);
-                    $label = isset($terms[$rest]) 
+                    $label = isset($terms[$rest])
                         ? $terms[$rest]['label']
                         : ucfirst(str_replace('_', ' ', $rest));
                     $table_names[$label] = 'tables.' . $table_alias;
@@ -653,7 +808,7 @@ class Schema {
                 $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
                 if ($label === 'Ref') $label = 'Referansetabeller';
                 $contents['Innhold']['items'][$label] = [
-                    'class_label' => 'b', 
+                    'class_label' => 'b',
                     'class_content' => 'ml3',
                     'items' => $table_names
                 ];
@@ -682,14 +837,17 @@ class Schema {
         }
 
         $schema_file = __DIR__ . '/../../schemas/' . $db->schema . '/schema.json';
+        $drop_file   = __DIR__ . '/../../schemas/' . $db->schema . '/drop.sql';
 
         try {
             $fh_schema = fopen($schema_file, 'w');
+            $fh_drop   = fopen($drop_file, 'w');
         } catch (\Exception $e) {
             return ['success' => false, 'msg' => 'Feilet: PHP-brukeren har ikke skriverettigheter'];
         }
 
         fwrite($fh_schema, $json_string);
+        fwrite($fh_drop, implode("", $drops));
 
         return ['success' => true, 'msg' => 'Skjema oppdatert', 'warn' => $warnings];
     }
