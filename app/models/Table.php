@@ -28,7 +28,7 @@ class Table {
         $tbl->label = $tbl->label ?: ucfirst(str_replace('_', ' ', $tbl_name));
         if (!isset($tbl->grid)) $tbl->grid = new \StdClass;
         $keys = array_keys((array) $tbl->fields);
-        $tbl->grid->columns = isset($tbl->grid->columns) 
+        $tbl->grid->columns = isset($tbl->grid->columns)
             ? $tbl->grid->columns
             // use first 5 columns excluding autoinc column
             : array_slice(array_keys(array_filter((array) $tbl->fields, function($field) use ($tbl) {
@@ -583,10 +583,10 @@ class Table {
               $record_condition";
         } else if ($this->db->platform == 'sqlite') {
             $sqlite_version = \SQLITE3::version()['versionNumber'];
-            
+
             if ($sqlite_version >= 3025000) {
-            
-                $sql = "SELECT rownum 
+
+                $sql = "SELECT rownum
                         FROM   (SELECT row_number () over ($order_by) as rownum,
                                        $this->name.*
                                 FROM $view $this->name
@@ -596,7 +596,7 @@ class Table {
             } else {
                 $sql = "SELECT 1";
             }
-            
+
         }
 
         $idx = $this->db->fetchSingle($sql);
@@ -674,9 +674,11 @@ class Table {
         $i = 0;
         $this->records = array();
         foreach ($rader as $rad) {
-            $prim_values = explode(',', $rad->urd_primary_key);
-            $this->records[$i]['primary_key'] = array_combine($this->primary_key, $prim_values);
-            unset($rad->urd_primary_key);
+            if (count($this->primary_key)) {
+                $prim_values = explode(',', $rad->urd_primary_key);
+                $this->records[$i]['primary_key'] = array_combine($this->primary_key, $prim_values);
+                unset($rad->urd_primary_key);
+            }
             if (isset($rad->count_children)) {
                 $this->records[$i]['count_children'] = $rad->count_children;
                 unset($rad->count_children);
@@ -826,7 +828,7 @@ class Table {
             if (count($admin_schemas)) {
                 if (in_array($this->name, ['filter', 'format', 'role', 'role_permission', 'user_role'])) {
                     $this->add_condition(
-                        "$this->name.schema_ IN ('" . implode("','", $admin_schemas) . "')", 
+                        "$this->name.schema_ IN ('" . implode("','", $admin_schemas) . "')",
                         false
                     );
                 }
@@ -900,12 +902,15 @@ class Table {
 
         $selects = array(); // array of select expressions
 
-        // Legger alle primærnøkler til arrayen $selects.
-        $arr = array();
-        foreach ($this->primary_key as $felt) {
-            $arr[] = $this->name.'.'.$felt;
+        // Legger alle primærnøkler til arrayen $selects
+        if (count($this->primary_key)) {
+            $pks = array();
+            foreach ($this->primary_key as $felt) {
+                $pks[] = $this->name.'.'.$felt;
+            }
+
+            $selects['urd_primary_key'] = $this->db->expr()->concat_ws(',', $pks);
         }
-        $selects['urd_primary_key'] = $this->db->expr()->concat_ws(',', $arr);
 
         // This is not currently in use, therefore commented out
         // $selects['urd_icon'] = $this->get_icon();

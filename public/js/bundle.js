@@ -18094,13 +18094,17 @@ var entry = {
             return;
         }
 
+        pk = ('primary_key' in table.records[idx])
+            ? JSON.stringify(table.records[idx].primary_key)
+            : JSON.stringify(table.records[idx].columns);
+
         m.request({
             method: "GET",
             url: 'record',
             data: {
                 base: m.route.param('base'),
                 table: table.name,
-                primary_key: JSON.stringify(table.records[idx].primary_key)
+                primary_key: pk
             }
         }).then(function(result) {
             rec = $.extend(table.records[idx], result.data);
