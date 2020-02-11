@@ -322,7 +322,7 @@ class Table {
             $ref_tbl = $ref_schema->tables[$fk->table];
 
             // Make fields that link to data tables (not reference tables) expandable
-            if ($ref_tbl->type === 'data' && !isset($field->expandable)) {
+            if (($ref_tbl->type === 'data' && !isset($field->expandable)) || !isset($field->view)) {
                 $field->expandable = true;
             }
 
