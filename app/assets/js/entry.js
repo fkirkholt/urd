@@ -648,11 +648,11 @@ var entry = {
                     rel.records.map(function(rec, rowidx) {
                         rec.base_name = rel.base.name;
                         rec.table_name = rel.name;
+
                         return [
                             m('tr', {
                                 class: config.relation_view === 'column' && _isEqual(rec, record.active_relation) ? 'bg-blue white' : '',
                                 onclick: function() {
-                                    if (record.readonly) return;
                                     record.active_relation = rec;
                                     entry.toggle_record(rec, rel);
                                 }
@@ -669,7 +669,7 @@ var entry = {
                                         ].join(' ')
                                     })
                                 ]),
-                                config.relation_view === 'column' || record.readonly ? '' : m('td.fa', {
+                                config.relation_view === 'column' ? '' : m('td.fa', {
                                     class: [
                                         rec.open ? 'fa-angle-down' : 'fa-angle-right',
                                         rec.invalid ? 'invalid' : rec.dirty ? 'dirty' : '',
