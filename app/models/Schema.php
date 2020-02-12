@@ -78,6 +78,21 @@ class Schema {
         }
     }
 
+    private function get_relation_tables($table_name, $relation_tables) {
+        $table = $this->tables[$table_name];
+
+        foreach ($table->relations as $relation) {
+            $relation = (object) $relation;
+            if (!in_array($relation->table, $relation_tables)) {
+                $relation_tables[] = $relation->table;
+
+                $relation_tables = $this->get_relation_tables($relation->table, $relation_tables);
+            }
+        }
+
+        return $relation_tables;
+    }
+
     /*
      * Update json file from actual database structure
      */
@@ -135,6 +150,7 @@ class Schema {
             $terms = [];
         }
 
+        $modules = [];
         $tbl_groups = [];
         $warnings = [];
 
@@ -780,7 +796,47 @@ class Schema {
                 $drops[$tbl_alias] = "\n-- -- -- $tbl_alias ($rows rader) -- -- --\n";
             }
 
+            // Find how tables are grouped in modules
+            if (empty($table->foreign_keys)) {
+                $related_tables = $this->get_relation_tables($tbl_alias, []);
+                $related_tables[] = $table->name;
+
+                $module_id = null;
+                foreach ($modules as $i => $module) {
+                    $common = array_intersect($related_tables, $module);
+                    if (count($common) > 0) {
+                        if (is_null($module_id)) {
+                            $modules[$i] = array_unique(array_merge($module, $related_tables));
+                            $module_id = $i;
+                        } else {
+                            $modules[$module_id] = array_unique(array_merge($module, $modules[$module_id]));
+                            unset($modules[$i]);
+                         }
+                    }
+                }
+
+                if (is_null($module_id)) {
+                    $modules[] = $related_tables;
+                }
+            }
+
             $this->tables[$tbl_alias] = $table;
+        }
+
+        $main_module = max($modules); // Find module with most tables
+
+        if (count($main_module) > 2) {
+            foreach ($modules as $module) {
+                if (count($module) == 1) {
+                    $tbl_name = $module[0];
+                    if (strpos($drops[$tbl_name], "drop table $tbl_name") === false) {
+                        // Add underscore to key for placing drop statement for table after drop statements for columns
+                        $drops[$tbl_name .'_'] = "-- drop table $tbl_name;\n";
+                        $tbl_name = $tbl_name . '_';
+                    }
+                    $drops[$tbl_name] .= "   -- -- Ikke knyttet til andre tabeller\n";
+                }
+            }
         }
 
         ksort($drops);
@@ -799,24 +855,43 @@ class Schema {
                 $label = isset($terms[$table_alias])
                     ? $terms[$table_alias]['label']
                     : ucfirst(str_replace('_', ' ', $table_alias));
-                $contents['Innhold']['items'][$label] = 'tables.' . $table_alias;
+                if (count($main_module) == 0 || count(array_intersect($table_names, $main_module))) {
+                    $contents['Innhold']['items'][$label] = 'tables.' . $table_alias;
+                } else {
+                    if (!isset($contents['Andre'])) {
+                        $contents['Andre'] = ['items' => []];
+                    }
+                    $contents['Andre']['items'][$label] = 'tables.' . $table_alias;
+                }
             } else {
                 // Remove group prefix from label
+                $tbl_names = [];
                 foreach ($table_names as $i => $table_alias) {
-                    unset($table_names[$i]);
                     $rest = str_replace($group_name . '_', '', $table_alias);
                     $label = isset($terms[$rest])
                         ? $terms[$rest]['label']
                         : ucfirst(str_replace('_', ' ', $rest));
-                    $table_names[$label] = 'tables.' . $table_alias;
+                    $tbl_names[$label] = 'tables.' . $table_alias;
                 }
                 $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
                 if ($label === 'Ref') $label = 'Referansetabeller';
-                $contents['Innhold']['items'][$label] = [
-                    'class_label' => 'b',
-                    'class_content' => 'ml3',
-                    'items' => $table_names
-                ];
+
+                if (count($main_module) < 3 || count(array_intersect($table_names, $main_module))) {
+                    $contents['Innhold']['items'][$label] = [
+                        'class_label' => 'b',
+                        'class_content' => 'ml3',
+                        'items' => $tbl_names
+                    ];
+                } else {
+                    if (!isset($contents['Andre'])) {
+                        $contents['Andre'] = ['items' => []];
+                    }
+                    $contents['Andre']['items'][$label] = [
+                        'class_label' => 'b',
+                        'class_content' => 'ml3',
+                        'items' => $tbl_names
+                    ];
+                }
             }
         }
 
