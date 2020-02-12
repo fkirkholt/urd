@@ -45,12 +45,33 @@ contents = {
 
     draw_item: function(label, item, level) {
         if (typeof item == 'object') {
+            var display = item.hidden ? 'none' : 'block';
             return m('.module', {
                 class: item.class_module,
                 style: 'display:' + item.display
             }, [
-                m('.label', {class: item.class_label || 'pb2 pt2 f'+level}, label),
-                m('.content', {class: item.class_content}, [
+                m('i', {
+                    class: [
+                        item.hidden ? 'fa fa-angle-right': 'fa fa-angle-down',
+                        'f'+level,
+                        'mr1',
+                        'light-silver'
+                    ].join(' '),
+                    onclick: function(e) {
+                        item.hidden = !item.hidden;
+                    }
+                }),
+                m('.label', {
+                    class: item.class_label || 'pb2 pt2 f'+level,
+                    style: 'display: inline',
+                    onclick: function(e) {
+                        item.hidden = !item.hidden;
+                    }
+                }, label),
+                m('.content', {
+                    class: item.class_content,
+                    style: 'display: ' + display
+                    }, [
                     Object.keys(item.items).map(function(label) {
                         var subitem = item.items[label];
                         if (_isArray(item.items)) {
