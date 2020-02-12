@@ -214,23 +214,7 @@ class Schema {
 
             $colnames = $refl_table->getColumnNames();
 
-            if ($urd_structure) {
-                if (
-                    substr($tbl_name, 0, 4) === 'ref_' ||
-                    substr($tbl_name, -4) === '_ref' ||
-                    substr($tbl_name, 0, 5) === 'meta_'
-                ) {
-                    $table->type = 'reference';
-                } else {
-                    $table->type = 'data';
-                }
-            } else {
-                if (!isset($table->type) && count($colnames) < 4) {
-                    $table->type = 'reference';
-                } else {
-                    $table->type = 'data';
-                }
-            }
+
 
             // Updates indexes
             {
@@ -351,6 +335,28 @@ class Schema {
                 }
             }
 
+            if ($urd_structure) {
+                if (
+                    substr($tbl_name, 0, 4) === 'ref_' ||
+                    substr($tbl_name, -4) === '_ref' ||
+                    substr($tbl_name, 0, 5) === 'meta_'
+                ) {
+                    $table->type = 'reference';
+                } else {
+                    $table->type = 'data';
+                }
+            } else {
+                if (
+                    !isset($table->type) &&
+                    count($colnames) < 4 &&
+                    count($table->foreign_keys) == 0
+                ) {
+                    $table->type = 'reference';
+                } else {
+                    $table->type = isset($table->type) ? $table->type : 'data';
+                }
+            }
+
             // Count table rows
             $count_rows = $db->select('*')->from($tbl_name)->count();
             $report[$tbl_name]['rows'] = $count_rows;
@@ -402,9 +408,11 @@ class Schema {
                         ->where($col_name . ' IS NOT NULL')
                         ->count();
 
+                    // for setting comment in front of drop statements for not empty columns
+                    $comment = $count > 0 ? '--' : '';
+
                     if ($count_rows && $count/$count_rows < 0.1) {
-                        // for setting comment in front of drop statements for not empty columns
-                        $comment = $count > 0 ? '--' : '';
+
                         // for setting ratio of columns with value behind drop statements
                         $ratio_comment = $count ? '-- ' . $col->nativetype . "($col->size)  Brukt: " . $count. '/' . $count_rows : '';
 
@@ -440,9 +448,6 @@ class Schema {
 
                         $value = $distinct->value === null ? 'NULL' : $distinct->value;
                         $comments[] = $value . ' (' . $distinct->count . ')';
-                        if ($value === '101,2') {
-                            error_log('Kolonne: ' . $tbl_name . '.' . $col_name);
-                        }
                         $values[] = $distinct->value;
                     }
                 } while (false);
@@ -460,7 +465,7 @@ class Schema {
                                 $sub[] = "drop constraint $key->name";
                             }
 
-                            if (count($values) < 5) {
+                            if (count($values) && count($values) < 5) {
 
                                 $conditions = [];
                                 foreach ($key->local as $i => $field_name) {
@@ -483,7 +488,7 @@ class Schema {
                     }
 
                     $sub[] = "drop column $col_name; $ratio_comment\n";
-                    $drops[$tbl_col] = "-- alter table $tbl_name " . implode(', ', $sub);
+                    $drops[$tbl_col] = "$comment alter table $tbl_name " . implode(', ', $sub);
 
                     if ($type == 'string' && $col->size > 12) {
                         for ($i = 0; $i < 4; $i++) {
