@@ -64,10 +64,20 @@ contents = {
             ]);
         } else {
             var object = _get(ds.base, item);
+            var icon = object.type && (object.type.indexOf('reference') !== -1)
+                ? 'fa-list'
+                : 'fa-table';
+            var title = object.type && (object.type.indexOf('reference') !== -1)
+                ? 'Referansetabell'
+                : 'Datatabell'
             var display = object.type && (object.type.indexOf('reference') !== -1) && !config.admin
                     ? 'none'
-                    : 'block';
+                    : 'inline';
             return m('div', [
+                m('i', {
+                    class: 'light-silver mr1 fa ' + icon,
+                    style: 'display:' + display,
+                    title: title}),
                 m('a', {
                     style: 'display:' + display,
                     href: '#/' + ds.base.name + '/' + item.replace('.', '/')
