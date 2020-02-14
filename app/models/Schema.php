@@ -96,9 +96,17 @@ class Schema {
     /*
      * Update json file from actual database structure
      */
-    public function update_schema_from_database($db_name)
+    public function update_schema_from_database($db_name, $config)
     {
         ini_set('max_execution_time', 600); // 10 minutes
+
+        $config->threshold = $config->threshold / 100;
+
+        if ($config->replace) {
+            $this->tables = [];
+            $this->reports = [];
+            $this->contents = [];
+        }
 
         $_SESSION['progress'] = 0;
 
@@ -351,28 +359,6 @@ class Schema {
                 }
             }
 
-            if ($urd_structure) {
-                if (
-                    substr($tbl_name, 0, 4) === 'ref_' ||
-                    substr($tbl_name, -4) === '_ref' ||
-                    substr($tbl_name, 0, 5) === 'meta_'
-                ) {
-                    $table->type = 'reference';
-                } else {
-                    $table->type = 'data';
-                }
-            } else {
-                if (
-                    !isset($table->type) &&
-                    count($colnames) < 4 &&
-                    count($table->foreign_keys) == 0
-                ) {
-                    $table->type = 'reference';
-                } else {
-                    $table->type = isset($table->type) ? $table->type : 'data';
-                }
-            }
-
             // Count table rows
             $count_rows = $db->select('*')->from($tbl_name)->count();
             $report[$tbl_name]['rows'] = $count_rows;
@@ -416,6 +402,7 @@ class Schema {
 
                 $drop_me = false;
                 $ratio_comment = '';
+                $hidden = false;
 
                 // Find if column is (largly) empty
                 {
@@ -427,7 +414,7 @@ class Schema {
                     // for setting comment in front of drop statements for not empty columns
                     $comment = $count > 0 ? '--' : '';
 
-                    if ($count_rows && $count/$count_rows < 0.1) {
+                    if ($count_rows && $count/$count_rows < $config->threshold) {
 
                         // for setting ratio of columns with value behind drop statements
                         $ratio_comment = $count ? '-- ' . $col->nativetype . "($col->size)  Brukt: " . $count. '/' . $count_rows : '';
@@ -448,7 +435,7 @@ class Schema {
                 do {
                     if ($count_rows < 2) break;
                     if (!in_array($type, ['integer', 'float', 'boolean', 'string'])) break;
-                    if ($type == 'string' && ($col->size > 12 && $count/$count_rows > 0.1)) break;
+                    if ($type == 'string' && ($col->size > 12 && $count/$count_rows > $config->threshold)) break;
                     if (in_array($col_name, $report[$tbl_name]['empty_columns'])) break;
                     if (in_array($col_name, $pk_columns)) break;
 
@@ -458,7 +445,7 @@ class Schema {
                     $distincts = $db->query($sql);
 
                     foreach ($distincts as $distinct) {
-                        if ($distinct->count/$count_rows > 0.9) {
+                        if ($distinct->count/$count_rows > (1 - $config->threshold)) {
                             $drop_me = true;
                         }
 
@@ -469,6 +456,8 @@ class Schema {
                 } while (false);
 
                 if ($drop_me) {
+
+                    $hidden = true;
 
                     // If column is in a fk, drop the fk before dropping column
                     $rec_comment = '';
@@ -555,6 +544,8 @@ class Schema {
                     $element = 'input[type=text]';
                 }
 
+                $element = $hidden ? 'input[type=hidden]' : $element;
+
                 $urd_col = (object) [
                     'name' => $col_name,
                     'element' => $element,
@@ -587,6 +578,36 @@ class Schema {
                 }
             }
 
+            $count_visible_fields = count(array_filter($table->fields, function($field) {
+                return $field->element !== 'input[type=hidden]';
+            }));
+
+            if ($urd_structure) {
+                if (
+                    substr($tbl_name, 0, 4) === 'ref_' ||
+                    substr($tbl_name, -4) === '_ref' ||
+                    substr($tbl_name, 0, 5) === 'meta_'
+                ) {
+                    $table->type = 'reference';
+                } else {
+                    $table->type = 'data';
+                }
+            } else {
+                if (
+                    !isset($table->type) &&
+                    $count_visible_fields < 4 &&
+                    count($table->foreign_keys) == 0
+                ) {
+                    $table->type = 'reference';
+                } else {
+                    $table->type = isset($table->type) ? $table->type : 'data';
+                }
+            }
+
+            if ($tbl_name == 'app_code') {
+                error_log($count_visible_fields);
+            }
+
             if ($grid_idx) {
                 $table->grid = (object) [
                     'columns' => $grid_idx->columns,
@@ -597,6 +618,7 @@ class Schema {
                     'columns' => array_slice(array_keys(array_filter((array) $table->fields, function($field) use ($table) {
                         // Don't show hidden columns
                         if (substr($field->name, 0, 1) === '_') return false;
+                        if ($field->element === 'input[type=hidden]') return false;
                         // an autoinc column is an integer column that is also primary key (like in SQLite)
                         return !($field->datatype == 'integer' && [$field->name] == $table->primary_key)
                                // but we show autoinc columns for reference tables
@@ -652,10 +674,8 @@ class Schema {
 
                 // Don't add fields that start with _
                 // They are treated as hidden fields
-                if ($group == '') {
-                    $field->element = 'input[type=hidden]';
-                    continue;
-                }
+                if ($group == '') $field->element = 'input[type=hidden]';
+                if ($field->element == 'input[type=hidden]') continue;
 
                 if (!isset($col_groups[$group])) $col_groups[$group] = [];
                 $col_groups[$group][] = $field->name;

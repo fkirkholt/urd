@@ -40,8 +40,8 @@ var toolbar = {
             if (response.progress < 100) {
                 $('#progress [value="OK"]').hide();
                 setTimeout(toolbar.track_progress, 1000);
-            } 
-        }); 
+            }
+        });
     },
 
     run_action: function(action) {
@@ -83,7 +83,7 @@ var toolbar = {
                     $('#progress').show().children('[name=message]').text(result.msg);
                     $btn = $('#progress [value="OK"]');
                     $btn.show("fast", function() {
-                       $btn[0].focus(); 
+                       $btn[0].focus();
                     });
                 }
                 if (result.warn && result.warn.length) {

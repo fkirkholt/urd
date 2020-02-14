@@ -20,10 +20,11 @@ class SchemaController extends BaseController {
     {
         $req = json_decode($this->request->getBody());
         $pk = json_decode($req->primary_key);
+        $config = json_decode($req->config);
         $db_name = $pk->name;
         $schema_name = DB::get($db_name)->schema;
         $schema = new Schema($schema_name);
-        $result = $schema->update_schema_from_database($db_name);
+        $result = $schema->update_schema_from_database($db_name, $config);
 
         return $this->response->body(json_encode($result));
     }

@@ -24,6 +24,11 @@ $app->put('/urd/update_schema', 'URD\controllers\SchemaController:update_schema'
 $app->put('/urd/schema_from_urd', 'URD\controllers\SchemaController:schema_from_urd_tables');
 $app->put('/urd/create_tables', 'URD\controllers\SchemaController:create_tables');
 
+$app->get('/urd/dialog_schema', function() use ($app) {
+    $contents = file_get_contents(__DIR__ . '/../schemas/urd/actions/update_schema.htm');
+    return $app->response->body($contents);
+});
+
 $app->get('/track_progress', function() use ($app) {
 
 	$progress = isset($_SESSION['progress']) ? $_SESSION['progress'] : 0;

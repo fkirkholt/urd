@@ -16790,6 +16790,12 @@ var m = __webpack_require__(2);
 
 var store = {
     base: {},
+    schema: {
+        config: {
+            replace: false,
+            threshold: 0
+        }
+    },
     urd_base: $('#urd-base-name').data('value'),
     load_database: function(base_name, callback) {
         return m.request({
@@ -20477,8 +20483,8 @@ var toolbar = {
             if (response.progress < 100) {
                 $('#progress [value="OK"]').hide();
                 setTimeout(toolbar.track_progress, 1000);
-            } 
-        }); 
+            }
+        });
     },
 
     run_action: function(action) {
@@ -20520,7 +20526,7 @@ var toolbar = {
                     $('#progress').show().children('[name=message]').text(result.msg);
                     $btn = $('#progress [value="OK"]');
                     $btn.show("fast", function() {
-                       $btn[0].focus(); 
+                       $btn[0].focus();
                     });
                 }
                 if (result.warn && result.warn.length) {

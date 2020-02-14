@@ -2,6 +2,12 @@ var m = require('mithril');
 
 var store = {
     base: {},
+    schema: {
+        config: {
+            replace: false,
+            threshold: 0
+        }
+    },
     urd_base: $('#urd-base-name').data('value'),
     load_database: function(base_name, callback) {
         return m.request({

@@ -203,8 +203,8 @@
                 },
                 {
                     "label": "Oppdater skjema fra database",
-                    "url": "update_schema",
-                    "communication": "ajax",
+                    "url": "dialog_schema",
+                    "communication": "dialog",
                     "track_progress": true,
                     "method": "put",
                     "description": "Oppdaterer skjema (schema.json) fra databasen"
