@@ -6,8 +6,21 @@ var _isArray = require('lodash/isArray');
 var ds = require('./datastore.js');
 var Stream = require('mithril/stream');
 var config = require('./config.js');
+var mermaid = require('mermaid');
+
+window.callback = function(id) {
+    var tablename = $('#'+id+' .title').html();
+    var table = ds.base.tables[tablename];
+
+    contents.draw_table_diagram(table);
+
+    $('#mermaid').html(contents.diagram).removeAttr('data-processed');
+    mermaid.init(undefined, $("#mermaid"));
+}
 
 contents = {
+
+    diagram: "",
 
     oninit: function(vnode) {
 
@@ -20,6 +33,19 @@ contents = {
         ds.type = 'contents';
 
         ds.load_database(base_name);
+    },
+
+    onupdate: function(vnode) {
+
+        var value = "classDiagram\nclass Test";
+
+        if (this.diagram !== "") {
+            mermaid.mermaidAPI.initialize({
+                securityLevel: 'loose'
+            });
+            $('#mermaid').html(this.diagram).removeAttr('data-processed');
+            mermaid.init(undefined, $("#mermaid"));
+        }
     },
 
     check_display: function(item) {
@@ -43,6 +69,25 @@ contents = {
         }
     },
 
+    draw_table_diagram: function(table) {
+        var diagram = "classDiagram\n"
+        diagram += "class " + table.name + "\n";
+
+        Object.keys(table.foreign_keys).map(function(label) {
+            var fk = table.foreign_keys[label];
+            diagram += table.name + " --> " + fk.table + "\n";
+            diagram += "callback " + fk.table + ' "callback" "Fokuser"' + "\n";
+        });
+
+        Object.keys(table.relations).map(function(label) {
+            var rel = table.relations[label];
+            diagram += rel.table + " --> " + table.name + "\n";
+            diagram += "callback " + rel.table + ' "callback" "Fokuser"' + "\n";
+        });
+
+        this.diagram = diagram;
+    },
+
     draw_item: function(label, item, level) {
         if (typeof item == 'object') {
             var display = item.hidden ? 'none' : 'block';
@@ -62,7 +107,7 @@ contents = {
                     }
                 }),
                 m('.label', {
-                    class: item.class_label || 'pb2 pt2 f'+level,
+                    class: item.class_label || ' f'+level,
                     style: 'display: inline',
                     onclick: function(e) {
                         item.hidden = !item.hidden;
@@ -98,7 +143,10 @@ contents = {
                 m('i', {
                     class: 'light-silver mr1 fa ' + icon,
                     style: 'display:' + display,
-                    title: title}),
+                    title: title,
+                    onclick: function() {
+                        contents.draw_table_diagram(object)
+                    }}),
                 m('a', {
                     style: 'display:' + display,
                     href: '#/' + ds.base.name + '/' + item.replace('.', '/')
@@ -110,21 +158,27 @@ contents = {
     view: function() {
         if ((!ds.base.contents && !ds.base.tables) || ds.base.name !== m.route.param('base')) return;
 
-        // if (!ds && !ds.base.contents) return;
+        if (!ds && !ds.base.contents) return;
 
-        return m('.contents', [
-            ds.base.contents && Object.keys(ds.base.contents).length
-                ? Object.keys(ds.base.contents).map(function(label) {
-                    var item = ds.base.contents[label];
-                    item.display = Stream('none');
-                    contents.check_display(item);
-                    var retur = contents.draw_item(label, item, 3);
-                    return retur;
-                })
-                : Object.keys(ds.base.tables).map(function(name) {
-                    var table = ds.base.tables[name];
-                    return contents.draw_item(table.label, 'tables.'+name, 3);
-                })
+        return m('.contents', {class: "flex w-100"}, [
+            m('.list', {class: "flex flex-column overflow-auto"}, [
+                ds.base.contents && Object.keys(ds.base.contents).length
+                    ? Object.keys(ds.base.contents).map(function(label) {
+                        var item = ds.base.contents[label];
+                        item.display = Stream('none');
+                        contents.check_display(item);
+                        var retur = contents.draw_item(label, item, 3);
+                        return retur;
+                    })
+                    : Object.keys(ds.base.tables).map(function(name) {
+                        var table = ds.base.tables[name];
+                        return contents.draw_item(table.label, 'tables.'+name, 3);
+                    }),
+            ]),
+            m('div.mermaid', {
+                    id: "mermaid",
+                    class: "flex flex-grow flex-column center overflow-auto"
+                }, this.diagram)
         ]);
 
     }
