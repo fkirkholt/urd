@@ -3,24 +3,16 @@ var $ = require('jquery');
 var _assign = require('lodash/assign');
 var _get = require('lodash/get')
 var _isArray = require('lodash/isArray');
+var _union = require('lodash/union');
 var ds = require('./datastore.js');
 var Stream = require('mithril/stream');
 var config = require('./config.js');
 var mermaid = require('mermaid');
 
-window.callback = function(id) {
-    var tablename = $('#'+id+' .title').html();
-    var table = ds.base.tables[tablename];
-
-    contents.draw_table_diagram(table);
-
-    $('#mermaid').html(contents.diagram).removeAttr('data-processed');
-    mermaid.init(undefined, $("#mermaid"));
-}
-
 contents = {
 
     diagram: "",
+    diagram_table: "",
 
     oninit: function(vnode) {
 
@@ -33,6 +25,17 @@ contents = {
         ds.type = 'contents';
 
         ds.load_database(base_name);
+
+        $('body').on('click', 'svg g.classGroup', function() {
+            var table_name = $(this).find('text tspan.title').html();
+            var table = ds.base.tables[table_name];
+
+            contents.draw_table_diagram(table);
+
+            $('#mermaid').html(contents.diagram).removeAttr('data-processed');
+            mermaid.init(undefined, $("#mermaid"));
+            $('#mermaid svg g').addClass('pointer');
+        });
     },
 
     onupdate: function(vnode) {
@@ -45,6 +48,8 @@ contents = {
             });
             $('#mermaid').html(this.diagram).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
+
+            $('#mermaid svg g').addClass('pointer');
         }
     },
 
@@ -70,22 +75,103 @@ contents = {
     },
 
     draw_table_diagram: function(table) {
-        var diagram = "classDiagram\n"
-        diagram += "class " + table.name + "\n";
+        var diagram = ["classDiagram"];
+        diagram.push("class " + table.name);
+
+        Object.keys(table.fields).map(function(label) {
+            var field = table.fields[label];
+            diagram.push(table.name + ' : ' + field.datatype + ' ' + field.name);
+        });
 
         Object.keys(table.foreign_keys).map(function(label) {
             var fk = table.foreign_keys[label];
-            diagram += table.name + " --> " + fk.table + "\n";
-            diagram += "callback " + fk.table + ' "callback" "Fokuser"' + "\n";
+            diagram.push(table.name + " --> " + fk.table);
         });
 
         Object.keys(table.relations).map(function(label) {
             var rel = table.relations[label];
-            diagram += rel.table + " --> " + table.name + "\n";
-            diagram += "callback " + rel.table + ' "callback" "Fokuser"' + "\n";
+            diagram.push(rel.table + " --> " + table.name);
         });
 
-        this.diagram = diagram;
+        this.diagram = diagram.join("\n");
+    },
+
+    add_table_diagram: function(table) {
+        var path = []
+        var level = 0;
+        path = contents.get_path(table, path, [], level);
+
+        if (path) {
+            this.diagram += "\n" + path.join("\n");
+        }
+    },
+
+    get_path: function(table, path) {
+
+        // TODO: Bør kanskje finne annen måte enn å hardkode dette
+        if (path.length > 3) {
+            return false;
+        }
+
+        var new_path;
+        var found_path = [];
+
+        Object.keys(table.relations).map(function(label) {
+
+            new_path = path.slice();
+
+            var rel = table.relations[label];
+
+            if ($.inArray(rel.table + ' --> ' + table.name, path) !== -1) return;
+
+            var rel_table = ds.base.tables[rel.table];
+            if (rel_table.hidden) return;
+
+            new_path.push(table.name + ' <-- ' + rel.table);
+
+            if (rel.table == contents.diagram_table) {
+                found_path = _union(found_path, new_path);
+
+                return;
+            } else {
+                new_path = contents.get_path(rel_table, new_path);
+                if (new_path) {
+                    found_path = _union(found_path, new_path);
+
+                    return new_path;
+                }
+            }
+        });
+
+        Object.keys(table.foreign_keys).map(function(label) {
+            new_path = path.slice();
+            var fk = table.foreign_keys[label];
+
+            if ($.inArray(fk.table + ' <-- ' + table.name, path) !== -1) return;
+
+            var fk_table = ds.base.tables[fk.table];
+            if (fk_table.type == 'reference') return;
+            if (fk_table.foreign_keys.length == 0) return;
+            if (fk_table.hidden) return;
+
+            new_path.push(table.name + ' --> ' + fk.table);
+
+            if (fk.table == contents.diagram_table) {
+                found_path = found_path.concat(new_path);
+                return new_path;
+            } else {
+
+
+                new_path = contents.get_path(fk_table, new_path);
+                if (new_path) {
+                    found_path = _union(found_path, new_path);
+
+                    return new_path;
+                }
+            }
+        });
+
+        return (found_path.length) ? found_path : false;
     },
 
     draw_item: function(label, item, level) {
@@ -133,6 +219,7 @@ contents = {
             var icon = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'fa-list'
                 : 'fa-table';
+            var icon_color = object.hidden ? 'light-gray' : 'light-silver';
             var title = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'Referansetabell'
                 : 'Datatabell'
@@ -141,12 +228,21 @@ contents = {
                     : 'inline';
             return m('div', [
                 m('i', {
-                    class: 'light-silver mr1 fa ' + icon,
+                    class: icon_color + ' mr1 fa ' + icon,
                     style: 'display:' + display,
                     title: title,
-                    onclick: function() {
-                        contents.draw_table_diagram(object)
-                    }}),
+                    onclick: function(event) {
+                        contents.draw_table_diagram(object);
+                        contents.diagram_table = object.name;
+                    },
+                    oncontextmenu: function(event){
+                        contents.context_table = object;
+                        var txt = object.hidden ? 'Vis tabell' : 'Skjul tabell';
+                        $('ul#context li.hide').html(txt);
+                        $('ul#context').css({top: event.clientY, left: event.clientX}).toggle();
+                        return false;
+                    }
+                }),
                 m('a', {
                     style: 'display:' + display,
                     href: '#/' + ds.base.name + '/' + item.replace('.', '/')
@@ -161,6 +257,24 @@ contents = {
         if (!ds && !ds.base.contents) return;
 
         return m('.contents', {class: "flex w-100"}, [
+            m('ul#context', {
+                class: 'absolute left-0 bg-white list pa1 shadow-5 dn pointer z-999'
+            }, [
+                m('li', {
+                    class: 'hover-blue',
+                    onclick: function() {
+                        contents.add_table_diagram(contents.context_table);
+                        $('ul#context').hide();
+                    }
+                }, 'Vis koblinger til denne tabellen'),
+                m('li.hide', {
+                    class: 'hover-blue',
+                    onclick: function() {
+                        contents.context_table.hidden = !contents.context_table.hidden;
+                        $('ul#context').hide();
+                    }
+                }, 'Skjul tabell')
+            ]),
             m('.list', {class: "flex flex-column overflow-auto"}, [
                 ds.base.contents && Object.keys(ds.base.contents).length
                     ? Object.keys(ds.base.contents).map(function(label) {
