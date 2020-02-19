@@ -1,0 +1,103 @@
+<script>
+var schema_dialog = {
+
+    track_progress: function() {
+        m.request({
+            method: "get",
+            url: "track_progress",
+            background: true
+        }).then(function(response) {
+            $('#progress [name="percent"]').text(response.progress + '%');
+            if (response.progress < 100) {
+                $('#progress [value="OK"]').hide();
+                setTimeout(schema_dialog.track_progress, 1000);
+            }
+        });
+    },
+
+    view: function() {
+
+        return m('div', [
+            m('div', [
+                m('input[type=checkbox]', {
+                    checked: ds.schema.config.replace,
+                    onchange: function(event) {
+                        ds.schema.config.replace = $(event.target).prop('checked');
+                    }.bind(this)
+                }), ' Slett eksisterende skjema',
+                m('br'),
+                m('label', 'Terskel '),
+                m('input[type=number]', {
+                    name: "threshold",
+                    class: "w3",
+                    title: "Hvor mange poster som har verdi i en kolonne for at den skal vises",
+                    value: ds.schema.config.threshold,
+                    onchange: function(event) {
+                        ds.schema.config.threshold = $(event.target).val();
+                    }.bind(this)
+                }), " %"
+            ]),
+            m('div[name=buttons]', {class: "bottom-0 max-w8 mt2"}, [
+                m('input[type=button]', {
+                    value: 'OK',
+                    class: 'fr',
+                    onclick: function() {
+                        var rec_idx = ds.table.selection;
+                        var prim_key = ds.table.records[rec_idx].primary_key;
+                        var prim_nokler_json = JSON.stringify(prim_key);
+                        var config = ds.schema.config;
+                        var config_json = JSON.stringify(config);
+
+                        $.ajax({
+                            method: "put",
+                            url: 'urd/update_schema',
+                            dataType: 'json',
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                base: ds.base.name,
+                                table: ds.table.name,
+                                primary_key: prim_nokler_json,
+                                config: config_json
+                            }),
+                        }).done(function(result) {
+                            $('#progress').show().children('[name=message]').text(result.msg);
+                            $btn = $('#progress [value="OK"]');
+                            $btn.show("fast", function() {
+                               $btn[0].focus();
+                            });
+
+                            if (result.warn && result.warn.length) {
+                                txt = $('#progress').show().children('[name=message]').text();
+                                txt += '<br><br><b>Advarsler:</b><ul class="tl"><li>';
+                                txt += result.warn.join('</li><li>');
+                                txt += '</li></ul>';
+                                $('#progress').show().children('[name=message]').html(txt);
+                            }
+                        }).fail(function(jqXHR, textStatus, error) {
+                            alert(jqXHR.responseText);
+                        });
+
+                        $('#action-dialog').hide();
+
+                        // show progress bar
+                        $('#progress').show().children('[name="percent"]').text('0%');
+                        this.track_progress();
+                    }.bind(this)
+                }),
+                m('input[type=button]', {
+                    value: 'Avbryt',
+                    class: 'fr',
+                    onclick: function() {
+                        $('div.curtain').hide();
+                        $('#action-dialog').hide();
+                    }
+                }),
+            ])
+        ]);
+    }
+}
+
+var $action = $('#action-dialog');
+
+m.mount($action[0], schema_dialog);
+</script>
