@@ -822,6 +822,42 @@ class Schema {
                 $drops[$tbl_alias] = "\n-- -- -- $tbl_alias ($rows rader) -- -- --\n";
             }
 
+            // Add delete statements for unreferenced records in reference tables
+            if ($table->type == 'reference' && count($table->relations)) {
+                $exists_conditions = [];
+                foreach ($table->relations as $relation) {
+                    $relation = (object) $relation;
+
+                    // Exclude relation defining hierarchy within same table
+                    if ($relation->table == $table->name) continue;
+
+                    $fk = $this->tables[$relation->table]->foreign_keys[$relation->foreign_key];
+
+                    $conditions = [];
+
+                    foreach ($fk->local as $i => $col) {
+                        $conditions[] = "$relation->table.$col = $table->name." . $fk->foreign[$i];
+                    }
+
+                    $exists_conditions[] = "select * from $relation->table\n        " .
+                                           "where " . implode(' and ', $conditions);
+                }
+
+                $where = "where not exists (\n        " .
+                    implode("\n      ) and not exists (\n        ", $exists_conditions) .
+                    "\n      );";
+
+                $select = "select count(*) from $table->name\n" . $where;
+
+                $count = $db->conn->query($select)->fetchSingle();
+
+                $delete = "delete from $table->name\n" . $where;
+
+                if ($count) {
+                    $drops[$tbl_alias] .= "-- -- Slett $count rader\n" . $delete . "\n";
+                }
+            }
+
             // Find how tables are grouped in modules
             if (empty($table->foreign_keys)) {
                 $related_tables = $this->get_relation_tables($tbl_alias, []);
