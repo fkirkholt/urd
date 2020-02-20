@@ -485,7 +485,7 @@ class Schema {
                                 $records = $db->query($sql, $values);
 
                                 foreach ($records as $rec) {
-                                    $rec_comment .= '   -- -- Rec: ' . (json_encode($rec)) . "\n";
+                                    $rec_comment .= '   -- -- Rec: ' . (json_encode($rec));
                                 }
                             }
 
@@ -499,10 +499,10 @@ class Schema {
                         for ($i = 0; $i < 4; $i++) {
                             if (!isset($comments[$i])) break;
                             if (substr($comments[$i], 0, 4) === 'NULL') continue;
-                            $drops[$tbl_col] .= "   -- -- Eks: '$comments[$i]'\n";
+                            $drops[$tbl_col] .= "   -- -- Eks: '$comments[$i]'";
                         }
                     } else if (count($comments)) {
-                        $drops[$tbl_col] .= "   -- -- Distinkte verdier: " . implode(", ", $comments) . "\n";
+                        $drops[$tbl_col] .= "   -- -- Distinkte verdier: " . implode(", ", $comments);
                     }
                     if ($rec_comment) $drops[$tbl_col] .= $rec_comment;
                 }
@@ -816,10 +816,10 @@ class Schema {
                 $records = array_unique($records);
                 $statements = array_merge($statements, $records);
 
-                $drops[$tbl_alias] = implode("\n", $statements) . "\n";
+                $drops[$tbl_alias] = implode("\n", $statements);
 
             } else {
-                $drops[$tbl_alias] = "\n-- -- -- $tbl_alias ($rows rader) -- -- --\n";
+                $drops[$tbl_alias] = "\n-- -- -- $tbl_alias ($rows rader) -- -- --";
             }
 
             // Add delete statements for unreferenced records in reference tables
@@ -854,7 +854,7 @@ class Schema {
                 $delete = "delete from $table->name\n" . $where;
 
                 if ($count) {
-                    $drops[$tbl_alias] .= "-- -- Slett $count rader\n" . $delete . "\n";
+                    $drops[$tbl_alias] .= "\n-- -- Slett $count rader\n" . $delete;
                 }
             }
 
@@ -893,10 +893,10 @@ class Schema {
                     $tbl_name = $module[0];
                     if (strpos($drops[$tbl_name], "drop table $tbl_name") === false) {
                         // Add underscore to key for placing drop statement for table after drop statements for columns
-                        $drops[$tbl_name .'_'] = "-- drop table $tbl_name;\n";
+                        $drops[$tbl_name .'_'] = "-- drop table $tbl_name;";
                         $tbl_name = $tbl_name . '_';
                     }
-                    $drops[$tbl_name] .= "   -- -- Ikke knyttet til andre tabeller\n";
+                    $drops[$tbl_name] .= "  -- Ikke knyttet til andre tabeller";
                 }
             }
         }
@@ -989,7 +989,7 @@ class Schema {
         }
 
         fwrite($fh_schema, $json_string);
-        fwrite($fh_drop, implode("", $drops));
+        fwrite($fh_drop, implode("\n", $drops));
 
         return ['success' => true, 'msg' => 'Skjema oppdatert', 'warn' => $warnings];
     }
