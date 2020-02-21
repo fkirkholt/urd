@@ -146,6 +146,22 @@ var toolbar = {
 
     view: function(vnode) {
 
+        if (ds.type == 'contents' && config.admin) {
+            return m('ul', {target: '_blank', class: 'f6 list p10 mb0 mt0'}, [
+                m('li', {class: 'dib'}, [
+                    m('i', {
+                        class: 'fa fa-edit',
+                        title: 'Oppdater skjema fra database',
+                        onclick: function() {
+                            $('#action-dialog').load('urd/dialog_schema?version=1');
+                            $('div.curtain').show();
+                            $('#action-dialog').show();
+                        }
+                    })
+                ])
+            ]);
+        }
+
         if (!ds.table || ds.table.type === 'database' && !config.admin) return;
 
         var param = m.route.param();

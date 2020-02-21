@@ -42,8 +42,14 @@ var schema_dialog = {
                     value: 'OK',
                     class: 'fr',
                     onclick: function() {
-                        var rec_idx = ds.table.selection;
-                        var prim_key = ds.table.records[rec_idx].primary_key;
+                        var rec_idx;
+                        var prim_key;
+                        if (ds.type == 'contents') {
+                            prim_key = {name: ds.base.name};
+                        } else {
+                            rec_idx = ds.table.selection;
+                            prim_key = ds.table.records[rec_idx].primary_key;
+                        }
                         var prim_nokler_json = JSON.stringify(prim_key);
                         var config = ds.schema.config;
                         var config_json = JSON.stringify(config);
@@ -55,7 +61,6 @@ var schema_dialog = {
                             contentType: "application/json",
                             data: JSON.stringify({
                                 base: ds.base.name,
-                                table: ds.table.name,
                                 primary_key: prim_nokler_json,
                                 config: config_json
                             }),
