@@ -236,9 +236,17 @@ contents = {
                         contents.diagram_table = object.name;
                     },
                     oncontextmenu: function(event){
+                        if (!config.admin) return false;
                         contents.context_table = object;
-                        var txt = object.hidden ? 'Vis tabell' : 'Skjul tabell';
-                        $('ul#context li.hide').html(txt);
+
+                        var hidden_txt = object.hidden ? 'Vis tabell' : 'Skjul tabell';
+                        $('ul#context li.hide').html(hidden_txt);
+
+                        var type_txt = object.type == 'reference'
+                            ? 'Sett til datatabell'
+                            : 'Sett til referansetabell';
+                        $('ul#context li.type').html(type_txt);
+
                         $('ul#context').css({top: event.clientY, left: event.clientX}).toggle();
                         return false;
                     }
@@ -249,6 +257,18 @@ contents = {
                 }, label)
             ]);
         }
+    },
+
+    set_dirty_attr: function(tbl, attr, value) {
+        if (ds.schema.config.dirty === undefined) {
+            ds.schema.config.dirty = {};
+        }
+
+        if (ds.schema.config.dirty[tbl.name] === undefined) {
+            ds.schema.config.dirty[tbl.name] = {};
+        }
+
+        ds.schema.config.dirty[tbl.name][attr] = value;
     },
 
     view: function() {
@@ -273,7 +293,19 @@ contents = {
                         contents.context_table.hidden = !contents.context_table.hidden;
                         $('ul#context').hide();
                     }
-                }, 'Skjul tabell')
+                }, 'Skjul tabell'),
+                m('li.type', {
+                    class: 'hover-blue',
+                    onclick: function() {
+                        var tbl = contents.context_table;
+                        tbl.type = tbl.type == 'data'
+                            ? 'reference'
+                            : 'data';
+                        $('ul#context').hide();
+
+                        contents.set_dirty_attr(tbl, 'type', tbl.type)
+                    }
+                }, 'Sett til referansetabell')
             ]),
             m('.list', {class: "flex flex-column overflow-auto"}, [
                 ds.base.contents && Object.keys(ds.base.contents).length

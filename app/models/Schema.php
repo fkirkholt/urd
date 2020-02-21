@@ -600,6 +600,9 @@ class Schema {
                 ) {
                     $table->type = 'reference';
                 } else {
+                    if (isset($config->dirty->{$table->name}->type)) {
+                        $table->type = $config->dirty->{$table->name}->type;
+                    }
                     $table->type = isset($table->type) ? $table->type : 'data';
                 }
             }
