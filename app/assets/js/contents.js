@@ -104,6 +104,14 @@ contents = {
         path = contents.get_path(table, path);
 
         if (path) {
+            path = path.filter(function(line) {
+                if (contents.diagram.indexOf(line) !== -1) return false;
+                // Check reversed relation
+                if (contents.diagram.indexOf(line.replace('<--', '-->').split(" ").reverse().join(" ")) !== -1) return false;
+
+                return true
+            });
+
             this.diagram += "\n" + path.join("\n");
         }
     },
