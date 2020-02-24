@@ -160,7 +160,7 @@ contents = {
             if ($.inArray(fk.table + ' <-- ' + table.name, path) !== -1) return;
 
             var fk_table = ds.base.tables[fk.table];
-            if (fk_table.type == 'reference') return;
+
             if (fk_table.hidden) return;
 
             new_path.push(table.name + ' --> ' + fk.table);
@@ -169,7 +169,7 @@ contents = {
                 found_path = found_path.concat(new_path);
                 return new_path;
             } else {
-
+                if (fk_table.type == 'reference') return;
 
                 new_path = contents.get_path(fk_table, new_path);
                 if (new_path) {
