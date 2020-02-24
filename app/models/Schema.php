@@ -607,8 +607,8 @@ class Schema {
                 }
             }
 
-            if ($tbl_name == 'app_code') {
-                error_log($count_visible_fields);
+            if (isset($config->dirty->{$table->name}->hidden)) {
+                $table->hidden = $config->dirty->{$table->name}->hidden;
             }
 
             if ($grid_idx) {
@@ -777,39 +777,72 @@ class Schema {
                         continue;
                     }
 
-                    $fk = $this->tables[$relation->table]->foreign_keys[$relation->foreign_key];
+                    $rel_table = $this->tables[$relation->table];
 
-                    $indexes = array_filter($this->tables[$relation->table]->indexes, function($index) use ($fk) {
+                    if (!empty($rel_table->hidden)) {
+                        $table->relations[$alias]['hidden'] = true;
+                    }
+
+                    $fk = $rel_table->foreign_keys[$relation->foreign_key];
+
+                    $indexes = array_filter($rel_table->indexes, function($index) use ($fk) {
                         return $index->columns === $fk->local;
                     });
-                    if (count($indexes)) {
+
+                    if (count($indexes) && empty($rel_table->hidden)) {
                         $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
                         $table->form['items'][$label] = 'relations.'.$alias;
+                    }
+
+                    // Don't show fields referring to hidden table
+                    $ref_field = end($fk->local);
+                    if (!empty($table->hidden)) {
+                        $this->tables[$relation->table]->fields[$ref_field]->hidden = true;
+                    } else {
+                        unset($this->tables[$relation->table]->fields[$ref_field]->hidden);
                     }
                 }
             }
 
-            // Add drop table statement if less than 2 rows
+            // Add drop table statement if hidden or less than 2 rows
             $rows = $report[$tbl_alias]['rows'];
-            if ($rows < 2) {
+
+            if ($rows < 2 || !empty($table->hidden)) {
                 // drop foreign key constraints first
                 $statements = [];
                 $records = [];
                 foreach ($table->relations as $alias => $rel) {
                     $rel = (object) $rel;
                     $tbl_col_fk = $rel->table . "." . $rel->foreign_key;
-                    if (!isset($drops[$tbl_col_fk])) continue;
-                    $new_statements = explode("\n", $drops[$tbl_col_fk]);
-                    foreach ($new_statements as $i => $stmt) {
-                        if (strpos($stmt, '{') !== false) {
-                            $records[] = $stmt;
-                            unset($new_statements[$i]);
+                    if (isset($drops[$tbl_col_fk])) {
+                        $new_statements = explode("\n", $drops[$tbl_col_fk]);
+                        foreach ($new_statements as $i => $stmt) {
+                            if (strpos($stmt, '{') !== false) {
+                                $records[] = $stmt;
+                                unset($new_statements[$i]);
+                            }
                         }
-                    }
-                    $new_statements = array_filter($new_statements);
-                    $statements = array_merge($statements, $new_statements);
+                        $new_statements = array_filter($new_statements);
+                        $statements = array_merge($statements, $new_statements);
 
-                    unset($drops[$tbl_col_fk]);
+                        unset($drops[$tbl_col_fk]);
+                    } else {
+
+                        $sub = [];
+
+                        $key = $this->tables[$rel->table]->foreign_keys[$rel->foreign_key];
+
+                        if ($db->platform === 'mysql') {
+                            $sub[] = "drop foreign key $key->name";
+                        } else {
+                            $sub[] = "drop constraint $key->name";
+                        }
+
+                        $sub[] = "drop column $rel->foreign_key;";
+
+                        $comment = !empty($table->hidden) ? '-- ' : '';
+                        $statements[] = $comment . "alter table $rel->table " . implode(', ', $sub);
+                    }
                 }
 
                 array_unshift($statements, "\n-- -- -- $tbl_alias ($rows rader) - drop -- -- --");

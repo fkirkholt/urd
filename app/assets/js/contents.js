@@ -85,11 +85,13 @@ contents = {
 
         Object.keys(table.foreign_keys).map(function(label) {
             var fk = table.foreign_keys[label];
+            if (table.fields[label].hidden) return;
             diagram.push(table.name + " --> " + fk.table);
         });
 
         Object.keys(table.relations).map(function(label) {
             var rel = table.relations[label];
+            if (rel.hidden) return;
             diagram.push(rel.table + " --> " + table.name);
         });
 
@@ -99,7 +101,7 @@ contents = {
     add_table_diagram: function(table) {
         var path = []
         var level = 0;
-        path = contents.get_path(table, path, [], level);
+        path = contents.get_path(table, path);
 
         if (path) {
             this.diagram += "\n" + path.join("\n");
@@ -151,7 +153,6 @@ contents = {
 
             var fk_table = ds.base.tables[fk.table];
             if (fk_table.type == 'reference') return;
-            if (fk_table.foreign_keys.length == 0) return;
             if (fk_table.hidden) return;
 
             new_path.push(table.name + ' --> ' + fk.table);
@@ -216,6 +217,7 @@ contents = {
             ]);
         } else {
             var object = _get(ds.base, item);
+            if (object.hidden && !config.admin) return;
             var icon = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'fa-list'
                 : 'fa-table';
@@ -290,8 +292,11 @@ contents = {
                 m('li.hide', {
                     class: 'hover-blue',
                     onclick: function() {
-                        contents.context_table.hidden = !contents.context_table.hidden;
+                        var tbl = contents.context_table;
+                        tbl.hidden = !tbl.hidden;
                         $('ul#context').hide();
+
+                        contents.set_dirty_attr(tbl, 'hidden', tbl.hidden);
                     }
                 }, 'Skjul tabell'),
                 m('li.type', {

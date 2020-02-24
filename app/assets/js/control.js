@@ -385,6 +385,7 @@ var control = {
     draw_cell: function(list, rowidx, col, options) {
         var rec = list.records[rowidx];
         var field = list.fields[col];
+        if (field.hidden) return;
         var value = rec.columns[col] != null ? rec.columns[col] : '';
         value = control.display_value(field, value);
         var expansion = col === list.expansion_column;
@@ -633,6 +634,8 @@ var control = {
             ]);
         } else {
             var field = rec.fields[colname];
+
+            if (field.hidden) return;
 
             // TODO: Hva gjør jeg med rights her?
             var mandatory = !field.nullable && !field.extra && field.editable && !field.source == true;

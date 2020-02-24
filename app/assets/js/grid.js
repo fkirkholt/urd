@@ -390,6 +390,7 @@ var grid = {
                         var col = ds.table.grid.columns[label];
 
                         var field = ds.table.fields[col];
+                        if (field.hidden) return;
 
                         // If this is for instance an action
                         if (field === undefined) {
