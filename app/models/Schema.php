@@ -83,6 +83,9 @@ class Schema {
 
         foreach ($table->relations as $relation) {
             $relation = (object) $relation;
+
+            if (!empty($relation->hidden)) continue;
+
             if (!in_array($relation->table, $relation_tables)) {
                 $relation_tables[] = $relation->table;
 
@@ -234,7 +237,9 @@ class Schema {
 
             $colnames = $refl_table->getColumnNames();
 
-
+            if (isset($config->dirty->{$table->name}->hidden)) {
+                $table->hidden = $config->dirty->{$table->name}->hidden;
+            }
 
             // Updates indexes
             {
@@ -334,8 +339,6 @@ class Schema {
                     return $carry;
                 });
 
-                if (!$key_index) continue;
-
                 $patterns = [];
                 $patterns[] = '/^(?:fk_|idx_)?(?:' . $key->table . '_)?/';
                 $patterns[] = '/(?:_' . implode('_', $key->local) . ')?(?:_fk|_idx)?$/';
@@ -351,6 +354,9 @@ class Schema {
                         "table" => $tbl_name,
                         "foreign_key" => $key_alias,
                         "label" => $label,
+                        "hidden" => (!$key_index && !empty($config->urd_structure)) || !empty($table->hidden)
+                            ? true
+                            : false
                     ];
                 }
             }
@@ -601,10 +607,6 @@ class Schema {
                     }
                     $table->type = isset($table->type) ? $table->type : 'data';
                 }
-            }
-
-            if (isset($config->dirty->{$table->name}->hidden)) {
-                $table->hidden = $config->dirty->{$table->name}->hidden;
             }
 
             if ($grid_idx) {
