@@ -320,7 +320,7 @@ contents = {
                     }
                 }, 'Sett til referansetabell')
             ]),
-            m('.list', {class: "flex flex-column overflow-auto"}, [
+            m('.list', {class: "flex flex-column overflow-auto min-w6"}, [
                 ds.base.contents && Object.keys(ds.base.contents).length
                     ? Object.keys(ds.base.contents).map(function(label) {
                         var item = ds.base.contents[label];
