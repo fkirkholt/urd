@@ -4,6 +4,7 @@ var store = {
     base: {},
     schema: {
         config: {
+            urd_structure: false,
             replace: false,
             threshold: 0
         }

@@ -165,10 +165,6 @@ class Schema {
         $total = count($db_tables);
         $processed = -1;
 
-        $urd_structure = !empty(array_filter($db_tables, function($tbl_name) {
-            return strpos($tbl_name, 'ref_') !== false || strpos($tbl_name, '_ref');
-        }));
-
         foreach ($db_tables as $tbl_name) {
 
             $report[$tbl_name] = [];
@@ -346,7 +342,7 @@ class Schema {
 
                 $replacements = ['', '', '', ''];
 
-                $label = $urd_structure
+                $label = $config->urd_structure
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
                     : ucfirst($tbl_alias);
 
@@ -582,7 +578,7 @@ class Schema {
                 return $field->element !== 'input[type=hidden]';
             }));
 
-            if ($urd_structure) {
+            if ($config->urd_structure) {
                 if (
                     substr($tbl_name, 0, 4) === 'ref_' ||
                     substr($tbl_name, -4) === '_ref' ||
