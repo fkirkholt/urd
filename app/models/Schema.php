@@ -712,18 +712,23 @@ class Schema {
 
             // Group tables
             $parts = explode('_', $tbl_alias);
-            $group = $parts[0];
+            // Group only if the base has urd structure
+            $group = $config->urd_structure ? $parts[0] : $tbl_alias;
 
             if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
 
             // Find if the table is subordinate to other tables
             // i.e. it has an other table's name as prefix
-            $parent_tables = array_filter($db_tables, function($name) use ($tbl_name, $table) {
-                // add underscore to $name if it doesn't end with underscore
-                $name_ = substr($name, -1) === '_' ? $name : $name . '_';
-                return ($name != $tbl_name && substr($tbl_name, 0, strlen($name_)) === $name_)
-                    || (!empty($table->extends) && $table->extends === $name);
-            });
+            if ($config->urd_structure) {
+                $parent_tables = array_filter($db_tables, function($name) use ($tbl_name, $table) {
+                    // add underscore to $name if it doesn't end with underscore
+                    $name_ = substr($name, -1) === '_' ? $name : $name . '_';
+                    return ($name != $tbl_name && substr($tbl_name, 0, strlen($name_)) === $name_)
+                        || (!empty($table->extends) && $table->extends === $name);
+                });
+            } else {
+                $parent_tables = [];
+            }
 
             // Only add tables that are not subordinate to other tables
             if (!count($parent_tables)) {
