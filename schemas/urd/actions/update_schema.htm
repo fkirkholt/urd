@@ -85,6 +85,7 @@ var schema_dialog = {
                                 txt += '</li></ul>';
                                 $('#progress').show().children('[name=message]').html(txt);
                             }
+                            ds.load_database(ds.base.name);
                         }).fail(function(jqXHR, textStatus, error) {
                             alert(jqXHR.responseText);
                         });
