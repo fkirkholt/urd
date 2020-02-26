@@ -804,6 +804,7 @@ class Schema {
 
             // Add drop table statement if hidden or less than 2 rows
             $rows = $report[$tbl_alias]['rows'];
+            $comment = $rows == 0 ? '' : '-- ';
 
             if ($rows < 2 || !empty($table->hidden)) {
                 // drop foreign key constraints first
@@ -838,13 +839,12 @@ class Schema {
 
                         $sub[] = "drop column $rel->foreign_key;";
 
-                        $comment = !empty($table->hidden) ? '-- ' : '';
                         $statements[] = $comment . "alter table $rel->table " . implode(', ', $sub);
                     }
                 }
 
                 array_unshift($statements, "\n-- -- -- $tbl_alias ($rows rader) - drop -- -- --");
-                $comment = $rows == 0 ? '' : '-- ';
+
                 $statements[] = $comment . "drop table $table->name;";
 
                 $records = array_unique($records);
