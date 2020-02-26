@@ -95,3 +95,5 @@ tr.bg-light-blue:focus {
     overflow-wrap: break-word;
     word-wrap: break-word;
 }
+
+.dot {text-decoration-style: dotted}

@@ -262,9 +262,11 @@ contents = {
                     }
                 }),
                 m('a', {
+                    class: object.description ? 'dot' : 'link',
+                    title: object.description ? object.description : '',
                     style: 'display:' + display,
                     href: '#/' + ds.base.name + '/' + item.replace('.', '/')
-                }, label)
+                }, label),
             ]);
         }
     },
