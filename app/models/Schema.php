@@ -712,7 +712,7 @@ class Schema {
 
             // Group tables
             $parts = explode('_', $tbl_alias);
-            // Group only if the base has urd structure
+            // Group only if the database has urd structure
             $group = $config->urd_structure ? $parts[0] : $tbl_alias;
 
             if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
@@ -732,7 +732,13 @@ class Schema {
 
             // Only add tables that are not subordinate to other tables
             if (!count($parent_tables)) {
-                $tbl_groups[$group][] = $tbl_alias;
+                // Remove group prefix from label
+                $rest = str_replace($group . '_', '', $tbl_alias);
+                $label = isset($terms[$rest])
+                    ? $terms[$rest]['label']
+                    : ucfirst(str_replace('_', ' ', $rest));
+
+                $tbl_groups[$group][$label] = $tbl_alias;
             }
 
             // Update records for reference tables
@@ -952,7 +958,8 @@ class Schema {
 
         foreach ($tbl_groups as $group_name => $table_names) {
             if (count($table_names) == 1 && $group_name != 'meta') {
-                $table_alias = $table_names[0];
+                // Get first element in array
+                $table_alias = reset($table_names);
                 $label = isset($terms[$table_alias])
                     ? $terms[$table_alias]['label']
                     : ucfirst(str_replace('_', ' ', $table_alias));
@@ -965,15 +972,6 @@ class Schema {
                     $contents['Andre']['items'][$label] = 'tables.' . $table_alias;
                 }
             } else {
-                // Remove group prefix from label
-                $tbl_names = [];
-                foreach ($table_names as $i => $table_alias) {
-                    $rest = str_replace($group_name . '_', '', $table_alias);
-                    $label = isset($terms[$rest])
-                        ? $terms[$rest]['label']
-                        : ucfirst(str_replace('_', ' ', $rest));
-                    $tbl_names[$label] = 'tables.' . $table_alias;
-                }
                 $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
                 if ($label === 'Ref') $label = 'Referansetabeller';
 
@@ -981,7 +979,7 @@ class Schema {
                     $contents['Innhold']['items'][$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
-                        'items' => $tbl_names
+                        'items' => $table_names
                     ];
                 } else {
                     if (!isset($contents['Andre'])) {
@@ -990,7 +988,7 @@ class Schema {
                     $contents['Andre']['items'][$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
-                        'items' => $tbl_names
+                        'items' => $table_names
                     ];
                 }
             }

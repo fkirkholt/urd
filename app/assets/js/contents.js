@@ -224,7 +224,7 @@ contents = {
                 ])
             ]);
         } else {
-            var object = _get(ds.base, item);
+            var object = _get(ds.base, item, ds.base.tables[item]);
             if (object.hidden && !config.admin) return;
             var icon = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'fa-list'
