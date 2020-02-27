@@ -92,6 +92,9 @@ contents = {
             if (field.hidden) return;
             var label = field.label ? field.label : alias;
             diagram.push(table.name + " --> " + fk.table + ' : ' + label);
+
+            var fk_table = ds.base.tables[fk.table];
+            diagram.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
         });
 
         Object.keys(table.relations).map(function(alias) {
