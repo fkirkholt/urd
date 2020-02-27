@@ -77,6 +77,9 @@ contents = {
     draw_table_diagram: function(table) {
         var diagram = ["classDiagram"];
         diagram.push("class " + table.name);
+        if (table.count_rows) {
+            diagram.push(table.name + ' : ' + 'count(' + table.count_rows + ')');
+        }
 
         Object.keys(table.fields).map(function(alias) {
             var field = table.fields[alias];
@@ -210,6 +213,9 @@ contents = {
                         item.hidden = !item.hidden;
                     }
                 }, label),
+                !item.count || !config.admin ? '' : m('span', {
+                    class: 'ml2 light-silver'
+                }, '(' + item.count + ')'),
                 m('.content', {
                     class: item.class_content,
                     style: 'display: ' + display
@@ -269,6 +275,10 @@ contents = {
                     style: 'display:' + display,
                     href: '#/' + ds.base.name + '/' + item.replace('.', '/')
                 }, label),
+                !object.count_rows || !config.admin ? '' : m('span', {
+                    class: 'ml2 light-silver',
+                    style: 'display:' + display
+                }, '(' + object.count_rows + ')'),
             ]);
         }
     },

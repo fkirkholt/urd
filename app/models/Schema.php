@@ -365,6 +365,12 @@ class Schema {
             $count_rows = $db->select('*')->from($tbl_name)->count();
             $report[$tbl_name]['rows'] = $count_rows;
 
+            if ($config->count_rows) {
+                $table->count_rows = $count_rows;
+            } else {
+                unset($table->count_rows);
+            }
+
             // Updates column properties
 
             if (!isset($table->fields)) {
@@ -952,7 +958,8 @@ class Schema {
         // Makes contents
         $contents = [
             'Innhold' => [
-                'items' => []
+                'items' => [],
+                'count' => count($main_module)
             ]
         ];
 
@@ -967,9 +974,10 @@ class Schema {
                     $contents['Innhold']['items'][$label] = 'tables.' . $table_alias;
                 } else {
                     if (!isset($contents['Andre'])) {
-                        $contents['Andre'] = ['items' => []];
+                        $contents['Andre'] = ['items' => [], 'count' => 0];
                     }
                     $contents['Andre']['items'][$label] = 'tables.' . $table_alias;
+                    $contents['Andre']['count']++;
                 }
             } else {
                 $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
@@ -983,13 +991,14 @@ class Schema {
                     ];
                 } else {
                     if (!isset($contents['Andre'])) {
-                        $contents['Andre'] = ['items' => []];
+                        $contents['Andre'] = ['items' => [], 'count' => 0];
                     }
                     $contents['Andre']['items'][$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
                         'items' => $table_names
                     ];
+                    $contents['Andre']['count'] += count($table_names);
                 }
             }
         }

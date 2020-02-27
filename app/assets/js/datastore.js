@@ -6,7 +6,8 @@ var store = {
         config: {
             urd_structure: false,
             replace: false,
-            threshold: 10
+            threshold: 10,
+            count_rows: false
         }
     },
     urd_base: $('#urd-base-name').data('value'),

@@ -42,7 +42,14 @@ var schema_dialog = {
                     onchange: function(event) {
                         ds.schema.config.threshold = $(event.target).val();
                     }.bind(this)
-                }), " %"
+                }), " %",
+                m('br'),
+                m('input[type=checkbox]', {
+                    checked: ds.schema.config.count_rows,
+                    onchange: function(event) {
+                        ds.schema.config.count_rows = $(event.target).prop('checked');
+                    }
+                }), ' Tell antall poster i tabellene'
             ]),
             m('div[name=buttons]', {class: "bottom-0 max-w8 mt2"}, [
                 m('input[type=button]', {
