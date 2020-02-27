@@ -34,7 +34,7 @@ contents = {
 
             $('#mermaid').html(contents.diagram).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
-            $('#mermaid svg g').addClass('pointer');
+            $('#mermaid svg g.classGroup').addClass('pointer');
         });
     },
 
@@ -49,7 +49,7 @@ contents = {
             $('#mermaid').html(this.diagram).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
 
-            $('#mermaid svg g').addClass('pointer');
+            $('#mermaid svg g.classGroup').addClass('pointer');
         }
     },
 
@@ -78,19 +78,21 @@ contents = {
         var diagram = ["classDiagram"];
         diagram.push("class " + table.name);
 
-        Object.keys(table.fields).map(function(label) {
-            var field = table.fields[label];
+        Object.keys(table.fields).map(function(alias) {
+            var field = table.fields[alias];
             diagram.push(table.name + ' : ' + field.datatype + ' ' + field.name);
         });
 
-        Object.keys(table.foreign_keys).map(function(label) {
-            var fk = table.foreign_keys[label];
-            if (table.fields[label].hidden) return;
-            diagram.push(table.name + " --> " + fk.table);
+        Object.keys(table.foreign_keys).map(function(alias) {
+            var fk = table.foreign_keys[alias];
+            var field = table.fields[alias];
+            if (field.hidden) return;
+            var label = field.label ? field.label : alias;
+            diagram.push(table.name + " --> " + fk.table + ' : ' + label);
         });
 
-        Object.keys(table.relations).map(function(label) {
-            var rel = table.relations[label];
+        Object.keys(table.relations).map(function(alias) {
+            var rel = table.relations[alias];
             if (rel.hidden) return;
             diagram.push(rel.table + " --> " + table.name);
         });
