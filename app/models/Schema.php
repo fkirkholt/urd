@@ -487,7 +487,7 @@ class Schema {
                                 $records = $db->query($sql, $values);
 
                                 foreach ($records as $rec) {
-                                    $rec_comment .= '   -- -- Rec: ' . (json_encode($rec));
+                                    $rec_comment .= "   -- -- Rec: " . str_replace(',"', ', "', json_encode($rec, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) . "\n";
                                 }
                             }
 
@@ -501,12 +501,12 @@ class Schema {
                         for ($i = 0; $i < 4; $i++) {
                             if (!isset($comments[$i])) break;
                             if (substr($comments[$i], 0, 4) === 'NULL') continue;
-                            $drops[$tbl_col] .= "   -- -- Eks: '$comments[$i]'";
+                            $drops[$tbl_col] .= "   -- -- Eks: '$comments[$i]'\n";
                         }
                     } else if (count($comments)) {
                         $drops[$tbl_col] .= "   -- -- Distinkte verdier: " . implode(", ", $comments);
                     }
-                    if ($rec_comment) $drops[$tbl_col] .= $rec_comment;
+                    if ($rec_comment) $drops[$tbl_col] .= "\n" . $rec_comment;
                 }
 
                 $items = array_filter($table->fields, function($item) use ($col_name) {
