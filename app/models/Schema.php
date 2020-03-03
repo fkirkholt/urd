@@ -332,6 +332,7 @@ class Schema {
                     $table->extends = $key->table;
                 }
 
+                // Finds index associated with the foreign key
                 $key_index = array_reduce($table->indexes, function($carry, $index) use ($key) {
                     if (!$carry && $index->columns === $key->local) {
                         $carry = $index;
@@ -345,7 +346,7 @@ class Schema {
 
                 $replacements = ['', '', '', ''];
 
-                $label = $config->urd_structure
+                $label = $config->urd_structure && $key_index
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
                     : ucfirst($tbl_alias);
 
