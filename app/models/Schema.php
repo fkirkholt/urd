@@ -925,7 +925,21 @@ class Schema {
             }
 
             // Find how tables are grouped in modules
-            if (empty($table->foreign_keys)) {
+
+            $top_level = true;
+
+            // Reference tables should not be used to group tables in modules
+            if ($table->type == 'reference') {
+                $top_level = false;
+            }
+
+            foreach ($table->foreign_keys as $alias => $fk) {
+                if ($fk->table !== $table->name && empty($table->fields[$alias]->hidden)) {
+                    $top_level = false;
+                }
+            }
+
+            if ($top_level) {
                 $related_tables = $this->get_relation_tables($tbl_alias, []);
                 $related_tables[] = $table->name;
 
@@ -951,8 +965,32 @@ class Schema {
             $this->tables[$tbl_alias] = $table;
         }
 
+        // Check if reference table is attached to only one mudule
+        foreach ($this->tables as $tbl_alias => $table) {
+            if ($table->type != 'reference') continue;
+            $in_modules = [];
+
+            foreach ($table->relations as $rel) {
+                $rel = (object) $rel;
+                foreach ($modules as $i => $module) {
+                    if (in_array($rel->table, $module)) {
+                        $in_modules[] = $i;
+                    }
+                }
+            }
+
+            $in_modules = array_unique($in_modules);
+
+            if (count($in_modules) == 1) {
+                $mod = $in_modules[0];
+                $modules[$mod][] = $tbl_alias;
+                $modules[$mod] = array_unique($modules[$mod]);
+             }
+        }
+
         $main_module = max($modules); // Find module with most tables
 
+        // Generate drop statements for tables not connected to other tables
         if (count($main_module) > 2) {
             foreach ($modules as $module) {
                 if (count($module) == 1) {
@@ -971,12 +1009,11 @@ class Schema {
 
 
         // Makes contents
-        $contents = [
-            'Innhold' => [
-                'items' => [],
-                'count' => count($main_module)
-            ]
-        ];
+
+        $contents = [];
+
+        // Sort modules so that modules with most tables are listed first
+        array_multisort(array_map('count', $modules), SORT_DESC, $modules);
 
         foreach ($tbl_groups as $group_name => $table_names) {
             if (count($table_names) == 1 && $group_name != 'meta') {
@@ -985,9 +1022,25 @@ class Schema {
                 $label = isset($terms[$table_alias])
                     ? $terms[$table_alias]['label']
                     : ucfirst(str_replace('_', ' ', $table_alias));
-                if (count($main_module) == 0 || count(array_intersect($table_names, $main_module))) {
-                    $contents['Innhold']['items'][$label] = 'tables.' . $table_alias;
-                } else {
+
+                // Loop through modules to find which one the table belongs to
+                $placed = false;
+
+                if ($config->urd_structure) {
+                    $contents[$label] = $table_alias;
+                    continue;
+                }
+
+                foreach ($modules as $i => $module) {
+                    if (count($module) > 2 && in_array($table_alias, $module)) {
+                        $mod = 'Modul ' . ($i + 1);
+                        $contents[$mod]['items'][$label] = 'tables.' . $table_alias;
+                        if (!isset($contents[$mod]['count'])) $contents[$mod]['count'] = 0;
+                        $contents[$mod]['count']++;
+                        $placed = true;
+                    }
+                }
+                if (!$placed) {
                     if (!isset($contents['Andre'])) {
                         $contents['Andre'] = ['items' => [], 'count' => 0];
                     }
@@ -998,13 +1051,32 @@ class Schema {
                 $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
                 if ($label === 'Ref') $label = 'Referansetabeller';
 
-                if (count($main_module) < 3 || count(array_intersect($table_names, $main_module))) {
-                    $contents['Innhold']['items'][$label] = [
+                if ($config->urd_structure) {
+                    $contents[$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
                         'items' => $table_names
                     ];
-                } else {
+
+                    continue;
+                }
+
+                $placed = false;
+                foreach ($modules as $i => $module) {
+                    if (count($module) > 2 && count(array_intersect($table_names, $module))) {
+                        $mod = 'Modul ' . ($i + 1);
+                        $contents[$mod]['items'][$label] = [
+                            'class_label' => 'b',
+                            'class_content' => 'ml3',
+                            'items' => $table_names
+                        ];
+                        if (!isset($contents[$mod]['count'])) $contents[$mod]['count'] = 0;
+                        $contents[$mod]['count'] += count($table_names);
+                        $placed = true;
+                    }
+                }
+
+                if (!$placed) {
                     if (!isset($contents['Andre'])) {
                         $contents['Andre'] = ['items' => [], 'count' => 0];
                     }
@@ -1016,6 +1088,15 @@ class Schema {
                     $contents['Andre']['count'] += count($table_names);
                 }
             }
+        }
+
+        ksort($contents);
+
+        // Move 'Andre' last
+        if (!empty($contents['Andre'])) {
+            $other = $contents['Andre'];
+            unset($contents['Andre']);
+            $contents['Andre'] = $other;
         }
 
         $this->contents = $contents;
