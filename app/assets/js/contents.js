@@ -84,7 +84,8 @@ contents = {
 
         Object.keys(table.fields).map(function(alias) {
             var field = table.fields[alias];
-            diagram.push(table.name + ' : ' + field.datatype + ' ' + field.name);
+            var sign = field.nullable ? '-' : '+';
+            diagram.push(table.name + ' : ' + sign + field.datatype + ' ' + field.name);
         });
 
         Object.keys(table.foreign_keys).map(function(alias) {
@@ -96,12 +97,20 @@ contents = {
 
             var fk_table = ds.base.tables[fk.table];
             diagram.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
+            if (fk_table.count_rows && fk.table != table.name) {
+                diagram.push(fk.table + ' : count(' + fk_table.count_rows + ')');
+            }
         });
 
         Object.keys(table.relations).map(function(alias) {
             var rel = table.relations[alias];
             if (rel.hidden || rel.table == table.name) return;
             diagram.push(rel.table + " --> " + table.name);
+
+            var rel_table = ds.base.tables[rel.table];
+            if (rel_table.count_rows) {
+                diagram.push(rel.table + ' : count(' + rel_table.count_rows + ')');
+            }
         });
 
         this.diagram = diagram.join("\n");
