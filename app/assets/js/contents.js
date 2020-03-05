@@ -31,6 +31,7 @@ contents = {
             var table = ds.base.tables[table_name];
 
             contents.draw_table_diagram(table);
+            contents.diagram_table = table_name;
 
             $('#mermaid').html(contents.diagram).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
@@ -63,7 +64,7 @@ contents = {
                         item.display = subitem.display
                     }
                 } else {
-                    var object = _get(ds.base, subitem);
+                    var object = _get(ds.base, subitem, ds.base.tables[subitem]);
                     if (object === undefined) return;
                     if (object.type != 'reference' || config.admin == true) {
                         item.display('block');
@@ -99,7 +100,7 @@ contents = {
 
         Object.keys(table.relations).map(function(alias) {
             var rel = table.relations[alias];
-            if (rel.hidden) return;
+            if (rel.hidden || rel.table == table.name) return;
             diagram.push(rel.table + " --> " + table.name);
         });
 
@@ -201,7 +202,7 @@ contents = {
                 m('i', {
                     class: [
                         item.hidden ? 'fa fa-angle-right': 'fa fa-angle-down',
-                        'f'+level,
+                        item.class_label || 'f'+level,
                         'mr1',
                         'light-silver'
                     ].join(' '),
