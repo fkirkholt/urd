@@ -805,18 +805,32 @@ class Schema {
                         return $index->columns === $fk->local;
                     });
 
+                    $label = '';
                     if (count($indexes) && empty($rel_table->hidden)) {
                         $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
                         $table->form['items'][$label] = 'relations.'.$alias;
                     }
 
-                    // Don't show fields referring to hidden table
-                    $ref_field = end($fk->local);
-                    if (!empty($table->hidden)) {
-                        $this->tables[$relation->table]->fields[$ref_field]->hidden = true;
-                    } else {
-                        unset($this->tables[$relation->table]->fields[$ref_field]->hidden);
+
+                    $ref_field_name = end($fk->local);
+                    $ref_field = $this->tables[$relation->table]->fields[$ref_field_name];
+
+                    // Don't show relations coming from hidden fields
+                    if (!empty($ref_field->hidden) || $ref_field->element == 'input[type=hidden]') {
+                        $relation->hidden = true;
+                        if ($label) unset($table->form['items'][$label]);
                     }
+
+                    // Don't show fields referring to hidden table
+                    if (!empty($table->hidden) && !in_array($ref_field_name, $rel_table->primary_key)) {
+                        $ref_field->hidden = true;
+                    } else {
+                        unset($ref_field->hidden);
+                    }
+                    $this->tables[$relation->table]->fields[$ref_field_name] = $ref_field;
+
+                    $table->relations[$alias] = $relation;
+
                 }
             }
 
