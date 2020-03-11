@@ -146,8 +146,25 @@ var toolbar = {
 
     view: function(vnode) {
 
-        if (ds.type == 'contents' && config.admin) {
-            return m('ul', {target: '_blank', class: 'f6 list p10 mb0 mt0'}, [
+        if ((ds.type == 'contents' || !config.show_table) && config.admin) {
+            return m('ul', {target: '_blank', class: 'f6 list pl0 mb0 mt0'}, [
+                m('li', {class: 'dib'}, [
+                    m('i', {
+                        class: [
+                            'fa ml1 mr3 pointer dim',
+                            config.show_table ? 'fa-project-diagram' : 'fa-table'
+                        ].join(' '),
+                        title: config.show_table ? 'Vis ER-diagram' : 'Vis tabell',
+                        onclick: function() {
+                            config.show_table = !config.show_table;
+
+                            if (config.show_table) {
+                                m.redraw();
+                                grid.align_thead();
+                            }
+                        }
+                    })
+                ]),
                 m('li', {class: 'dib'}, [
                     m('i', {
                         class: 'fa fa-edit',
@@ -163,6 +180,7 @@ var toolbar = {
         }
 
         if (!ds.table || ds.table.type === 'database' && !config.admin) return;
+        if (!ds.table.records) return;
 
         var param = m.route.param();
 
@@ -251,20 +269,22 @@ var toolbar = {
                     m('input', {type: 'hidden', name: 'primary_key'}),
                 ]),
             ]),
-            m('li', {class: 'dib'}, [
+            !config.admin ? '' : m('li', {class: 'dib'}, [
                 m('i', {
                     class: [
-                        'fa fa-table ml1 mr2 pointer dim',
-                        config.show_table ? 'gray' : ''
+                        'fa ml1 mr3 pointer dim',
+                        config.show_table ? 'fa-sitemap' : 'fa-table'
                     ].join(' '),
-                    title: 'Vis/skjul tabell',
+                    title: config.show_table ? 'Vis ER-diagram' : 'Vis tabell',
                     onclick: function() {
                         config.show_table = !config.show_table;
 
                         if (config.show_table) {
-                            m.redraw();
                             grid.align_thead();
+                        } else {
+                            diagram.draw(ds.base.tables[ds.table.name]);
                         }
+                        m.redraw();
                     }
                 })
             ]),
@@ -700,4 +720,4 @@ var filterpanel = require('./filterpanel');
 var entry = require('./entry.js');
 var pagination = require('./pagination.js');
 var Cookies = require('js-cookie');
-
+var diagram = require('./diagram.js');

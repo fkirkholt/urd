@@ -1,23 +1,38 @@
 
 var datapanel = {
     view: function(vnode) {
-        if (m.route.get() != grid.url) {
+        if (m.route.get() != grid.url && config.show_table) {
             grid.load();
             grid.url = m.route.get();
         }
 
         if (!ds.table) return;
 
-        var selected_idx = ds.table.selection !== null ? ds.table.selection : 0;
-        var selected_record = ds.table.records[selected_idx];
+        if (!config.show_table) {
+            var table_name = m.route.param('table');
+            if (ds.table && ds.table.name !== table_name) {
+                ds.table = ds.base.tables[table_name];
+            }
+
+            if (diagram.main_table !== table_name) {
+                diagram.draw(ds.base.tables[table_name]);
+            }
+        } else {
+            var selected_idx = ds.table.selection !== null ? ds.table.selection : 0;
+        }
 
         ds.table.invalid = false;
         $('.right.content').hide();
         if (ds.table.modus == 'search') return;
         $('.left.nav').show();
         $('.right.content').show();
-        return !ds.table.records ? m('div', 'laster ...') : [
-            !config.show_table || ds.table.search || ds.table.edit ? '' : m('div#gridpanel', {class: 'flex flex-column'}, [
+
+        return config.show_table && !ds.table.records ? m('div', 'laster ...') : [
+            m(contents),
+            config.show_table ? '' : m(diagram),
+            !config.show_table || ds.table.search || ds.table.edit
+            ? ''
+            : m('div#gridpanel', {class: 'flex flex-column ml2'}, [
                 m(grid),
                 m(pagination, {
                     from: Number(ds.table.offset) + 1,
@@ -27,10 +42,10 @@ var datapanel = {
                 })
             ]),
 
-            ds.table.search ? m(search) : m(entry, {
-                record: selected_record
+            !config.show_table || !ds.table.records ? '' : ds.table.search ? m(search) : m(entry, {
+                record: ds.table.records[selected_idx]
             }),
-            m('div', {style: 'flex: 1'}),
+            !config.show_table ? '' : m('div', {style: 'flex: 1'}),
         ];
     }
 }
@@ -39,7 +54,9 @@ module.exports = datapanel;
 
 var pagination = require('./pagination.js');
 var toolbar = require('./toolbar.js');
+var contents = require('./contents.js');
 var grid = require('./grid.js');
 var entry = require('./entry.js');
 var search = require('./search.js');
 var config = require('./config.js');
+var diagram = require('./diagram.js');

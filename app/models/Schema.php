@@ -1034,6 +1034,8 @@ class Schema {
                 foreach ($modules as $i => $module) {
                     if (count($module) > 2 && in_array($table_alias, $module)) {
                         $mod = 'Modul ' . ($i + 1);
+                        $contents[$mod]['class_label'] = 'b';
+                        $contents[$mod]['class_content'] = 'ml3';
                         $contents[$mod]['items'][$label] = 'tables.' . $table_alias;
                         if (!isset($contents[$mod]['count'])) $contents[$mod]['count'] = 0;
                         $contents[$mod]['count']++;
@@ -1042,7 +1044,7 @@ class Schema {
                 }
                 if (!$placed) {
                     if (!isset($contents['Andre'])) {
-                        $contents['Andre'] = ['items' => [], 'count' => 0];
+                        $contents['Andre'] = ['class_label' => 'b', 'class_content' => 'ml3', 'items' => [], 'count' => 0];
                     }
                     $contents['Andre']['items'][$label] = 'tables.' . $table_alias;
                     $contents['Andre']['count']++;
@@ -1065,6 +1067,8 @@ class Schema {
                 foreach ($modules as $i => $module) {
                     if (count($module) > 2 && count(array_intersect($table_names, $module))) {
                         $mod = 'Modul ' . ($i + 1);
+                        $contents[$mod]['class_label'] = 'b';
+                        $contents[$mod]['class_content'] = 'ml3';
                         $contents[$mod]['items'][$label] = [
                             'class_label' => 'b',
                             'class_content' => 'ml3',
@@ -1078,7 +1082,7 @@ class Schema {
 
                 if (!$placed) {
                     if (!isset($contents['Andre'])) {
-                        $contents['Andre'] = ['items' => [], 'count' => 0];
+                        $contents['Andre'] = ['class_label' => 'b', 'class_content' => 'ml3', 'items' => [], 'count' => 0];
                     }
                     $contents['Andre']['items'][$label] = [
                         'class_label' => 'b',
