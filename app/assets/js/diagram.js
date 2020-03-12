@@ -2,6 +2,7 @@ var m = require('mithril');
 var $ = require('jquery');
 var mermaid = require('mermaid');
 var _union = require('lodash/union');
+var _repeat = require('lodash/repeat');
 
 diagram = {
     def: "",
@@ -24,7 +25,8 @@ diagram = {
 
         if (this.def !== "") {
             mermaid.mermaidAPI.initialize({
-                securityLevel: 'loose'
+                securityLevel: 'loose',
+                themeCSS: 'g.classGroup text{font-family: Consolas, monaco, monospace;}'
             });
             $('#mermaid').html(this.def).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
@@ -46,13 +48,15 @@ diagram = {
         Object.keys(table.fields).map(function(alias) {
             var field = table.fields[alias];
             var sign = field.nullable ? '-' : '+';
-            def.push(table.name + ' : ' + sign + field.datatype + ' ' + field.name);
+            // number of invicible spaces to align column names
+            var count = 6 - field.datatype.length;
+            def.push(table.name + ' : ' + sign + field.datatype + _repeat('\u2000', count) + ' ' + field.name);
         });
 
         Object.keys(table.foreign_keys).map(function(alias) {
             var fk = table.foreign_keys[alias];
             var field = table.fields[alias];
-            if (field.hidden) return;
+            if (field.hidden || field.element == 'input[type=hidden]') return;
             var label = field.label ? field.label : alias;
             def.push(table.name + " --> " + fk.table + ' : ' + label);
 
