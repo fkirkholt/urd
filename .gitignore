@@ -17,7 +17,7 @@ lib/fb.php
 lib/firelogger.php
 schemes/urd/sql/
 app/config/config.php
-js/build.js
+public/js/bundle.js
 
 # Ignore invisible files
 .*
