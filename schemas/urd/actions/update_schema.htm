@@ -58,7 +58,7 @@ var schema_dialog = {
                     onclick: function() {
                         var rec_idx;
                         var prim_key;
-                        if (ds.type == 'contents') {
+                        if (ds.type !== 'database') {
                             prim_key = {name: ds.base.name};
                         } else {
                             rec_idx = ds.table.selection;
