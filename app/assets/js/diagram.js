@@ -56,7 +56,7 @@ diagram = {
         Object.keys(table.foreign_keys).map(function(alias) {
             var fk = table.foreign_keys[alias];
             var field = table.fields[alias];
-            if (field.hidden || field.element == 'input[type=hidden]') return;
+            if (field.hidden) return;
             var label = field.label ? field.label : alias;
             def.push(table.name + " --> " + fk.table + ' : ' + label);
 

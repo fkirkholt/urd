@@ -553,8 +553,6 @@ class Schema {
                     $element = 'input[type=text]';
                 }
 
-                $element = $hidden ? 'input[type=hidden]' : $element;
-
                 $urd_col = (object) [
                     'name' => $col_name,
                     'element' => $element,
@@ -577,6 +575,10 @@ class Schema {
                     $urd_col->options = $options;
                 }
 
+                if ($hidden) {
+                    $urd_col->hidden = true;
+                }
+
                 if (!$key) {
                     $table->fields[$col_name] = $urd_col;
                 } else {
@@ -588,7 +590,7 @@ class Schema {
             }
 
             $count_visible_fields = count(array_filter($table->fields, function($field) {
-                return $field->element !== 'input[type=hidden]';
+                return !empty($field->hidden);
             }));
 
             if ($config->urd_structure) {
@@ -626,7 +628,7 @@ class Schema {
                     'columns' => array_slice(array_keys(array_filter((array) $table->fields, function($field) use ($table) {
                         // Don't show hidden columns
                         if (substr($field->name, 0, 1) === '_') return false;
-                        if ($field->element === 'input[type=hidden]') return false;
+                        if (!empty($field->hidden)) return false;
                         // an autoinc column is an integer column that is also primary key (like in SQLite)
                         return !($field->datatype == 'integer' && [$field->name] == $table->primary_key)
                                // but we show autoinc columns for reference tables
@@ -682,8 +684,8 @@ class Schema {
 
                 // Don't add fields that start with _
                 // They are treated as hidden fields
-                if ($group == '') $field->element = 'input[type=hidden]';
-                if ($field->element == 'input[type=hidden]') continue;
+                if ($group == '') $field->hidden = true;
+                if (!empty($field->hidden)) continue;
 
                 if (!isset($col_groups[$group])) $col_groups[$group] = [];
                 $col_groups[$group][] = $field->name;
@@ -816,7 +818,7 @@ class Schema {
                     $ref_field = $this->tables[$relation->table]->fields[$ref_field_name];
 
                     // Don't show relations coming from hidden fields
-                    if (!empty($ref_field->hidden) || $ref_field->element == 'input[type=hidden]') {
+                    if (!empty($ref_field->hidden)) {
                         $relation->hidden = true;
                         if ($label) unset($table->form['items'][$label]);
                     }
