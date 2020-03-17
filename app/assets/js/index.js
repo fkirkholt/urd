@@ -27,14 +27,13 @@ m.route($('#main')[0], '/', {
             if (ds.table && ds.table.dirty) {
                 if (!confirm('Du har ulagrede data. Vil du fortsette?')) {
                     m.route.set(grid.url);
-                } else {
-                    ds.load_database(base_name);
-                    return contents;
                 }
-            } else {
-                ds.load_database(base_name);
-                return contents;
             }
+
+            ds.type = 'contents';
+            ds.load_database(base_name);
+
+            return contents;
         }
     },
     "/:base/tables/:table": {

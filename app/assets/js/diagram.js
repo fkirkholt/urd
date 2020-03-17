@@ -79,7 +79,6 @@ diagram = {
         });
 
         this.def = def.join("\n");
-        console.log('def', this.def);
     },
 
     add_path: function(table) {
