@@ -29,6 +29,7 @@ class Schema {
         $this->tables = (array) $schema->tables;
         $this->reports = isset($schema->reports) ? (array) $schema->reports : [];
         $this->contents = isset($schema->contents) ? (array) $schema->contents : [];
+        $this->criteria = isset($schema->criteria) ? $schema->criteria : null;
 
         foreach ($this->tables as $alias => $table) {
             $table->fields = isset($table->fields) ? (array) $table->fields : [];
@@ -103,7 +104,7 @@ class Schema {
     {
         ini_set('max_execution_time', 600); // 10 minutes
 
-        $config->threshold = $config->threshold / 100;
+        $threshold = $config->threshold / 100;
 
         if ($config->replace) {
             $this->tables = [];
@@ -423,7 +424,7 @@ class Schema {
                     // for setting comment in front of drop statements for not empty columns
                     $comment = $count > 0 ? '--' : '';
 
-                    if ($count_rows && $count/$count_rows < $config->threshold) {
+                    if ($count_rows && $count/$count_rows < $threshold) {
 
                         // for setting ratio of columns with value behind drop statements
                         $ratio_comment = $count ? '-- ' . $col->nativetype . "($col->size)  Brukt: " . $count. '/' . $count_rows : '';
@@ -444,7 +445,7 @@ class Schema {
                 do {
                     if ($count_rows < 2) break;
                     if (!in_array($type, ['integer', 'float', 'boolean', 'string'])) break;
-                    if ($type == 'string' && ($col->size > 12 && $count/$count_rows > $config->threshold)) break;
+                    if ($type == 'string' && ($col->size > 12 && $count/$count_rows > $threshold)) break;
                     if (in_array($col_name, $report[$tbl_name]['empty_columns'])) break;
                     if (in_array($col_name, $pk_columns)) break;
 
@@ -454,7 +455,7 @@ class Schema {
                     $distincts = $db->query($sql);
 
                     foreach ($distincts as $distinct) {
-                        if ($distinct->count/$count_rows > (1 - $config->threshold)) {
+                        if ($distinct->count/$count_rows > (1 - $threshold)) {
                             $drop_me = true;
                         }
 
@@ -1107,6 +1108,11 @@ class Schema {
         }
 
         $this->contents = $contents;
+
+        if ($config->add_criteria) {
+            unset($config->dirty);
+            $this->criteria = $config;
+        }
 
         $_SESSION['progress'] = 100;
         session_write_close();

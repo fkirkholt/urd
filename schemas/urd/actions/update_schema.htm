@@ -49,7 +49,14 @@ var schema_dialog = {
                     onchange: function(event) {
                         ds.schema.config.count_rows = $(event.target).prop('checked');
                     }
-                }), ' Tell antall poster i tabellene'
+                }), ' Tell antall poster i tabellene',
+                m('br'),
+                m('input[type=checkbox]', {
+                    checked: ds.schema.config.add_criteria,
+                    onchange: function(event) {
+                        ds.schema.config.add_criteria = $(event.target).prop('checked');
+                    }
+                }), ' Legg disse kriteriene inn i skjemaet',
             ]),
             m('div[name=buttons]', {class: "bottom-0 max-w8 mt2"}, [
                 m('input[type=button]', {

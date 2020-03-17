@@ -112,6 +112,7 @@ class Database {
         $this->relations = isset($schema->relations) ? $schema->relations : [];
         $this->reports = isset($schema->reports) ? $schema->reports : [];
         $this->contents = isset($schema->contents) ? $schema->contents : null;
+        $this->criteria = isset($schema->criteria) ? $schema->criteria : null;
     }
 
     public static function get($db_name=null) {
@@ -174,6 +175,7 @@ class Database {
         $info->base->label = $this->label;
         $info->base->branch = $branch;
         $info->banner = $banner;
+        $info->criteria = $this->criteria;
         $info->user = new \StdClass;
         $info->user->name = $_SESSION['user_name'];
         $info->user->id = $_SESSION['user_id'];
@@ -358,7 +360,7 @@ class Database {
     }
 
     public function fetchSingle($args) {
-        
+
         $args = func_get_args();
         return $this->conn->query($args)->fetchSingle();
     }
