@@ -38,6 +38,7 @@ diagram = {
     draw: function(table) {
         var def = ["classDiagram"];
         def.push("class " + table.name);
+        if (table.type == 'reference') def.push('<<reference>>' + table.name);
 
         diagram.main_table = table.name;
 
@@ -47,7 +48,7 @@ diagram = {
 
         Object.keys(table.fields).map(function(alias) {
             var field = table.fields[alias];
-            var sign = field.nullable ? '-' : '+';
+            var sign = field.hidden ? '# ' : field.nullable ? '- ' : '+ ';
             // number of invicible spaces to align column names
             var count = 6 - field.datatype.length;
             def.push(table.name + ' : ' + sign + field.datatype + _repeat('\u2000', count) + ' ' + field.name);
@@ -57,9 +58,12 @@ diagram = {
             var fk = table.foreign_keys[alias];
             var field = table.fields[alias];
             var label = field.label ? field.label : alias;
-            def.push(table.name + (field.hidden ? ' ..> ' : ' --> ') + fk.table + ' : ' + label);
+            def.push(fk.table + (field.hidden ? ' <.. ' : ' <-- ') + table.name + ' : ' + label);
 
             var fk_table = ds.base.tables[fk.table];
+            if ($.inArray('class ' + fk.table, def) !== -1) return
+            def.push('class ' + fk.table);
+            if (fk_table.type == 'reference') def.push('<<reference>>' + fk.table);
             def.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
             if (fk_table.count_rows && fk.table != table.name) {
                 def.push(fk.table + ' : count(' + fk_table.count_rows + ')');
@@ -69,7 +73,7 @@ diagram = {
         Object.keys(table.relations).map(function(alias) {
             var rel = table.relations[alias];
             if (rel.table == table.name) return;
-            def.push(rel.table + (rel.hidden ? " ..> " : " --> ") + table.name);
+            def.push(table.name + (rel.hidden ? ' <.. ' : ' <-- ') + rel.table);
 
             var rel_table = ds.base.tables[rel.table];
             if (rel_table.count_rows) {
