@@ -941,7 +941,11 @@ class Schema {
 
             foreach ($table->foreign_keys as $alias => $fk) {
                 if ($fk->table !== $table->name && empty($table->fields[$alias]->hidden)) {
-                    $top_level = false;
+                    $fk_table = $this->tables[$fk->table];
+
+                    if ($fk_table->type !== 'reference') {
+                        $top_level = false;
+                    }
                 }
             }
 
@@ -1101,7 +1105,7 @@ class Schema {
             }
         }
 
-        ksort($contents);
+        ksort($contents, SORT_NATURAL);
 
         // Move 'Andre' last
         if (!empty($contents['Andre'])) {
