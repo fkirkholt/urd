@@ -817,6 +817,7 @@ class Schema {
 
                     $ref_field_name = end($fk->local);
                     $ref_field = $this->tables[$relation->table]->fields[$ref_field_name];
+                    $ref_tbl_col = $relation->table . '.' . $ref_field_name;
 
                     // Don't show relations coming from hidden fields
                     if (!empty($ref_field->hidden)) {
@@ -827,7 +828,9 @@ class Schema {
                     // Don't show fields referring to hidden table
                     if (!empty($table->hidden) && !in_array($ref_field_name, $rel_table->primary_key)) {
                         $ref_field->hidden = true;
-                    } else {
+                    } else if (isset($config->dirty->{$table->name}->hidden) && !isset($drops[$ref_tbl_col])) {
+                        // unset property hidden for columns where fk table is shown again
+                        // and where the column is not hidden for other reasons
                         unset($ref_field->hidden);
                     }
                     $this->tables[$relation->table]->fields[$ref_field_name] = $ref_field;

@@ -56,9 +56,8 @@ diagram = {
         Object.keys(table.foreign_keys).map(function(alias) {
             var fk = table.foreign_keys[alias];
             var field = table.fields[alias];
-            if (field.hidden) return;
             var label = field.label ? field.label : alias;
-            def.push(table.name + " --> " + fk.table + ' : ' + label);
+            def.push(table.name + (field.hidden ? ' ..> ' : ' --> ') + fk.table + ' : ' + label);
 
             var fk_table = ds.base.tables[fk.table];
             def.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
@@ -69,8 +68,8 @@ diagram = {
 
         Object.keys(table.relations).map(function(alias) {
             var rel = table.relations[alias];
-            if (rel.hidden || rel.table == table.name) return;
-            def.push(rel.table + " --> " + table.name);
+            if (rel.table == table.name) return;
+            def.push(rel.table + (rel.hidden ? " ..> " : " --> ") + table.name);
 
             var rel_table = ds.base.tables[rel.table];
             if (rel_table.count_rows) {
