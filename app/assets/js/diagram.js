@@ -61,7 +61,7 @@ diagram = {
             def.push(fk.table + (field.hidden ? ' <.. ' : ' <-- ') + table.name + ' : ' + label);
 
             var fk_table = ds.base.tables[fk.table];
-            if ($.inArray('class ' + fk.table, def) !== -1) return
+            if ($.inArray('class ' + fk.table, def) !== -1) return;
             def.push('class ' + fk.table);
             if (fk_table.type == 'reference') def.push('<<reference>>' + fk.table);
             def.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
@@ -76,6 +76,8 @@ diagram = {
             def.push(table.name + (rel.hidden ? ' <.. ' : ' <-- ') + rel.table);
 
             var rel_table = ds.base.tables[rel.table];
+            if ($.inArray('class ' + rel.table, def) !== -1) return;
+            def.push('class ' + rel.table);
             if (rel_table.count_rows) {
                 def.push(rel.table + ' : count(' + rel_table.count_rows + ')');
             }
