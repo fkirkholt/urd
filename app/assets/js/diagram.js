@@ -159,13 +159,13 @@ diagram = {
 
             if (fk_table.hidden) return;
 
-            new_path.push(table.name + ' --> ' + fk.table);
-
             if (fk.table == diagram.main_table) {
                 found_path = found_path.concat(new_path);
                 return new_path;
             } else {
                 if (fk_table.type == 'reference') return;
+
+                new_path.push(table.name + ' --> ' + fk.table);
 
                 new_path = diagram.get_path(fk_table, new_path);
                 if (new_path) {
