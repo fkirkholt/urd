@@ -93,6 +93,17 @@ diagram = {
         this.def = def.join("\n");
     },
 
+    draw_foreign_keys: function(table, def, module) {
+        Object.keys(table.foreign_keys).map(function(alias) {
+            var fk = table.foreign_keys[alias];
+            var field = table.fields[alias];
+            if (field.hidden) return;
+            console.log('module', module);
+            if (Object.values(module.items).indexOf('tables.' + fk.table) == -1) return;
+            def.push(fk.table + ' <-- ' + table.name);
+        });
+    },
+
     add_path: function(table) {
         var path = []
         var level = 0;

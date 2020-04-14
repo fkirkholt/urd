@@ -58,6 +58,11 @@ contents = {
                     style: 'display: inline',
                     onclick: function(e) {
                         item.hidden = !item.hidden;
+                    },
+                    oncontextmenu: function(event) {
+                        contents.context_module = label;
+                        $('ul#context-module').css({top: event.clientY, left: event.clientX}).toggle();
+                        return false;
                     }
                 }, label),
                 !item.count || !config.admin ? '' : m('span', {
@@ -93,19 +98,19 @@ contents = {
                     : 'inline';
             return m('div', {
                 class: ds.table && ds.table.name == object.name ? 'bg-light-gray' : '',
-                oncontextmenu: function(event){
+                oncontextmenu: function(event) {
                     if (!config.admin) return false;
                     contents.context_table = object;
 
                     var hidden_txt = object.hidden ? 'Vis tabell' : 'Skjul tabell';
-                    $('ul#context li.hide').html(hidden_txt);
+                    $('ul#context-table li.hide').html(hidden_txt);
 
                     var type_txt = object.type == 'reference'
                         ? 'Sett til datatabell'
                         : 'Sett til referansetabell';
-                    $('ul#context li.type').html(type_txt);
+                    $('ul#context-table li.type').html(type_txt);
 
-                    $('ul#context').css({top: event.clientY, left: event.clientX}).toggle();
+                    $('ul#context-table').css({top: event.clientY, left: event.clientX}).toggle();
                     return false;
                 }
             }, [
@@ -149,14 +154,33 @@ contents = {
         if (!ds && !ds.base.contents) return;
 
         return m('.contents', {class: ["flex", ds.type == 'contents' ? 'w-100' : ''].join(' ')}, [
-            m('ul#context', {
+            m('ul#context-module', {
+                class: 'absolute left-0 bg-white list pa1 shadow-5 dn pointer z-999'
+            }, [
+                m('li', {
+                    class: 'hover-blue',
+                    onclick: function() {
+                        var module = contents.context_module;
+                        var def = ['classDiagram'];
+
+                        Object.values(ds.base.contents[module].items).map(function(item) {
+                            var object = _get(ds.base, item, ds.base.tables[item]);
+                            diagram.draw_foreign_keys(object, def, ds.base.contents[module]);
+                        });
+
+                        diagram.def = def.join("\n");
+                        $('ul#context-module').hide();
+                    }
+                }, 'Vis diagram')
+            ]),
+            m('ul#context-table', {
                 class: 'absolute left-0 bg-white list pa1 shadow-5 dn pointer z-999'
             }, [
                 config.show_table ? '' : m('li', {
                     class: 'hover-blue',
                     onclick: function() {
                         diagram.add_path(contents.context_table);
-                        $('ul#context').hide();
+                        $('ul#context-table').hide();
                     }
                 }, 'Vis koblinger til denne tabellen'),
                 m('li.hide', {
@@ -164,7 +188,7 @@ contents = {
                     onclick: function() {
                         var tbl = contents.context_table;
                         tbl.hidden = !tbl.hidden;
-                        $('ul#context').hide();
+                        $('ul#context-table').hide();
 
                         contents.set_dirty_attr(tbl, 'hidden', tbl.hidden);
                     }
@@ -176,7 +200,7 @@ contents = {
                         tbl.type = tbl.type == 'data'
                             ? 'reference'
                             : 'data';
-                        $('ul#context').hide();
+                        $('ul#context-table').hide();
 
                         contents.set_dirty_attr(tbl, 'type', tbl.type)
                     }
