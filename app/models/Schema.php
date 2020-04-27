@@ -1038,7 +1038,7 @@ class Schema {
                 $placed = false;
 
                 if ($config->urd_structure) {
-                    $contents[$label] = $table_alias;
+                    $contents[$label] = 'tables.' . $table_alias;
                     continue;
                 }
 
@@ -1116,7 +1116,7 @@ class Schema {
 
         $this->contents = $contents;
 
-        if ($config->add_criteria) {
+        if (!empty($config->add_criteria)) {
             unset($config->dirty);
             $this->criteria = $config;
         }

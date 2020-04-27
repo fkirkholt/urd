@@ -153,7 +153,7 @@ contents = {
 
         if (!ds && !ds.base.contents) return;
 
-        return m('.contents', {class: ["flex", ds.type == 'contents' ? 'w-100' : ''].join(' ')}, [
+        return m('.contents', {class: "flex"}, [
             m('ul#context-module', {
                 class: 'absolute left-0 bg-white list pa1 shadow-5 dn pointer z-999'
             }, [
