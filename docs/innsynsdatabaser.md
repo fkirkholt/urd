@@ -24,7 +24,7 @@ F.eks. kan man navngi tabell for sakstyper i en noark-base som "ref_sakstype" el
 
 ### Gruppering av tabeller i moduler
 
-Man kan gruppere tabeller sammen ved å gi dem samme prefix. En slik gruppering gjenspeiler måten man ofte vil gjøre det på når man designer databaser. 
+Man kan gruppere tabeller sammen ved å gi dem samme prefix. En slik gruppering gjenspeiler måten man ofte vil gjøre det på når man designer databaser.
 
 Tabeller med samme prefix opptrer under samme overskrift i innholdsfortegnelsen. Overskriften er utledet fra prefixet, enten ved at den er det samme som prefixet, eller at prefixet er angitt som term i tabellen "meta_terminology", og gitt en ledetekst (label) der. Da vises denne ledeteksten som overskrift. (jf. under om tabell for terminologi).
 
@@ -32,7 +32,7 @@ Tabeller med samme prefix opptrer under samme overskrift i innholdsfortegnelsen.
 
 Man kan angi at en tabell er underordnet en annen tabell, ved å sette et prefix lik tabellnavnet til hovedtabellen. Dette fører til at den underordnede tabellen ikke vises i innholds-listen i URD. F.eks. vil tabellen `person_adresse` være underordnet `person`-tabellen, og dermed vises den ikke på innholds-oversikten. Tanken er at slike tabeller kun er relevante i forbindelse med den overordnede tabellen, og det er derfor uaktuelt å vise dem som selvstendige tabeller man kan søke i.
 
-Dette vil ofte gjelde mange tabeller i en større database - også kryssreferanse-tabeller. Det er også i tråd med ofte brukt databasedesign å angi navn på en kryssreferansetabell som en kombinasjon av tabellnavnene til de to tabellene den knytter sammen. 
+Dette vil ofte gjelde mange tabeller i en større database - også kryssreferanse-tabeller. Det er også i tråd med ofte brukt databasedesign å angi navn på en kryssreferansetabell som en kombinasjon av tabellnavnene til de to tabellene den knytter sammen.
 
 ## Kolonnenavn
 
@@ -88,31 +88,36 @@ Ofte vil en relasjon kalles det samme som tabellen til de postene som refererer 
 
 Man bruker da navnet på indeksen til å bestemme hva som skal vises som overskrift/ledetekst. Dermed må indeksene bygges opp etter et spesielt mønster. Det er forsøkt å bygge dette opp slik at man i stor grad kan bruke mønstre som allerede er utbredt for navngivning av indekser.
 
-En veldig utbredt måte å angi indekser på er å bruke mønsteret `<prefix>_<tabellnavn>_<kolonnenavn>`, hvor `<prefix>` betegner typen indeks. Foreløpig gjenkjenner URD kun `idx` som prefiks for indekstype. Så da kan man f.eks. lage indeksen `idx_journalpost_saksnummer` som kan brukes til å finne alle journalposter tilhørende en sak. For å lage ledeteksten/overskriften til alle journalpostene når man står på en sak, kuttes prefikset og kolonnenavnet, og man står igjen med "Journalpost" som ledetekst, som altså er det vi vil ha.
+En veldig utbredt måte å angi indekser på er å bruke mønsteret `<prefix>_<tabellnavn>_<kolonnenavn>`, hvor `<prefix>` betegner typen indeks. Foreløpig gjenkjenner URD kun `idx` som prefiks for indekstype. Så da kan man f.eks. lage indeksen `idx_journalpost_sak` som kan brukes til å finne alle journalposter tilhørende en sak.
 
-Men det er ikke alltid så enkelt. En person kan f.eks. ha flere relasjoner til saker. Han/hun kan være saksansvarlig for en rekke saker, men også registrert som den som sist har gjort endringer på noen saker.
+For å lage ledeteksten/overskriften til alle journalpostene når man står på en sak, kuttes prefikset og kolonnenavnet, og man står igjen med "Journalpost" som ledetekst, som altså er det vi vil ha.
+
+Men det er ikke alltid så enkelt. En bruker kan f.eks. ha flere relasjoner til saker. Han/hun kan være saksansvarlig for en rekke saker, men også registrert som den som sist har gjort endringer på noen saker.
 
 Når man står på en person, vil man derfor kunne ha to relasjoner til sakstabellen, hvor den ene betegner de sakene vedkommende har saksansvar for, og den andre betegner de sakene vedkommende sist har oppdatert. Begge disse relasjonene kan ikke kalles "Saker".
 
 Vi kan navngi indeksene på følgende måte for å få de ledetekstene vi ønsker:
-- `idx_person_har_saksansvar_for`
-- `idx_person_har_oppdatert_sak`
+- `idx_sak_saksansvar`
+- `idx_sak_oppdatert_av`
 
-Her har vi brukt mønsteret `<prefix>_<referert_tabell>_<ledetekst>`, som altså URD gjenkjenner. Både prefikset og navn på referert tabell fjernes, og vi står igjen med ledeteksten. Ved at vi setter navn på referert tabell etter prefikset, ser vi straks hva indeksen brukes til - den brukes til å finne saker som en person har relasjoner til.
+Her har vi navngitt indeksene etter standarden referert til ovenfor. Når man står på en bruker, vil disse relasjonene framstå som:
+- Sak (saksansvar)
+- Sak (oppdatert av)
 
-Det generelle mønsteret som URD gjenkjenner er som følger:
+Det URD gjør her, er å legge kolonnenavnet fra sakstabellen i parentes etter tabellnavnet. Dermed ser vi hvilken relasjon vi har med å gjøre.
 
-`<prefix>_<referert_tabell>_<ledetekst>_<refererende_felt>_<suffix>`
+Regelen er slik at dersom kolonnenavnet er det samme som navnet på den refererte tabellen, så vises det ikke i ledeteksten til relasjonen, men dersom det ikke samsvarer med navn på referert tabell, vises det i parentes.
 
-`<prefix>` er valgritt. Det kan være enten `idx` eller `fk`. Førstnevnte er mye brukt som prefiks for indekser, mens sistnevnte er tatt med fordi MySQL automatisk oppretter en indeks (hvis det ikke eksisterer en fra før som kan brukes) når man oppretter en fremmednøkkel. Da denne indeksen får samme navn som fremmednøkkelen, og det er vanlig å ha prefiks `fk_` på fremmednøkler, tillates altså dette prefikset.
+URD gjenkjenner følgende mønster på index-navn som betegner har-mange-relasjoner:
+`<prefix>_<tabellnavn>_<kolonnenavn>_<postfix>`
 
-`<referert_tabell>` er også valgfritt. Det er tatt med fordi det blir enklere å lage navn som viser hvilken relasjon indeksen brukes til å finne.
+`<prefix>` er valgritt. Det kan være enten `idx` eller `fk`. Førstnevnte er mye brukt som prefiks for indekser, mens sistnevnte er tatt med fordi MySQL automatisk oppretter en indeks (hvis det ikke eksisterer en fra før som kan brukes) når man oppretter en fremmednøkkel. Da denne indeksen får samme navn som fremmednøkkelen, og det er vanlig å ha prefiks `fk_` på fremmednøkler, tillates altså dette prefikset. Merk at man i MySQL spesifikt må sette navn på foreign key constraint - hvis man ikke gjør det, opprettes en index med navn lik kolonnen som indekseres.
 
-`<ledetekst>` er obligatorisk, og er den teksten som vises som overskrift for relasjonen. Denne vil ofte være lik tabellnavnet til refererende tabell.
+`<tabellnavn>` er navnet på tabellen hvor indexen er definert. Det blir brukt som ledetekst til relasjonen når man står på en post i referert tabell. Man behøver ikke å bruke tabellnavnet her, da det man skriver her uansett blir brukt som ledetekst. Man kan altså skrive her det som man ønsker skal framstå som ledetekst.
 
-`<refererende_felt>` er valgfritt, og betegner det feltet som representerer fremmednøkkelen.
+`<kolonnenavn>` er navnet på den indekserte kolonnen, som også representerer fremmednøkkelen. Hvis dette navnet samsvarer med navn på referert tabell, vil det ikke tas med i ledeteksten. Hvis det ikke samsvarer med navn på referert tabell, vil det settes i parentes etter navnet på referert tabell.
 
-`<suffix>` er valgfritt, og kan være `idx` eller `fk`. Det kan brukes istedenfor prefiks.
+`<postfix>` er valgfritt, og kan ha samme verdier som `<prefix>`. Dvs. man kan sette `idx` eller `fk` enten som prefix eller som postfix.
 
 
 ## Fremmednøkler

@@ -342,10 +342,14 @@ class Schema {
                 });
 
                 $patterns = [];
-                $patterns[] = '/^(?:fk_|idx_)?(?:' . $key->table . '_)?/';
-                $patterns[] = '/(?:_' . implode('_', $key->local) . ')?(?:_fk|_idx)?$/';
+                $patterns[] = '/^(fk_|idx_)/'; // find prefix
+                $patterns[] = '/(_' . $key->table . ')(_fk|_idx)?$/'; // find referenced table
+                $key_string = implode('_', $key->local);
+                $patterns[] = '/(_' . $key_string . ')(_fk|_idx)?$/'; // find column names
+                $patterns[] = '/(_fk|_idx)$/'; // find postfix
 
-                $replacements = ['', '', '', ''];
+                $replace = $key->table == $key_string ? '' : ' (' . $key_string . ')';
+                $replacements = ['', '', $replace, ''];
 
                 $label = $config->urd_structure && $key_index
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
