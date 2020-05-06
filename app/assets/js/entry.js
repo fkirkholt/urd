@@ -653,6 +653,7 @@ var entry = {
                             m('tr', {
                                 class: config.relation_view === 'column' && _isEqual(rec, record.active_relation) ? 'bg-blue white' : '',
                                 onclick: function() {
+                                    if (rec.primary_key == null) return;
                                     record.active_relation = rec;
                                     entry.toggle_record(rec, rel);
                                 }
@@ -669,7 +670,7 @@ var entry = {
                                         ].join(' ')
                                     })
                                 ]),
-                                config.relation_view === 'column' ? '' : m('td.fa', {
+                                config.relation_view === 'column' || rec.primary_key == null ? '' : m('td.fa', {
                                     class: [
                                         rec.open ? 'fa-angle-down' : 'fa-angle-right',
                                         rec.invalid ? 'invalid' : rec.dirty ? 'dirty' : '',
