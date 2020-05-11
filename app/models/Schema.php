@@ -1072,7 +1072,7 @@ class Schema {
                     $contents[$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
-                        'items' => $table_names
+                        'items' => array_map(function($value) { return 'tables.'.$value; }, $table_names)
                     ];
 
                     continue;
