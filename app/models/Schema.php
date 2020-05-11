@@ -732,20 +732,19 @@ class Schema {
             if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
 
             // Find if the table is subordinate to other tables
-            // i.e. it has an other table's name as prefix
+            // i.e. the primary key also has a foreign key
+            $subordinate = false;
             if ($config->urd_structure) {
-                $parent_tables = array_filter($db_tables, function($name) use ($tbl_name, $table) {
-                    // add underscore to $name if it doesn't end with underscore
-                    $name_ = substr($name, -1) === '_' ? $name : $name . '_';
-                    return ($name != $tbl_name && substr($tbl_name, 0, strlen($name_)) === $name_)
-                        || (!empty($table->extends) && $table->extends === $name);
-                });
-            } else {
-                $parent_tables = [];
+                if (empty($table->primary_key)) $subordinate = true;
+                foreach ($table->primary_key as $colname) {
+                    if (isset($table->foreign_keys[$colname])) {
+                        $subordinate = true;
+                    }
+                }
             }
 
             // Only add tables that are not subordinate to other tables
-            if (!count($parent_tables)) {
+            if (!$subordinate) {
                 // Remove group prefix from label
                 $rest = str_replace($group . '_', '', $tbl_alias);
                 $label = isset($terms[$rest])

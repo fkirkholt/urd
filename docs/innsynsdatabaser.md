@@ -30,9 +30,9 @@ Tabeller med samme prefix opptrer under samme overskrift i innholdsfortegnelsen.
 
 ### Uselvstendige tabeller
 
-Man kan angi at en tabell er underordnet en annen tabell, ved å sette et prefix lik tabellnavnet til hovedtabellen. Dette fører til at den underordnede tabellen ikke vises i innholds-listen i URD. F.eks. vil tabellen `person_adresse` være underordnet `person`-tabellen, og dermed vises den ikke på innholds-oversikten. Tanken er at slike tabeller kun er relevante i forbindelse med den overordnede tabellen, og det er derfor uaktuelt å vise dem som selvstendige tabeller man kan søke i.
+Man angir at en tabell er underordnet en annen tabell, ved å lage en primærnøkkel for tabellen som består av flere kolonner, og hvor minst én kolonne samtidig er fremmednøkkel til en annen tabell. Dersom man f.eks. har tabellen `adresse` som har primærnøkkel `person, type`, så er altså denne tabellen underordnet `person`-tabellen. Dette medfører at `adresse`-tabellen ikke vises i innholds-listen i URD.
 
-Dette vil ofte gjelde mange tabeller i en større database - også kryssreferanse-tabeller. Det er også i tråd med ofte brukt databasedesign å angi navn på en kryssreferansetabell som en kombinasjon av tabellnavnene til de to tabellene den knytter sammen.
+Tanken er at slike tabeller kun er relevante i forbindelse med den overordnede tabellen, og det er derfor uaktuelt å vise dem som selvstendige tabeller man kan søke i. Dette vil ofte gjelde mange tabeller i en større database - også kryssreferanse-tabeller, hvor det er vanlig at primærnøkkel består av de to kolonnene som representerer koblingen mellom de to tabellene.
 
 ## Kolonnenavn
 
