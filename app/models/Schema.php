@@ -807,8 +807,9 @@ class Schema {
 
                     $fk = $rel_table->foreign_keys[$relation->foreign_key];
 
+                    // Find indexes that can be used to get relation
                     $indexes = array_filter($rel_table->indexes, function($index) use ($fk) {
-                        return $index->columns === $fk->local;
+                        return array_slice($index->columns, 0, count($fk->local)) === $fk->local;
                     });
 
                     $label = '';
