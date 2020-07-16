@@ -21,7 +21,7 @@
     "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
     "js-cookie": "^2.2.1",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "mithril": "^1.1.7",
     "moment": "^2.24.0",
     "mousetrap": "^1.6.3",
