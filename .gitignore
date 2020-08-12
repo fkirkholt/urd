@@ -7,7 +7,6 @@ public/assets/
 lib_old/
 lib/img/silk/
 schemas/*/
-schemas/*/uploads/
 inc/versjon.inc.php
 tags
 uncommitted/
@@ -15,7 +14,6 @@ lib/FirePHP.class.php
 lib/FirePHPCore/
 lib/fb.php
 lib/firelogger.php
-schemes/urd/sql/
 app/config/config.php
 public/js/bundle.js
 

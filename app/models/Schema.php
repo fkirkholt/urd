@@ -818,13 +818,12 @@ class Schema {
                         $table->form['items'][$label] = 'relations.'.$alias;
                     }
 
-
                     $ref_field_name = end($fk->local);
                     $ref_field = $this->tables[$relation->table]->fields[$ref_field_name];
                     $ref_tbl_col = $relation->table . '.' . $ref_field_name;
 
                     // Don't show relations coming from hidden fields
-                    if (!empty($ref_field->hidden)) {
+                    if (empty($config->urd_structure) && !empty($ref_field->hidden)) {
                         $relation->hidden = true;
                         if ($label) unset($table->form['items'][$label]);
                     }
