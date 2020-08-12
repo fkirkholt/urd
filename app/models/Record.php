@@ -215,6 +215,11 @@ class Record {
                 $tbl_rel->offset = 0;
                 $tbl_rel->csv = false;
 
+                // Filter the list on highest level when necessary
+                if ($this->tbl->name !== $tbl_rel->name) {
+                    $tbl_rel->user_filtered = false;
+                }
+
                 $relation = $tbl_rel->hent_tabell();
 
                 // Finds condition for relation
