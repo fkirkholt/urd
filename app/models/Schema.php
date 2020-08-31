@@ -755,6 +755,10 @@ class Schema {
             }
 
             // Update records for reference tables
+            if (empty($config->add_ref_records)) {
+                unset($table->records);
+                continue;
+            }
 
             if (!isset($db->tables->$tbl_alias)) continue;
 

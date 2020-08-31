@@ -52,6 +52,13 @@ var schema_dialog = {
                 }), ' Tell antall poster i tabellene',
                 m('br'),
                 m('input[type=checkbox]', {
+                    checked: ds.schema.config.add_ref_records,
+                    onchange: function(event) {
+                        ds.schema.config.add_ref_records = $(event.target).prop('checked');
+                    }
+                }), ' Legg inn poster fra referansetabellene',
+                m('br'),
+                m('input[type=checkbox]', {
                     checked: ds.schema.config.add_criteria,
                     onchange: function(event) {
                         ds.schema.config.add_criteria = $(event.target).prop('checked');
