@@ -617,7 +617,7 @@ var entry = {
                     // draw header cells
                     m('tr', [
                         m('td'),
-                        config.relation_view === 'column' ? '' : m('td', {class: 'w0 gray'}),
+                        config.relation_view === 'column' || rel.primary_key.length == 0 ? '' : m('td', {class: 'w0 gray'}),
                         Object.keys(rel.grid.columns).map(function(label, idx) {
                             var field_name = rel.grid.columns[label];
 
