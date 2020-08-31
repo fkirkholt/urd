@@ -171,9 +171,10 @@ class Schema {
 
         foreach ($db_tables as $tbl_name) {
 
-            $report[$tbl_name] = [];
-            $report[$tbl_name]['empty_columns'] = [];
-            $report[$tbl_name]['almost_empty_columns'] = [];
+            $report[$tbl_name] = [
+                'empty_columns' => [],
+                'almost_empty_columns' => []
+            ];
 
             // Tracks progress
             $processed++;
@@ -219,7 +220,6 @@ class Schema {
 
             } else {
                 $table = $this->tables[$tbl_alias];
-                $table->name = strtolower($tbl_name);
                 $table->label = isset($terms[$tbl_name])
                     ? $terms[$tbl_name]['label'] : (
                         isset($table->label) ? $table->label : null
@@ -236,8 +236,7 @@ class Schema {
                     );
             }
 
-            $colnames = $refl_table->getColumnNames();
-
+            // Hides table if user has marked the table to be hidden
             if (isset($config->dirty->{$table->name}->hidden)) {
                 $table->hidden = $config->dirty->{$table->name}->hidden;
             }
@@ -281,129 +280,122 @@ class Schema {
             }
 
             // Updates foreign keys
+            {
+                $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
-            $foreign_keys = $reflector->getForeignKeys($tbl_name);
-
-            if (!isset($table->foreign_keys)) {
-                $table->foreign_keys = [];
-            }
-
-            foreach ($foreign_keys as $key) {
-                $key = (object) $key;
-                unset($key->onDelete);
-                unset($key->onUpdate);
-                $key->name = strtolower($key->name);
-                $key->schema = $this->name;
-                $key->table = strtolower($key->table);
-                $key->local = array_map('strtolower', $key->local);
-                $key->foreign = array_map('strtolower', $key->foreign);
-                $key_alias = end($key->local);
-
-                // Checks if reference table exists.
-                // This might not be the case if foreign key check is disabled
-                if (!in_array($key->table, $db_tables)) {
-                    $warnings[] = "Fremmednøkkel $key->name er ugyldig";
-                    continue;
+                if (!isset($table->foreign_keys)) {
+                    $table->foreign_keys = [];
                 }
 
-                $table->foreign_keys[$key_alias] = $key;
+                foreach ($foreign_keys as $key) {
+                    $key = (object) $key;
+                    unset($key->onDelete);
+                    unset($key->onUpdate);
+                    $key->name = strtolower($key->name);
+                    $key->schema = $this->name;
+                    $key->table = strtolower($key->table);
+                    $key->local = array_map('strtolower', $key->local);
+                    $key->foreign = array_map('strtolower', $key->foreign);
+                    $key_alias = end($key->local);
 
-                // Add to relations of relation table
-                $key_table_alias = isset($tbl_aliases[$key->table])
-                ? $tbl_aliases[$key->table]
-                : $key->table;
-                if (!isset($this->tables[$key_table_alias])) {
-                    $this->tables[$key_table_alias] = (object) [
-                        "name" => $key->table,
-                        "relations" => [],
-                        "extension_tables" => [],
-                    ];
-                }
-
-                // Checks if the relation defines this as an extension table
-                if ($key->local === $pk_columns) {
-                    // TODO: Dokumenter
-                    if (!isset($this->tables[$key_table_alias]->extension_tables)) {
-                        $this->tables[$key_table_alias]->extension_tables = [];
-                    }
-                    if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
-                        $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
+                    // Checks if reference table exists.
+                    // This might not be the case if foreign key check is disabled
+                    if (!in_array($key->table, $db_tables)) {
+                        $warnings[] = "Fremmednøkkel $key->name er ugyldig";
+                        continue;
                     }
 
-                    $table->extends = $key->table;
-                }
+                    $table->foreign_keys[$key_alias] = $key;
 
-                // Finds index associated with the foreign key
-                $key_index = array_reduce($table->indexes, function($carry, $index) use ($key) {
-                    if (!$carry && $index->columns === $key->local) {
-                        $carry = $index;
+                    // Add to relations of relation table
+                    $key_table_alias = isset($tbl_aliases[$key->table])
+                    ? $tbl_aliases[$key->table]
+                    : $key->table;
+                    if (!isset($this->tables[$key_table_alias])) {
+                        $this->tables[$key_table_alias] = (object) [
+                            "name" => $key->table,
+                            "relations" => [],
+                            "extension_tables" => [],
+                        ];
                     }
-                    return $carry;
-                });
 
-                $patterns = [];
-                $patterns[] = '/^(fk_|idx_)/'; // find prefix
-                $patterns[] = '/(_' . $key->table . ')(_fk|_idx)?$/'; // find referenced table
-                $key_string = implode('_', $key->local);
-                $patterns[] = '/(_' . $key_string . ')(_fk|_idx)?$/'; // find column names
-                $patterns[] = '/(_fk|_idx)$/'; // find postfix
+                    // Checks if the relation defines this as an extension table
+                    if ($key->local === $pk_columns) {
+                        // TODO: Dokumenter
+                        if (!isset($this->tables[$key_table_alias]->extension_tables)) {
+                            $this->tables[$key_table_alias]->extension_tables = [];
+                        }
+                        if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
+                            $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
+                        }
 
-                $replace = $key->table == $key_string ? '' : ' (' . $key_string . ')';
-                $replacements = ['', '', $replace, ''];
+                        $table->extends = $key->table;
+                    }
 
-                $label = $config->urd_structure && $key_index
+                    // Finds index associated with the foreign key
+                    $key_index = array_reduce($table->indexes, function($carry, $index) use ($key) {
+                        if (!$carry && $index->columns === $key->local) {
+                            $carry = $index;
+                        }
+                        return $carry;
+                    });
+
+                    $patterns = [];
+                    $patterns[] = '/^(fk_|idx_)/'; // find prefix
+                    $patterns[] = '/(_' . $key->table . ')(_fk|_idx)?$/'; // find referenced table
+                    $key_string = implode('_', $key->local);
+                    $patterns[] = '/(_' . $key_string . ')(_fk|_idx)?$/'; // find column names
+                    $patterns[] = '/(_fk|_idx)$/'; // find postfix
+
+                    $replace = $key->table == $key_string ? '' : ' (' . $key_string . ')';
+                    $replacements = ['', '', $replace, ''];
+
+                    $label = $config->urd_structure && $key_index
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
                     : ucfirst($tbl_alias);
 
-                if (!isset($table->extends)) {
-                    $this->tables[$key_table_alias]->relations[$key->name] = [
-                        "table" => $tbl_name,
-                        "foreign_key" => $key_alias,
-                        "label" => $label,
-                        "hidden" => (!$key_index && !empty($config->urd_structure)) || !empty($table->hidden)
+                    if (!isset($table->extends)) {
+                        $this->tables[$key_table_alias]->relations[$key->name] = [
+                            "table" => $tbl_name,
+                            "foreign_key" => $key_alias,
+                            "label" => $label,
+                            "hidden" => (!$key_index && !empty($config->urd_structure)) || !empty($table->hidden)
                             ? true
                             : false
-                    ];
+                        ];
+                    }
                 }
             }
 
             // Count table rows
-            $count_rows = $db->select('*')->from($tbl_name)->count();
-            $report[$tbl_name]['rows'] = $count_rows;
-
             if ($config->count_rows) {
+                $count_rows = $db->select('*')->from($tbl_name)->count();
+                $report[$tbl_name]['rows'] = $count_rows;
+
                 $table->count_rows = $count_rows;
             } else {
                 unset($table->count_rows);
             }
 
-            // Updates column properties
 
             if (!isset($table->fields)) {
                 $table->fields = [];
             }
 
-            // Fields may be defined with alias the same as name,
-            // and avoid specifying the name
-            if (count($table->fields)) {
-                foreach ($table->fields as $alias => $field) {
-                    if (!isset($field->name)) $table->fields[$alias]->name = $alias;
+            // Delete columns that doesn't exist anymore
+            $colnames = $refl_table->getColumnNames();
+            foreach ($table->fields as $alias => $field) {
+                // Keep virtual columns
+                if (isset($field->source)) continue;
+
+                if (!in_array($field->name, $colnames) && !in_array($alias, $colnames)) {
+                    unset($table->fields[$alias]);
                 }
             }
 
             $db_columns = $refl_table->getColumns();
 
-            // Delete columns that doesn't exist anymore
-            foreach ($table->fields as $alias => $field) {
-                // Keep virtual columns
-                if (isset($field->source)) continue;
-
-                if (!in_array($field->name, $colnames)) {
-                    unset($table->fields[$alias]);
-                }
-            }
-
-
+            // Updates column properties
             foreach ($db_columns as $col) {
                 $col_name = strtolower($col->name);
                 $tbl_col = "$tbl_name.$col_name";
@@ -521,11 +513,16 @@ class Schema {
                     if ($rec_comment) $drops[$tbl_col] .= "\n" . $rec_comment;
                 }
 
-                $items = array_filter($table->fields, function($item) use ($col_name) {
-                    return $item->name === $col_name;
-                });
+                // Find alias ($key) of existing column in schema
+                if (isset($table->fields[$col_name])) {
+                    $key = $col_name;
+                } else {
+                    $items = array_filter($table->fields, function($item) use ($col_name) {
+                        return $item->name === $col_name;
+                    });
 
-                $key = key($items);
+                    $key = key($items);
+                }
 
                 // Desides what sort of input should be used
                 // todo: support more
@@ -594,10 +591,7 @@ class Schema {
                 }
             }
 
-            $count_visible_fields = count(array_filter($table->fields, function($field) {
-                return !empty($field->hidden);
-            }));
-
+            // Try to decide if the table is a reference table
             if ($config->urd_structure) {
                 if (
                     substr($tbl_name, 0, 4) === 'ref_' ||
@@ -609,6 +603,10 @@ class Schema {
                     $table->type = 'data';
                 }
             } else {
+                // use number of visible fields to decide if table is reference table
+                $count_visible_fields = count(array_filter($table->fields, function($field) {
+                    return !empty($field->hidden);
+                }));
                 if (
                     !isset($table->type) &&
                     $count_visible_fields < 4 &&
@@ -623,6 +621,7 @@ class Schema {
                 }
             }
 
+            // Decide which columns should be shown in grid
             if ($grid_idx) {
                 $table->grid = (object) [
                     'columns' => $grid_idx->columns,
@@ -643,6 +642,7 @@ class Schema {
                 ];
             }
 
+            // Make ation for displaying files
             if (isset($table->indexes[$tbl_name . '_file_path_idx'])) {
 
                 $last_col = end($table->indexes[$tbl_name . '_file_path_idx']->columns);
@@ -665,116 +665,115 @@ class Schema {
 
 
             // Make form
+            {
+                $form = [
+                    'items' => []
+                ];
 
-            $form = [
-                'items' => []
-            ];
+                $col_groups = [];
 
-            $col_groups = [];
+                // Group fields according to first part of field name
+                foreach ($table->fields as $field) {
+                    // Don't add column to form if it's part of primary key but not shown in grid
+                    if (
+                        in_array($field->name, $pk_columns)
+                        && (
+                            (isset($table->grid) && !in_array($field->name, $table->grid->columns))
+                            || !isset($table->grid)
+                        )
+                    ) continue;
 
-            // Group fields according to first part of field name
-            foreach ($table->fields as $field) {
-                // Don't add column to form if it's part of primary key but not shown in grid
-                if (
-                    in_array($field->name, $pk_columns)
-                    && (
-                        (isset($table->grid) && !in_array($field->name, $table->grid->columns))
-                        || !isset($table->grid)
-                    )
-                ) continue;
+                    // Group by prefix
+                    $parts = explode('_', $field->name);
+                    $group = $parts[0];
 
-                // Group by prefix
-                $parts = explode('_', $field->name);
-                $group = $parts[0];
+                    // Don't add fields that start with _
+                    // They are treated as hidden fields
+                    if ($group == '') $field->hidden = true;
+                    if (!empty($field->hidden)) continue;
 
-                // Don't add fields that start with _
-                // They are treated as hidden fields
-                if ($group == '') $field->hidden = true;
-                if (!empty($field->hidden)) continue;
+                    if (!isset($col_groups[$group])) $col_groups[$group] = [];
+                    $col_groups[$group][] = $field->name;
+                }
 
-                if (!isset($col_groups[$group])) $col_groups[$group] = [];
-                $col_groups[$group][] = $field->name;
+                foreach ($col_groups as $group_name => $col_names) {
+                    if (count($col_names) == 1) {
+                        $label = ucfirst(str_replace('_', ' ', $col_names[0]));
+                        $form['items'][$label] = $col_names[0];
+                    } else {
+                        foreach ($col_names as $i => $col_name) {
+                            // removes group name prefix from column name and use the rest as label
+                            $rest = str_replace($group_name . '_', '', $col_name);
+                            $label = isset($terms[$rest])
+                                ? $terms[$rest]['label']
+                                : ucfirst(str_replace('_', ' ', $rest));
+                            // replace indexed key in array with named key
+                            $col_names[$label] = $col_name;
+                            unset($col_names[$i]);
+                        }
+                        $group_label = isset($terms[$group_name])
+                            ? $terms[$group_name]['label']
+                            : ucfirst($group_name);
+                        $form['items'][$group_label] = [
+                            'items' => $col_names
+                        ];
+                    }
+                }
+
+                $table->form = $form;
             }
 
-            foreach ($col_groups as $group_name => $col_names) {
-                if (count($col_names) == 1) {
-                    $label = ucfirst(str_replace('_', ' ', $col_names[0]));
-                    $form['items'][$label] = $col_names[0];
+
+            // Add table to table group
+            {
+                if ($config->urd_structure) {
+                    $group = explode('_', $tbl_alias)[0];
+
+                    // Find if the table is subordinate to other tables
+                    // i.e. the primary key also has a foreign key
+                    $subordinate = false;
+                    if (empty($table->primary_key)) $subordinate = true;
+                    foreach ($table->primary_key as $colname) {
+                        if (isset($table->foreign_keys[$colname])) {
+                            $subordinate = true;
+                        }
+                    }
                 } else {
-                    foreach ($col_names as $i => $col_name) {
-                        // removes group name prefix from column name and use the rest as label
-                        $rest = str_replace($group_name . '_', '', $col_name);
-                        $label = isset($terms[$rest])
-                            ? $terms[$rest]['label']
-                            : ucfirst(str_replace('_', ' ', $rest));
-                        // replace indexed key in array with named key
-                        $col_names[$label] = $col_name;
-                        unset($col_names[$i]);
-                    }
-                    $group_label = isset($terms[$group_name])
-                        ? $terms[$group_name]['label']
-                        : ucfirst($group_name);
-                    $form['items'][$group_label] = [
-                        'items' => $col_names
-                    ];
+                    $group = $tbl_alias;
+                    $subordinate = false;
                 }
-            }
 
-            $table->form = $form;
+                // Only add tables that are not subordinate to other tables
+                if (!$subordinate) {
+                    // Remove group prefix from label
+                    $rest = str_replace($group . '_', '', $tbl_alias);
+                    $label = isset($terms[$rest])
+                        ? $terms[$rest]['label']
+                        : ucfirst(str_replace('_', ' ', $rest));
 
-            $this->tables[$tbl_alias] = $table;
-
-            // Group tables
-            $parts = explode('_', $tbl_alias);
-            // Group only if the database has urd structure
-            $group = $config->urd_structure ? $parts[0] : $tbl_alias;
-
-            if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
-
-            // Find if the table is subordinate to other tables
-            // i.e. the primary key also has a foreign key
-            $subordinate = false;
-            if ($config->urd_structure) {
-                if (empty($table->primary_key)) $subordinate = true;
-                foreach ($table->primary_key as $colname) {
-                    if (isset($table->foreign_keys[$colname])) {
-                        $subordinate = true;
-                    }
+                    if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
+                    $tbl_groups[$group][$label] = $tbl_alias;
                 }
-            }
-
-            // Only add tables that are not subordinate to other tables
-            if (!$subordinate) {
-                // Remove group prefix from label
-                $rest = str_replace($group . '_', '', $tbl_alias);
-                $label = isset($terms[$rest])
-                    ? $terms[$rest]['label']
-                    : ucfirst(str_replace('_', ' ', $rest));
-
-                $tbl_groups[$group][$label] = $tbl_alias;
             }
 
             // Update records for reference tables
-            if (empty($config->add_ref_records)) {
-                unset($table->records);
-                continue;
+            {
+                if (empty($config->add_ref_records)) {
+                    unset($table->records);
+                    continue;
+                }
+
+                if (!isset($db->tables[$tbl_alias])) continue;
+
+                if ($table->type !== 'reference') continue;
+
+                $sql = "SELECT * FROM $table->name";
+                $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
+
+                $table->records = $db->conn->query($sql)->fetchAll();
             }
 
-            if (!isset($db->tables->$tbl_alias)) continue;
-
-            $tbl = Table::get($db->name, $tbl_alias);
-
-            if ($tbl->type !== 'reference') continue;
-
-            $sql = "SELECT * FROM $tbl->name";
-            $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
-            $records = $db->conn->query($sql)->fetchAll();
-
-            $this->tables[$tbl_alias]->records = [];
-
-            foreach ($records as $record) {
-                $this->tables[$tbl_alias]->records[] = $record;
-            }
+            $this->tables[$tbl_alias] = $table;
 
         }
 
