@@ -34,6 +34,8 @@ Man angir at en tabell er underordnet en annen tabell, ved å lage en primærnø
 
 Tanken er at slike tabeller kun er relevante i forbindelse med den overordnede tabellen, og det er derfor uaktuelt å vise dem som selvstendige tabeller man kan søke i. Dette vil ofte gjelde mange tabeller i en større database - også kryssreferanse-tabeller, hvor det er vanlig at primærnøkkel består av de to kolonnene som representerer koblingen mellom de to tabellene.
 
+Man kan også markere at en tabell ikke er selvstendig ved å unnlate å gi den en primærnøkkel. Dette er generelt ikke anbefalt i databasedesign, men i innsynsbaser kan det likevel rettferdiggjøres. Hvis poster bare skal vises som relasjoner til andre poster, og man ikke har noe behov for å hente en enkeltpost, så har man egentlig ikke behov for primærnøkkel. Uten primærnøkkel vil URD derfor bare vise relasjonene, uten at man får noen mulighet til å ekspandere hver enkelt post.
+
 ## Kolonnenavn
 
 På samme måte som tabellnavn, brukes kolonnenavnene direkte til ledetekster. Man kan her også skille ord vha. understrek (`_`).
