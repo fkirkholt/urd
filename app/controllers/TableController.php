@@ -90,12 +90,6 @@ class TableController extends BaseController {
             return $this->response->body(json_encode(['message' => 'No permission']));
         }
 
-        if ($req->base == dibi::getConnection()->getConfig('name') && $tbl->name == 'database_') {
-            $data['type'] = 'database';
-        }
-        else {
-            $data['type'] = 'table';
-        }
         // TODO: hører ikke hjemme her, men i modellen!
         $data['saved_filters'] = $tbl->get_saved_searches();
 

@@ -43,6 +43,8 @@ var home = {
 
         if (config.admin) return m(datapanel);
 
+        ds.type = 'dblist';
+
         return m('div', [
             m('h2', 'Databaser'),
             m('ul', [

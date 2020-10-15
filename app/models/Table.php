@@ -722,6 +722,7 @@ class Table {
     }
 
     // TODO: Fungerer ikke
+    /*
     public function set_action_visibility($join, $condition) {
         if (count($this->handlinger) > 0) {
             $select_handling = array();
@@ -757,6 +758,7 @@ class Table {
             }
         }
     }
+    */
 
     /**
      * Get array of sort fields

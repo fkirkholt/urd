@@ -72,11 +72,11 @@ var schema_dialog = {
                     onclick: function() {
                         var rec_idx;
                         var prim_key;
-                        if (ds.type !== 'dblist') {
-                            prim_key = {name: ds.base.name};
-                        } else {
+                        if (ds.base.schema == 'urd' && ds.table.name == 'database_') {
                             rec_idx = ds.table.selection;
                             prim_key = ds.table.records[rec_idx].primary_key;
+                        } else {
+                            prim_key = {name: ds.base.name};
                         }
                         var prim_nokler_json = JSON.stringify(prim_key);
                         var config = ds.schema.config;

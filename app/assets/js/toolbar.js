@@ -179,8 +179,7 @@ var toolbar = {
             ]);
         }
 
-        if (!ds.table || ds.table.type === 'database' && !config.admin) return;
-        if (!ds.table.records) return;
+        if (!ds.table || !ds.table.records || ds.type === 'dblist') return;
 
         var param = m.route.param();
 

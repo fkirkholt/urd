@@ -168,7 +168,8 @@ var grid = {
                 sort_fields[key]['idx'] = i;
             });
             ds.table.sort_fields = sort_fields;
-            ds.type = ds.table.type == 'database' ? 'dblist' : ds.table.type;
+
+            ds.type = 'table';
 
             ds.table.query = data.filter;
 

@@ -8,6 +8,8 @@ var datapanel = {
 
         if (!ds.table) return;
 
+        ds.type = 'table';
+
         if (!config.show_table) {
             var table_name = m.route.param('table');
             if (ds.table && ds.table.name !== table_name) {
