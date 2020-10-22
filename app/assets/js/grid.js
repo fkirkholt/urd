@@ -374,7 +374,7 @@ var grid = {
                     return control.draw_action_button(record, action);
                 }
 
-                return control.draw_cell(ds.table, idx, col, {compressed: config.compressed, border: true});
+                return control.draw_cell(ds.table, idx, col, {compressed: config.compressed, border: true, grid: true});
             })
         ]);
     },

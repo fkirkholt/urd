@@ -388,7 +388,7 @@ var control = {
         if (field.hidden) return;
         var value = rec.columns[col] != null ? rec.columns[col] : '';
         value = control.display_value(field, value);
-        var expansion = col === list.expansion_column && list.type === 'table';
+        var expansion = col === list.expansion_column && options.grid;
         var is_checkbox = field.element == 'input[type=checkbox]';
 
         var icon = m('i', {
