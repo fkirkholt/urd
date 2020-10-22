@@ -368,10 +368,9 @@ class Schema {
             }
 
             // Count table rows
+            $count_rows = $db->select('*')->from($tbl_name)->count();
+            $report[$tbl_name]['rows'] = $count_rows;
             if ($config->count_rows) {
-                $count_rows = $db->select('*')->from($tbl_name)->count();
-                $report[$tbl_name]['rows'] = $count_rows;
-
                 $table->count_rows = $count_rows;
             } else {
                 unset($table->count_rows);
@@ -756,6 +755,8 @@ class Schema {
                 }
             }
 
+            $this->tables[$tbl_alias] = $table;
+
             // Update records for reference tables
             {
                 if (empty($config->add_ref_records)) {
@@ -773,6 +774,7 @@ class Schema {
                 $table->records = $db->conn->query($sql)->fetchAll();
             }
 
+            // Updates table definition with records
             $this->tables[$tbl_alias] = $table;
 
         }
@@ -815,7 +817,6 @@ class Schema {
                         return array_slice($index->columns, 0, count($fk->local)) === $fk->local;
                     });
 
-                    $label = '';
                     if (count($indexes) && empty($rel_table->hidden)) {
                         $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
                         $table->form['items'][$label] = 'relations.'.$alias;
@@ -828,7 +829,7 @@ class Schema {
                     // Don't show relations coming from hidden fields
                     if (empty($config->urd_structure) && !empty($ref_field->hidden)) {
                         $relation->hidden = true;
-                        if ($label) unset($table->form['items'][$label]);
+                        if (!empty($label)) unset($table->form['items'][$label]);
                     }
 
                     // Don't show fields referring to hidden table
