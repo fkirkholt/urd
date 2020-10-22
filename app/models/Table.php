@@ -721,6 +721,17 @@ class Table {
         }
     }
 
+    // Get column representing parent in self referencing tables
+    public function get_parent_column() {
+        // Find relation to child records
+        $relations = array_filter((array) $this->relations, function($relation) {
+                return $relation->table === $this->name;
+        });
+        $rel = reset($relations);
+
+        return $this->fields[$rel->foreign_key];
+    }
+
     // TODO: Fungerer ikke
     /*
     public function set_action_visibility($join, $condition) {
@@ -945,14 +956,9 @@ class Table {
 
         // Get number of relations to same table for expanding row
         if (!empty($this->expansion_column)) {
-            $relations = array_filter((array) $this->relations, function($relation) {
-                return $relation->table === $this->name;
-            });
-
-            $rel = reset($relations);
 
             // TODO: Support composite key
-            $rel_column = $this->fields[$rel->foreign_key];
+            $rel_column = $this->get_parent_column();
             $pk_column = $this->primary_key[0];
 
             $selects['count_children'] = "(SELECT count(*)

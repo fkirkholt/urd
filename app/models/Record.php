@@ -198,6 +198,13 @@ class Record {
             // else get all relations
             if ($count) {
                 $start = microtime(true);
+
+                // Filter on highest level
+                if (!empty($tbl_rel->expansion_column) && $tbl_rel->name !== $this->tbl->name) {
+                    $parent_col = $tbl_rel->get_parent_column();
+                    $tbl_rel->add_condition("$tbl_rel->name.$parent_col->alias " . ($parent_col->default ? "= '" . $parent_col->default . "'" : "IS NULL"));
+                }
+
                 $conditions = $tbl_rel->get_conditions();
                 $condition = count($conditions) ? 'WHERE '.implode(' AND ', $conditions) : '';
                 $count_records = $tbl_rel->get_record_count($condition);
