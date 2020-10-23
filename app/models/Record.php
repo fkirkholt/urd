@@ -201,7 +201,8 @@ class Record {
 
                 // Filter on highest level
                 if (!empty($tbl_rel->expansion_column) && $tbl_rel->name !== $this->tbl->name) {
-                    $parent_col = $tbl_rel->get_parent_column();
+                    $fk = $tbl_rel->get_parent_fk();
+                    $parent_col = $tbl_rel->fields[$fk->alias];
                     $tbl_rel->add_condition("$tbl_rel->name.$parent_col->alias " . ($parent_col->default ? "= '" . $parent_col->default . "'" : "IS NULL"));
                 }
 
@@ -257,10 +258,13 @@ class Record {
         });
         $rel = reset($relations);
 
-        // TODO Support composite key
-        $ref_column = $this->tbl->primary_key[0];
-        $value = $rec['fields'][$ref_column]->value;
-        $this->tbl->add_condition("$rel->table.$rel->foreign_key = '$value'");
+        $fk = $this->tbl->foreign_keys[$rel->foreign_key];
+
+        foreach ($fk->local as $i => $col_name) {
+            $foreign = $fk->foreign[$i];
+            $value = $rec['fields'][$foreign]->value;
+            $this->tbl->add_condition("$rel->table.$col_name = '$value'");
+        }
 
         if (!empty($rel->filter)) {
             $this->tbl->add_condition($rel->filter);

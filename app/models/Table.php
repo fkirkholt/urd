@@ -721,15 +721,17 @@ class Table {
         }
     }
 
-    // Get column representing parent in self referencing tables
-    public function get_parent_column() {
+    public function get_parent_fk() {
         // Find relation to child records
         $relations = array_filter((array) $this->relations, function($relation) {
-                return $relation->table === $this->name;
+            return $relation->table === $this->name;
         });
         $rel = reset($relations);
 
-        return $this->fields[$rel->foreign_key];
+        $fk = $this->foreign_keys[$rel->foreign_key];
+        $fk->alias = $rel->foreign_key;
+
+        return $fk;
     }
 
     // TODO: Fungerer ikke
@@ -957,13 +959,18 @@ class Table {
         // Get number of relations to same table for expanding row
         if (!empty($this->expansion_column)) {
 
-            // TODO: Support composite key
-            $rel_column = $this->get_parent_column();
-            $pk_column = $this->primary_key[0];
+            $fk = $this->get_parent_fk();
+            $rel_column = $this->fields[$fk->alias];
+            $wheres = [];
+
+            foreach ($fk->local as $i => $col_name) {
+                $foreign = $fk->foreign[$i];
+                $wheres[] = "$col_name = $this->name.$foreign";
+            }
 
             $selects['count_children'] = "(SELECT count(*)
-                    FROM {$this->db->name}.$this->name child_table
-                    WHERE $rel_column->name = $this->name.$pk_column)";
+                FROM {$this->db->name}.$this->name child_table
+                WHERE " . implode(' AND ', $wheres) . ')';
 
             // Filters on highest level if not filtered by user
             if (isset($this->user_filtered) && $this->user_filtered === false) {
