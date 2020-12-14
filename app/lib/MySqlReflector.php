@@ -23,7 +23,7 @@ Class MySqlReflector extends \Dibi\Drivers\MySqlReflector
 	{
 		$data = $this->driver->query("SELECT `ENGINE` FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = {$this->driver->escapeText($table)}")->fetch(TRUE);
 		if ($data['ENGINE'] !== 'InnoDB') {
-			throw new Dibi\NotSupportedException("Foreign keys are not supported in {$data['ENGINE']} tables.");
+			throw new \Dibi\NotSupportedException("Foreign keys are not supported in {$data['ENGINE']} tables.");
 		}
 
 		$res = $this->driver->query("
@@ -49,5 +49,5 @@ Class MySqlReflector extends \Dibi\Drivers\MySqlReflector
 			$foreignKeys[$keyName]['onUpdate'] = 'NO ACTION';
 		}
 		return array_values($foreignKeys);
-	}	
+	}
 }

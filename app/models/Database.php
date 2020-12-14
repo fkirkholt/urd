@@ -344,11 +344,6 @@ class Database {
         return $this->conn->fetch_row($res);
     }
 
-    public function fetchAssoc($args) {
-        $args = func_get_args();
-        return $this->conn->query($args)->fetchAssoc();
-    }
-
     public function fetch($args) {
         $args = func_get_args();
         return $this->conn->query($args)->fetch();
