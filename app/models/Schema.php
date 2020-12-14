@@ -130,7 +130,7 @@ class Schema {
 
         // Don't return keys in lowercase
         // Necessary for database reflection to work
-        if ($db->platform !== 'sqlite') {
+        if ($this->db->conn->getConfig('driver') == 'pdo') {
             $pdo = $db->conn->getDriver()->getResource();
             $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
         }
@@ -194,7 +194,7 @@ class Schema {
 
             // Updates table properties
 
-            if ($db->platform !== 'sqlite') {
+            if ($this->db->conn->getConfig('driver') == 'pdo') {
                 $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_NATURAL);
             }
             $pk = $refl_table->getPrimaryKey();

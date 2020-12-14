@@ -343,7 +343,7 @@ class Table {
         }
 
         // Add column properties from database
-        if ($this->db->platform !== 'sqlite') {
+        if ($this->db->conn->getConfig('driver') == 'pdo') {
             $pdo = $this->db->conn->getDriver()->getResource();
             $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_NATURAL);
         }
@@ -387,7 +387,7 @@ class Table {
             }
         }
 
-        if ($this->db->platform !== 'sqlite') {
+        if ($this->db->conn->getConfig('driver') == 'pdo') {
             $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
         }
 
@@ -668,7 +668,10 @@ class Table {
                 %lmt %ofs";
 
         $this->sql = $sql;
-        $rader = $this->db->conn->query($sql, $condition, $this->limit, $this->offset)->setFormat(Type::DATETIME, 'Y-m-d H:i:s')->fetchAll();
+        $rader = $this->db->conn->query($sql, $condition, $this->limit, $this->offset)
+            ->setFormat(Type::DATETIME, 'Y-m-d H:i:s')
+            ->setFormat(Type::DATE, 'Y-m-d')
+            ->fetchAll();
 
         // Henter ut array med assosiative nøkler:
         $i = 0;

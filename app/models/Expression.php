@@ -33,6 +33,7 @@ class Expression {
             return "concat_ws('$sep'," . implode(',', $expressions) . ")";
         case 'oracle':
         case 'sqlite':
+        case 'pgsql':
             return implode(" || '$sep' || ", $expressions);
         }
     }
@@ -122,13 +123,14 @@ class Expression {
             case 'text':
                 return 'string';
             case 'integer':
+            case 'int4':
                 return 'integer';
             case 'blob':
                 return 'binary';
             case 'date':
                 return 'date';
             default:
-                throw new \Exception("type $this->expr not recognized");
+                throw new \Exception("type $nativetype not recognized");
             }
         }
     }

@@ -44,9 +44,8 @@ class Database {
             $this->host = $db->host;
             $this->username = $db->username;
             $this->password = $db->password;
-            $this->alias = ($db->platform == 'sqlite')
-                ? 'main'
-                : $this->name;
+            $this->alias = $this->name;
+
             if ($db->host == 'localhost') $db->host = '127.0.0.1';
 
             $options = [
@@ -55,8 +54,12 @@ class Database {
 
             if ($db->platform == 'sqlite') {
                 $this->dsn = 'sqlite:' . $db->host;
+                $this->alias = 'main';
             } elseif ($db->platform == 'oracle') {
                 $this->dsn = 'oci:dbname=' . $db->host . ';charset=AL32UTF8';
+            } elseif ($db->platform == 'pgsql') {
+                $this->dsn = "host=$db->host port=$db->port dbname=$db->name user=$db->username password=$db->password";
+                $this->alias = 'public';
             } else {
                 $this->dsn = $db->platform . ':host=' . $db->host . (!$db->port ? '' : ';port=' . $db->port) . ';dbname=' . $db->name
                     . ';charset=utf8';
@@ -68,6 +71,11 @@ class Database {
                 $this->conn = new Dibi\Connection([
                     'driver' => 'sqlite3',
                     'database' => $db->host
+                ]);
+            } elseif ($this->platform === 'pgsql') {
+                $this->conn = new Dibi\Connection([
+                    'driver' => 'postgre',
+                    'string' => $this->dsn
                 ]);
             } else {
                 $this->conn = new Dibi\Connection([

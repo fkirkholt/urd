@@ -64,7 +64,10 @@ class Record {
                        $join
                 $where";
 
-        $row = $this->db->query($sql, $cond)->setFormat(Type::DATETIME, 'Y-m-d H:i:s')->fetch();
+        $row = $this->db->query($sql, $cond)
+            ->setFormat(Type::DATETIME, 'Y-m-d H:i:s')
+            ->setFormat(Type::DATE, 'Y-m-d')
+            ->fetch();
 
 
         // Build array over fields, with value and other properties
