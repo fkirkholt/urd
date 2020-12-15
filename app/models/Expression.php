@@ -125,9 +125,13 @@ class Expression {
             case 'integer':
             case 'int4':
                 return 'integer';
+            case 'numeric':
+            case 'float8':
+                return 'float';
             case 'blob':
                 return 'binary';
             case 'date':
+            case 'timestamp':
                 return 'date';
             default:
                 throw new \Exception("type $nativetype not recognized");
