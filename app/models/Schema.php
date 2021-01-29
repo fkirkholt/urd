@@ -548,7 +548,7 @@ class Schema {
                 } else if (isset($table->foreign_keys[$col_name])) {
                     $element = 'select';
                     $options = null;
-                } else if ($type == 'binary' || ($type == 'string' && (!$col->size || $col->size > 60))) {
+                } else if ($type == 'binary' || ($type == 'string' && (!$col->size || $col->size > 255))) {
                     $element = 'textarea';
                 } else {
                     $element = 'input[type=text]';
