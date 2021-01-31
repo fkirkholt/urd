@@ -287,10 +287,17 @@ class Record {
     public function insert($values)
     {
         $inserts = [];
-        // Get values for auto and auto_update fields
+
         foreach ($this->tbl->fields as $fieldname => $field) {
+            //  Get values for auto and auto_update fields
             if (in_array($field->extra, ['auto', 'auto_update'])) {
                 $values->$fieldname = $this->db->expr()->replace_vars($field->default);
+            }
+
+            // Workaround for problem with triggers for not null columns in MariaDB
+            // https://jira.mariadb.org/browse/MDEV-19761
+            if (!isset($values->$fieldname) && $field->nullable === false) {
+                $values->$fieldname = null;
             }
         }
 
