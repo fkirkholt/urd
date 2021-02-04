@@ -674,7 +674,8 @@ var control = {
                     }, [
                         field.description
                             ? m('abbr', {title: field.description}, label)
-                            : label
+                            : label,
+                        ':'
                     ]),
                     m('td', {
                         class: 'v-top'
