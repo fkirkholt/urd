@@ -34,7 +34,10 @@ var datapanel = {
             config.show_table ? '' : m(diagram),
             !config.show_table || ds.table.search || ds.table.edit
             ? ''
-            : m('div#gridpanel', {class: 'flex flex-column ml2'}, [
+            : m('div#gridpanel', {
+                class: 'flex flex-column ml2',
+                style: ds.table.hide ? 'display: none' : ''
+            }, [
                 m(grid),
                 m(pagination, {
                     from: Number(ds.table.offset) + 1,

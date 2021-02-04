@@ -175,6 +175,13 @@ var grid = {
 
             ds.table.filters = filterpanel.parse_query(data.filter);
 
+            // Don't show table when searching for primary key
+            ds.table.hide = ds.table.filters.length ? true : false;
+            $.each(ds.table.filters, function(i, filter) {
+                if (ds.table.primary_key[i] !== filter.field) ds.table.hide = false;
+                if (filter.operator != '=') ds.table.hide = false;
+            });
+
             if (ds.table.selection === null) ds.table.selection = 0;
 
             // Remount filterpanel to recreate value fields
