@@ -52,22 +52,22 @@ class Schema {
     }
 
     public function get_db_alias() {
-        if ($this->name == 'urd') {
-            return dibi::getConnection()->getConfig('database');
-        } else {
-            $sql = "SELECT name, alias
-                    FROM   database_
-                    WHERE  schema_ = '$this->name'";
+        $sql = "SELECT name, alias
+                FROM   database_
+                WHERE  schema_ = '$this->name'";
 
-            $base = DB::get()->conn->query($sql)->fetch();
+        $base = DB::get()->conn->query($sql)->fetch();
 
-            return $base->alias ? $base->alias : $base->name;
+        if ($base == false && $this->name == 'urd') {
+            return dibi::getConnection()->getConfig('name');
         }
+
+        return $base->alias ? $base->alias : $base->name;
     }
 
     public function get_db_name() {
         if ($this->name == 'urd') {
-            return dibi::getConnection()->getConfig('database');
+            return dibi::getConnection()->getConfig('name');
         } else {
             $sql = "SELECT name
                     FROM   database_
@@ -302,7 +302,6 @@ class Schema {
                     // This might not be the case if foreign key check is disabled
                     if (!in_array($key->table, $db_tables)) {
                         $warnings[] = "Fremmednøkkel $key->name er ugyldig";
-                        continue;
                     }
 
                     $table->foreign_keys[$key_alias] = $key;
