@@ -298,7 +298,7 @@ var entry = {
             method: "GET",
             url: "record",
             data: {
-                base: ds.base.name,
+                base: rec.base_name ? rec.base_name : ds.base.name,
                 table: tbl.name,
                 primary_key: JSON.stringify(rec.primary_key)
             }
@@ -606,7 +606,6 @@ var entry = {
     draw_relation_list: function(rel, record) {
         var count_columns = 0;
         var group = rel.gruppe;
-        rel.base = ds.base;
 
         return m('tr', [
             m('td', {
@@ -646,7 +645,7 @@ var entry = {
                     ]),
                     // draw records
                     rel.records.map(function(rec, rowidx) {
-                        rec.base_name = rel.base.name;
+                        rec.base_name = rel.base_name;
                         rec.table_name = rel.name;
 
                         return [

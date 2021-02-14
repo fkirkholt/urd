@@ -612,7 +612,7 @@ var control = {
                                 'icon-crosshairs light-blue hover-blue pointer mr1',
                             ].join(' '),
                             onclick: function(event) {
-                                var url = '/' + ds.base.name + '/tables/' + rel.name;
+                                var url = '/' + rel.base_name + '/tables/' + rel.name;
                                 url += '?query=' + rel.conditions.join(' AND ').replace(/=/g, '%3D');
                                 m.route.set(url);
                                 event.stopPropagation();

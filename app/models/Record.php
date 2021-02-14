@@ -218,6 +218,7 @@ class Record {
                     'time' => $end - $start,
                     'name' => $rel->table,
                     'conditions' => $conditions,
+                    'base_name' => $rel->db_name
                 ];
 
             } else { // get all relations

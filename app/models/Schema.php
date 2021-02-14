@@ -310,7 +310,8 @@ class Schema {
                     $key_table_alias = isset($tbl_aliases[$key->table])
                     ? $tbl_aliases[$key->table]
                     : $key->table;
-                    if (!isset($this->tables[$key_table_alias])) {
+
+                    if (in_array($key->table, $db_tables) && !isset($this->tables[$key_table_alias])) {
                         $this->tables[$key_table_alias] = (object) [
                             "name" => $key->table,
                             "relations" => [],
@@ -353,7 +354,7 @@ class Schema {
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
                     : ucfirst($tbl_alias);
 
-                    if (!isset($table->extends)) {
+                    if (in_array($key->table, $db_tables) && !isset($table->extends)) {
                         $this->tables[$key_table_alias]->relations[$key->name] = [
                             "table" => $tbl_name,
                             "foreign_key" => $key_alias,
@@ -946,6 +947,8 @@ class Schema {
             }
 
             foreach ($table->foreign_keys as $alias => $fk) {
+                if (!isset($this->tables[$fk->table])) continue;
+
                 if ($fk->table !== $table->name && empty($table->fields[$alias]->hidden)) {
                     $fk_table = $this->tables[$fk->table];
 
