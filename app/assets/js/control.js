@@ -604,9 +604,8 @@ var control = {
                     }, [
                         label,
                         rel.count_records !== undefined ? m('span', {class: 'ml1 pr1 normal moon-gray f7'}, rel.count_records) : '',
-                        // show target icon for relations where table's in contents
-                        // !JSON.stringify(ds.base.contents).includes('tables.' + rel.name) ? '' :
-                        (!rel.name || ds.base.tables[rel.name].primary_key.length == 0) ? '' :
+                        // show target icon for relations
+                        !rel.name ? '' :
                         m('i', {
                             class: [
                                 'icon-crosshairs light-blue hover-blue pointer mr1',
