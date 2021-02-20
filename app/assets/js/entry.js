@@ -755,7 +755,8 @@ var entry = {
         }
 
         return m('td.nowrap', [
-            fieldset.items.map(function(fieldname, idx) {
+            Object.keys(fieldset.items).map(function(label, idx) {
+                var fieldname = fieldset.items[label];
                 var type = fieldname.indexOf('actions.') > -1 ? 'action' : 'field';
 
                 switch (type) {
