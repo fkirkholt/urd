@@ -486,7 +486,7 @@ var entry = {
             }
             $.each(rel.records, function(i, subrec) {
                 if (!subrec.dirty) return;
-                subrec_changes = entry.get_changes(subrec);
+                subrec_changes = entry.get_changes(subrec, true);
                 changed_rel.records.push(subrec_changes);
             });
             changes.relations[alias] = changed_rel;

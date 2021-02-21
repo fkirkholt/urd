@@ -25,7 +25,7 @@ var grid = {
         // Get column widths
 
         colWidthHead = $headCells.map(function() {
-            return $(this).width();
+            return $(this).width() + 1;
         });
 
         colWidthBody = $bodyCells.map(function() {
