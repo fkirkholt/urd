@@ -620,7 +620,7 @@ var control = {
                         rel.dirty ? m('i', {class: 'fa fa-pencil ml1 light-gray'}) : '',
                     ]),
                 ]),
-                rel.expanded && rel.records ? entry.draw_relation_list(rel, rec) : null
+                rel.expanded && rel.records ? entry.draw_relation_table(rel, rec) : null
             ];
         } else if (typeof colname === "string" && colname.indexOf('actions.') > -1) {
             m('tr', [
@@ -692,7 +692,8 @@ var control = {
                         ].join(' ')
                     }, [
                         rec.table.permission.edit == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
-                        !field.expandable || field.value === null ? '' : m('i', {
+                        !field.expandable || field.value === null || 
+                        (rec.table.type === "xref" && config.edit_mode) ? '' : m('i', {
                             class: 'icon-crosshairs light-blue hover-blue pointer',
                             onclick: function() {
                                 var url = '/' + field.foreign_key.base + '/tables/' + field.foreign_key.table + '?query=';
@@ -704,6 +705,13 @@ var control = {
                                 m.route.set(url);
                             }
                         }),
+
+                        // Show trash bin for field from cross reference table
+                        rec.table.type != 'xref' || !config.edit_mode ? '' : m('i', {
+                            class: 'fa fa-trash-o light-blue pl1 hover-blue pointer',
+                            onclick: entry.delete.bind(this, rec)
+                        }),
+
                         !field.attr || !field.attr.href ? '' : m('a', {
                             href: sprintf(field.attr.href, field.value)
                         }, m('i', {class: 'icon-crosshairs light-blue hover-blue pointer'})),

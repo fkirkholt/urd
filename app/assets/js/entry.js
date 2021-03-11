@@ -512,7 +512,6 @@ var entry = {
 
         rec.fields[field.name].value = value;
 
-
         // For each select that depends on the changed field, we must set the
         // value to empty and load new options
         $.each(rec.table.fields, function(name, other_field) {
@@ -604,13 +603,79 @@ var entry = {
     },
 
     draw_relation_list: function(rel, record) {
+        console.log('ds', ds);
+        return m('tr', [
+            m('td', {}),
+            m('td', {colspan:3}, [
+                m('table', {class: 'w-100 collapse'}, [
+                    rel.records.map(function(rec, rowidx) {
+                        if (rec.delete) return;
+                        if (rec.fields === undefined) {
+                            rec.fields = JSON.parse(JSON.stringify(rel.fields));
+                        }
+                        rec.table = rel;
+                        rec.loaded = true;
+
+                        return [
+                            Object.keys(rel.grid.columns).map(function(label, colidx) {
+                                var field_name = rel.grid.columns[label];
+                                // var field = rel.fields[field_name];
+                                var field = rec.fields[field_name];
+                                // if value changed, use this value, else get from primary key
+                                field.value = rec.fields[field_name].value
+                                    ? rec.fields[field_name].value
+                                    : rec.primary_key[field_name];
+                                field.text = rec.columns[field_name];
+                                field.editable = rel.permission.edit;
+
+                                return field.defines_relation
+                                    ? ''
+                                    : control.draw_field(rec, field_name, label);
+                            }),
+
+                        ];
+                    }),
+                    record.readonly || !config.edit_mode ? '' : m('tr', [
+                        m('td'),
+                        config.relation_view !== 'expansion' ? '' : m('td'),
+                        m('td', [
+                            !rel.permission.add ? '' : m('a', {
+                                onclick: function(e) {
+                                    e.stopPropagation();
+                                    var rec = entry.create(rel, true);
+                                    if (!rec) return;
+
+                                    // Tilordner verdier til felter som definerer relasjon:
+                                    $.each(rel.conditions, function(i, condition) {
+                                        var filter = filterpanel.parse_query(condition)[0];
+                                        var parts = filter.field.split('.');
+                                        var fieldname = parts.pop();
+                                        rec.fields[fieldname].value = filter.value;
+                                        rec.fields[fieldname].dirty = true;
+                                    });
+
+                                    rel.modus = 'edit';
+                                    record.active_relation = rec;
+                                }
+                            }, m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
+                        ])
+                    ]),
+                ])
+            ])
+        ])
+    },
+
+    draw_relation_table: function(rel, record) {
         var count_columns = 0;
         var group = rel.gruppe;
 
-        return m('tr', [
-            m('td', {
+        if (Object.keys(rel.grid.columns).length == 2) {
+            rel.type = "xref";
+            return entry.draw_relation_list(rel, record);
+        }
 
-            }),
+        return m('tr', [
+            m('td', {}),
             m('td', {colspan:3}, [
                 m('table', {class: 'w-100 collapse'}, [
                     // draw header cells
@@ -825,7 +890,6 @@ var entry = {
                         if (typeof item !== 'object' && item.indexOf('.') === -1 && rec.table.fields[item].defines_relation) {
                             return;
                         }
-
                         return control.draw_field(rec, item, label);
                     })
                 ])
