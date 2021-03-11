@@ -59,6 +59,13 @@ var schema_dialog = {
                 }), ' Legg inn poster fra referansetabellene',
                 m('br'),
                 m('input[type=checkbox]', {
+                    checked: ds.schema.config.norwegian_chars,
+                    onchange: function(event) {
+                        ds.schema.config.norwegian_chars = $(event.target).prop('checked');
+                    }
+                }), " ae → æ, oe → ø, aa → å",
+                m('br'),
+                m('input[type=checkbox]', {
                     checked: ds.schema.config.add_criteria,
                     onchange: function(event) {
                         ds.schema.config.add_criteria = $(event.target).prop('checked');

@@ -354,6 +354,12 @@ class Schema {
                     ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
                     : ucfirst($tbl_alias);
 
+                    if ($config->norwegian_chars) {
+                        $label = str_replace('ae', 'æ', $label);
+                        $label = str_replace('oe', 'ø', $label);
+                        $label = str_replace('aa', 'å', $label);
+                    }
+
                     if (in_array($key->table, $db_tables) && !isset($table->extends)) {
                         $this->tables[$key_table_alias]->relations[$key->name] = [
                             "table" => $tbl_name,
@@ -698,6 +704,11 @@ class Schema {
                 foreach ($col_groups as $group_name => $col_names) {
                     if (count($col_names) == 1) {
                         $label = ucfirst(str_replace('_', ' ', $col_names[0]));
+                        if ($config->norwegian_chars) {
+                            $label = str_replace('ae', 'æ', $label);
+                            $label = str_replace('oe', 'ø', $label);
+                            $label = str_replace('aa', 'å', $label);
+                        }
                         $form['items'][$label] = $col_names[0];
                     } else {
                         foreach ($col_names as $i => $col_name) {
