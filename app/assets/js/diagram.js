@@ -68,6 +68,7 @@ diagram = {
             var line = field.hidden ? '..' : '--';
             def.push(fk.table + ' <' + line + ' ' + table.name + ' : ' + label);
             if ($.inArray('class ' + fk.table, def) !== -1) return;
+            if (fk_table === undefined) return;
             def.push('class ' + fk.table);
             def.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
             if (fk_table.count_rows && fk.table != table.name) {
