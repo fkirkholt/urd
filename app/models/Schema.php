@@ -560,14 +560,24 @@ class Schema {
                     $element = 'input[type=text]';
                 }
 
+                $label = isset($terms[$col_name])
+                    ? $terms[$col_name]['label']
+                    : $col_name;
+                
+                if ($config->norwegian_chars) {
+                    $label = str_replace('ae', 'æ', $label);
+                    $label = str_replace('oe', 'ø', $label);
+                    $label = str_replace('aa', 'å', $label);
+                }
+
+                $label = ucfirst($label);
+
                 $urd_col = (object) [
                     'name' => $col_name,
                     'element' => $element,
                     'datatype' => $type,
                     'nullable' => $col->nullable,
-                    'label' => isset($terms[$col_name])
-                        ? $terms[$col_name]['label']
-                        : null,
+                    'label' => $label,
                     'description' => isset($terms[$col_name])
                         ? $terms[$col_name]['description']
                         : null,
@@ -1053,6 +1063,12 @@ class Schema {
                 $label = isset($terms[$table_alias])
                     ? $terms[$table_alias]['label']
                     : ucfirst(str_replace('_', ' ', $table_alias));
+
+                if ($config->norwegian_chars) {
+                    $label = str_replace('ae', 'æ', $label);
+                    $label = str_replace('oe', 'ø', $label);
+                    $label = str_replace('aa', 'å', $label);
+                }
 
                 // Loop through modules to find which one the table belongs to
                 $placed = false;
