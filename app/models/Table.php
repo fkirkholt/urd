@@ -328,7 +328,7 @@ class Table {
 
             if (!isset($field->view) && isset($ref_tbl->indexes)) {
                 foreach ($ref_tbl->indexes as $index) {
-                    if (strpos($index->name, '_sort_idx') !== false) {
+                    if (!$index->primary && $index->unique) {
                         $columns = array_map(function($col) use ($alias) {
                             return "$alias.$col";
                         }, $index->columns);
