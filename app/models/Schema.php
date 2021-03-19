@@ -608,15 +608,32 @@ class Schema {
 
             // Try to decide if the table is a reference table
             if ($config->urd_structure) {
-                if (
-                    substr($tbl_name, 0, 4) === 'ref_' ||
-                    substr($tbl_name, -4) === '_ref' ||
-                    substr($tbl_name, 0, 5) === 'meta_'
-                ) {
-                    $table->type = 'reference';
-                } else {
+                do {
+                    if (
+                        substr($tbl_name, 0, 4) === 'ref_' ||
+                        substr($tbl_name, -4) === '_ref' ||
+                        substr($tbl_name, 0, 5) === 'meta_'
+                    ) {
+                        $table->type = 'reference';
+                        break;
+                    }
+
+                    // Checks if unique indexes cover all columns
+                    $index_cols = [];
+                    foreach ($table->indexes as $index) {
+                        if ($index->unique) {
+                            $index_cols = array_merge($index_cols, $index->columns);
+                        }
+                    }
+                    $index_cols = array_unique($index_cols);
+                    if (count($table->fields) == count($index_cols)) {
+                        $table->type = 'reference';
+                        break;
+                    }
+
                     $table->type = 'data';
-                }
+
+                } while (0);
             } else {
                 // use number of visible fields to decide if table is reference table
                 $count_visible_fields = count(array_filter($table->fields, function($field) {
