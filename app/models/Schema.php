@@ -344,21 +344,26 @@ class Schema {
                     $patterns[] = '/^(fk_|idx_)/'; // find prefix
                     $patterns[] = '/(_' . $key->table . ')(_fk|_idx)?$/'; // find referenced table
                     $key_string = implode('_', $key->local);
+                    $patterns[] = '/^' . $key_string . '$/'; // index name from columns
                     $patterns[] = '/(_' . $key_string . ')(_fk|_idx)?$/'; // find column names
                     $patterns[] = '/(_fk|_idx)$/'; // find postfix
 
                     $replace = $key->table == $key_string ? '' : ' (' . $key_string . ')';
-                    $replacements = ['', '', $replace, ''];
+                    $replacements = ['', '', '', $replace, ''];
 
                     $label = $config->urd_structure && $key_index
-                    ? ucfirst(str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name)))
-                    : ucfirst($tbl_alias);
+                    ? str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name))
+                    : $tbl_alias;
+
+                    if ($label == '') $label = $tbl_alias;
 
                     if ($config->norwegian_chars) {
                         $label = str_replace('ae', 'æ', $label);
                         $label = str_replace('oe', 'ø', $label);
                         $label = str_replace('aa', 'å', $label);
                     }
+
+                    $label = ucfirst($label);
 
                     if (in_array($key->table, $db_tables) && !isset($table->extends)) {
                         $this->tables[$key_table_alias]->relations[$key->name] = [
