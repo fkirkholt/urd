@@ -669,7 +669,7 @@ var entry = {
         var count_columns = 0;
         var group = rel.gruppe;
 
-        if (Object.keys(rel.grid.columns).length == 2) {
+        if (Object.keys(rel.fields).length == rel.primary_key.length) {
             rel.type = "xref";
             return entry.draw_relation_list(rel, record);
         }
