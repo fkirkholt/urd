@@ -14,6 +14,8 @@ class Schema {
     public $tables;
     public $reports;
     public $contents;
+    private $config;
+    private $terms;
 
     function __construct($schema_name) {
         $file = __DIR__ . '/../../schemas/' . $schema_name . '/schema.json';
@@ -104,6 +106,8 @@ class Schema {
     {
         ini_set('max_execution_time', 600); // 10 minutes
 
+        $this->config = $config;
+
         $threshold = $config->threshold / 100;
 
         if ($config->replace) {
@@ -162,8 +166,9 @@ class Schema {
             $terms = [];
         }
 
+        $this->terms = $terms;
+
         $modules = [];
-        $tbl_groups = [];
         $warnings = [];
 
         $total = count($db_tables);
@@ -766,38 +771,6 @@ class Schema {
             }
 
 
-            // Add table to table group
-            {
-                if ($config->urd_structure) {
-                    $group = explode('_', $tbl_alias)[0];
-
-                    // Find if the table is subordinate to other tables
-                    // i.e. the primary key also has a foreign key
-                    $subordinate = false;
-                    if (empty($table->primary_key)) $subordinate = true;
-                    foreach ($table->primary_key as $colname) {
-                        if (isset($table->foreign_keys[$colname])) {
-                            $subordinate = true;
-                        }
-                    }
-                } else {
-                    $group = $tbl_alias;
-                    $subordinate = false;
-                }
-
-                // Only add tables that are not subordinate to other tables
-                if (!$subordinate) {
-                    // Remove group prefix from label
-                    $rest = str_replace($group . '_', '', $tbl_alias);
-                    $label = isset($terms[$rest])
-                        ? $terms[$rest]['label']
-                        : ucfirst(str_replace('_', ' ', $rest));
-
-                    if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
-                    $tbl_groups[$group][$label] = $tbl_alias;
-                }
-            }
-
             $this->tables[$tbl_alias] = $table;
 
             // Update records for reference tables
@@ -1028,7 +1001,60 @@ class Schema {
         }
 
         // Check if reference table is attached to only one mudule
+        // and group tables
+        $tbl_groups = [];
+        $sub_tables = [];
         foreach ($this->tables as $tbl_alias => $table) {
+            // Add table to table group
+            {
+                if ($config->urd_structure) {
+                    $group = explode('_', $tbl_alias)[0];
+
+                    // Check if this is a crossreference table
+                    $last_pk_col = end($table->primary_key);
+                    if (
+                        isset($table->foreign_keys[$last_pk_col]) &&
+                        empty($table->extends) 
+                    ) $table->type = 'xref';
+
+                    // Find if the table is subordinate to other tables
+                    // i.e. the primary key also has a foreign key
+                    $subordinate = false;
+                    if (empty($table->primary_key)) $subordinate = true;
+
+                    foreach ($table->primary_key as $colname) {
+                        if (isset($table->foreign_keys[$colname])) {
+                            $subordinate = true;
+                            $key = $table->foreign_keys[$colname];
+                            
+                            if ($table->type == 'xref') break;
+
+                            if (!isset($sub_tables[$key->table])) {
+                                $sub_tables[$key->table] = [];
+                            }
+                            $sub_tables[$key->table][] = $tbl_alias;
+
+                            break;
+                        }
+                    }
+                } else {
+                    $group = $tbl_alias;
+                    $subordinate = false;
+                }
+
+                // Only add tables that are not subordinate to other tables
+                if (!$subordinate) {
+                    // Remove group prefix from label
+                    $rest = str_replace($group . '_', '', $tbl_alias);
+                    $label = isset($terms[$rest])
+                        ? $terms[$rest]['label']
+                        : ucfirst(str_replace('_', ' ', $rest));
+
+                    if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
+                    $tbl_groups[$group][$label] = $tbl_alias;
+                }
+            }
+
             if ($table->type != 'reference') continue;
             $in_modules = [];
 
@@ -1096,7 +1122,7 @@ class Schema {
                 $placed = false;
 
                 if ($config->urd_structure) {
-                    $contents[$label] = 'tables.' . $table_alias;
+                    $contents = $this->get_content_items($table_alias, $sub_tables, $contents);
                     continue;
                 }
 
@@ -1192,6 +1218,10 @@ class Schema {
             }
         }
 
+        // remove attributes that shouldn't be written to schema.json
+        unset($this->config);
+        unset($this->terms);
+
         $json_string = json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         if ($json_string === false) {
@@ -1212,6 +1242,39 @@ class Schema {
         fwrite($fh_drop, implode("\n", $drops));
 
         return ['success' => true, 'msg' => 'Skjema oppdatert', 'warn' => $warnings];
+    }
+
+    private function get_content_items($tbl_alias, $sub_tables, $contents) {
+
+        $label = isset($this->terms[$tbl_alias])
+            ? $this->terms[$table_alias]['label']
+            : str_replace('_', ' ', $tbl_alias);
+
+        if ($this->config->norwegian_chars) {
+            $label = str_replace('ae', 'æ', $label);
+            $label = str_replace('oe', 'ø', $label);
+            $label = str_replace('aa', 'å', $label);
+        }
+
+        $label = ucfirst($label);
+        
+        if (empty($sub_tables[$tbl_alias])) {
+            $contents[$label] = 'tables.' . $tbl_alias;
+        } else {
+            $contents[$label] = [];
+            $contents[$label]['item'] = 'tables.' . $tbl_alias;
+            $contents[$label]['items'] = [];
+
+            foreach ($sub_tables[$tbl_alias] as $subtable) {
+                $contents[$label]['items'] = $this->get_content_items(
+                    $subtable, 
+                    $sub_tables, 
+                    $contents[$label]['items']
+                );
+            } 
+        }
+
+        return $contents;
     }
 
     /*

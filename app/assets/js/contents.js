@@ -36,7 +36,7 @@ contents = {
 
 
     draw_item: function(label, item, level) {
-        if (typeof item == 'object') {
+        if (typeof item == 'object' && !item.item) {
             var display = item.hidden ? 'none' : 'block';
             return m('.module', {
                 class: item.class_module,
@@ -84,6 +84,10 @@ contents = {
                 ])
             ]);
         } else {
+            if (typeof item == 'object') {
+                var subitems = item.items;
+                item = item.item;
+            } else subitems = false
             var object = _get(ds.base, item, ds.base.tables[item]);
             if (item.indexOf('.') == -1) item = 'tables.' + item;
             if (object.hidden && !config.admin) return;
@@ -133,6 +137,14 @@ contents = {
                     class: 'ml2 light-silver',
                     style: 'display:' + display
                 }, '(' + object.count_rows + ')'),
+                !subitems ? '' : m('.content', {
+                    style: 'margin-left:' + 10 * (level-2) + 'px',
+                }, [
+                    Object.keys(subitems).map(function(label) {
+                        var subitem = subitems[label];
+                        return contents.draw_item(label, subitem, level + 1);
+                    })
+                ])
             ]);
         }
     },
