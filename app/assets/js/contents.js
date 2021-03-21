@@ -138,7 +138,7 @@ contents = {
                     style: 'display:' + display
                 }, '(' + object.count_rows + ')'),
                 !subitems ? '' : m('.content', {
-                    style: 'margin-left:' + 10 * (level-2) + 'px',
+                    style: 'margin-left:' + 18 + 'px',
                 }, [
                     Object.keys(subitems).map(function(label) {
                         var subitem = subitems[label];
