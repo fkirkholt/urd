@@ -154,7 +154,9 @@ class Expression {
         $sql = str_replace('$user_id', $_SESSION['user_id'], $sql);
         $sql = str_replace('$user_name', $_SESSION['user_name'], $sql);
         $sql = str_replace('$date', date('Y-m-d'), $sql);
+        $sql = str_replace('current_date', date('Y-m-d'), $sql);
         $sql = str_replace('$timestamp', date('Y-m-d H:i:s'), $sql);
+        $sql = str_replace('current_timestamp', date('Y-m-d H:i:s'), $sql);
         return $sql;
     }
 
