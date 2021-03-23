@@ -597,6 +597,18 @@ class Schema {
                     $urd_col->options = $options;
                 }
 
+                if ($col->default) {
+                    if ($col->default == "current_timestamp()") {
+                        $default = 'current_timestamp';
+                    } else if ($col->default == "current_date()") {
+                        $default = 'current_date';
+                    } else {
+                        $default = $col->default;
+                    }
+                    $urd_col->default = $default;
+                    $urd_col->extra = 'auto';
+                }
+
                 if ($hidden) {
                     $urd_col->hidden = true;
                 }
