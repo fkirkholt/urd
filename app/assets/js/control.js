@@ -3,8 +3,7 @@ var control = {
 
     align: function(list, colname) {
         var col = list.fields[colname];
-        if (((col.datatype == 'integer' || col.datatype == 'float') && !col.foreign_key) ||
-            (col.element == 'input[type=date]' && col.datatype == 'string') && !col.element === 'input[type=checkbox]') {
+        if (((col.datatype == 'integer' || col.datatype == 'float') && !col.foreign_key) && !col.element === 'input[type=checkbox]') {
                 return 'right';
             } else {
                 return 'left';
@@ -34,7 +33,7 @@ var control = {
                 field.errormsg = 'Feil datoformat';
                 field.invalid = true;
             }
-        } else if (field.datatype == 'string' && field.element == 'input[type=date]') {
+        } else if (field.datatype == 'string' && field.placeholder == 'yyyy(-mm(-dd))') {
             if (
                 moment(value, 'YYYY-MM-DD', true).isValid() == false &&
                 moment(value, 'YYYY-MM', true).isValid() == false &&
@@ -264,39 +263,6 @@ var control = {
                     entry.update_field(value, field.name, rec);
                 }
             });
-        } else if (
-            (
-                (field.element == 'input' && field.attr.type == 'date') ||
-                field.element == 'input[type=date]'
-            ) && field.datatype == 'string'
-        ) {
-            var separator = _get(rec.table, 'date_as_string.separator', '-');
-            if (field.value !== null) {
-                var date_items = separator == ''
-                    ? [field.value.substr(6,2), field.value.substr(4,2), field.value.substr(0,4)]
-                    : field.value.split(separator);
-                value = $.grep(date_items, Boolean).join('-');
-            } else {
-                value = null;
-            }
-
-            return m('input', {
-                name: field.name,
-                placeholder: 'yyyy(-mm(-dd))',
-                maxlength: 10,
-                // required: !field.nullable,
-                class: [
-                    !field.nullable && field.value === '' ? 'invalid' : '',
-                    'max-w7',
-                ].join(' '),
-                disabled: readOnly,
-                value: value,
-                onchange: function(event) {
-                    control.validate(event.target.value, field);
-                    var value = event.target.value.split('.').reverse().join(separator);
-                    entry.update_field(event.target.value, field.name, rec);
-                }
-            })
         } else {
             var width = (field.size === null || field.size > 20)
                 ? '100%'
@@ -343,7 +309,7 @@ var control = {
         if (typeof value === 'undefined') value = field.value;
         // Different types of fields
         var is_date_as_string = value &&
-            field.element == 'input[type=date]' &&
+            field.placeholder == 'yyyy(-mm(-dd))' &&
             field.datatype == 'string';
         var is_timestamp = field.element == 'input' &&
             field.attr.class == 'timestamp';
