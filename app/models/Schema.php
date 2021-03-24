@@ -606,7 +606,6 @@ class Schema {
                         $default = $col->default;
                     }
                     $urd_col->default = $default;
-                    $urd_col->extra = 'auto';
                 }
 
                 if ($hidden) {
