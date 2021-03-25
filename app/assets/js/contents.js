@@ -15,8 +15,8 @@ contents = {
 
     check_display: function(item) {
         if (typeof item == 'object') {
-            Object.keys(item.items).map(function(label) {
-                var subitem = item.items[label];
+            Object.keys(item.subitems).map(function(label) {
+                var subitem = item.subitems[label];
                 if (typeof subitem == 'object') {
                     subitem.display = Stream('none');
                     if (item.display() == 'none') {
@@ -72,9 +72,9 @@ contents = {
                     class: item.class_content,
                     style: 'display: ' + display
                     }, [
-                    Object.keys(item.items).map(function(label) {
-                        var subitem = item.items[label];
-                        if (_isArray(item.items)) {
+                    Object.keys(item.subitems).map(function(label) {
+                        var subitem = item.subitems[label];
+                        if (_isArray(item.subitems)) {
                             var obj = _get(ds.base, subitem);
                             if (obj === undefined) return;
                             label = obj.label;
@@ -85,7 +85,7 @@ contents = {
             ]);
         } else {
             if (typeof item == 'object') {
-                var subitems = item.items;
+                var subitems = item.subitems;
                 item = item.item;
             } else subitems = false
             var object = _get(ds.base, item, ds.base.tables[item]);
@@ -176,7 +176,7 @@ contents = {
                         var module = contents.context_module;
                         var def = ['classDiagram'];
 
-                        Object.values(ds.base.contents[module].items).map(function(item) {
+                        Object.values(ds.base.contents[module].subitems).map(function(item) {
                             var object = _get(ds.base, item, ds.base.tables[item]);
                             diagram.draw_foreign_keys(object, def, ds.base.contents[module]);
                         });

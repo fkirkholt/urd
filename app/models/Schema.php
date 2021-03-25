@@ -1148,7 +1148,7 @@ class Schema {
                         $mod = 'Modul ' . ($i + 1);
                         $contents[$mod]['class_label'] = 'b';
                         $contents[$mod]['class_content'] = 'ml3';
-                        $contents[$mod]['items'][$label] = 'tables.' . $table_alias;
+                        $contents[$mod]['subitems'][$label] = 'tables.' . $table_alias;
                         if (!isset($contents[$mod]['count'])) $contents[$mod]['count'] = 0;
                         $contents[$mod]['count']++;
                         $placed = true;
@@ -1156,9 +1156,9 @@ class Schema {
                 }
                 if (!$placed) {
                     if (!isset($contents['Andre'])) {
-                        $contents['Andre'] = ['class_label' => 'b', 'class_content' => 'ml3', 'items' => [], 'count' => 0];
+                        $contents['Andre'] = ['class_label' => 'b', 'class_content' => 'ml3', 'subitems' => [], 'count' => 0];
                     }
-                    $contents['Andre']['items'][$label] = 'tables.' . $table_alias;
+                    $contents['Andre']['subitems'][$label] = 'tables.' . $table_alias;
                     $contents['Andre']['count']++;
                 }
             } else {
@@ -1169,7 +1169,7 @@ class Schema {
                     $contents[$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
-                        'items' => array_map(function($value) { return 'tables.'.$value; }, $table_names)
+                        'subitems' => array_map(function($value) { return 'tables.'.$value; }, $table_names)
                     ];
 
                     continue;
@@ -1181,10 +1181,10 @@ class Schema {
                         $mod = 'Modul ' . ($i + 1);
                         $contents[$mod]['class_label'] = 'b';
                         $contents[$mod]['class_content'] = 'ml3';
-                        $contents[$mod]['items'][$label] = [
+                        $contents[$mod]['subitems'][$label] = [
                             'class_label' => 'b',
                             'class_content' => 'ml3',
-                            'items' => $table_names
+                            'subitems' => $table_names
                         ];
                         if (!isset($contents[$mod]['count'])) $contents[$mod]['count'] = 0;
                         $contents[$mod]['count'] += count($table_names);
@@ -1194,12 +1194,12 @@ class Schema {
 
                 if (!$placed) {
                     if (!isset($contents['Andre'])) {
-                        $contents['Andre'] = ['class_label' => 'b', 'class_content' => 'ml3', 'items' => [], 'count' => 0];
+                        $contents['Andre'] = ['class_label' => 'b', 'class_content' => 'ml3', 'subitems' => [], 'count' => 0];
                     }
-                    $contents['Andre']['items'][$label] = [
+                    $contents['Andre']['subitems'][$label] = [
                         'class_label' => 'b',
                         'class_content' => 'ml3',
-                        'items' => $table_names
+                        'subitems' => $table_names
                     ];
                     $contents['Andre']['count'] += count($table_names);
                 }
@@ -1264,7 +1264,7 @@ class Schema {
     private function get_content_items($tbl_alias, $sub_tables, $contents) {
 
         $label = isset($this->terms[$tbl_alias])
-            ? $this->terms[$table_alias]['label']
+            ? $this->terms[$tbl_alias]['label']
             : str_replace('_', ' ', $tbl_alias);
 
         if ($this->config->norwegian_chars) {
@@ -1280,13 +1280,13 @@ class Schema {
         } else {
             $contents[$label] = [];
             $contents[$label]['item'] = 'tables.' . $tbl_alias;
-            $contents[$label]['items'] = [];
+            $contents[$label]['subitems'] = [];
 
             foreach ($sub_tables[$tbl_alias] as $subtable) {
-                $contents[$label]['items'] = $this->get_content_items(
+                $contents[$label]['subitems'] = $this->get_content_items(
                     $subtable, 
                     $sub_tables, 
-                    $contents[$label]['items']
+                    $contents[$label]['subitems']
                 );
             } 
         }
