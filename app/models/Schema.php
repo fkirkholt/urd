@@ -754,6 +754,7 @@ class Schema {
                         }
                         $form['items'][$label] = $col_names[0];
                     } else {
+                        $inline = false;
                         foreach ($col_names as $i => $col_name) {
                             // removes group name prefix from column name and use the rest as label
                             $rest = str_replace($group_name . '_', '', $col_name);
@@ -763,11 +764,16 @@ class Schema {
                             // replace indexed key in array with named key
                             $col_names[$label] = $col_name;
                             unset($col_names[$i]);
+
+                            if (isset($table->fields[$col_name]->separator)) {
+                                $inline = true;
+                            }
                         }
                         $group_label = isset($terms[$group_name])
                             ? $terms[$group_name]['label']
                             : ucfirst($group_name);
                         $form['items'][$group_label] = [
+                            'inline' => $inline,
                             'items' => $col_names
                         ];
                     }
