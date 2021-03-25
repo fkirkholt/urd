@@ -35,29 +35,29 @@ contents = {
     },
 
 
-    draw_item: function(label, item, level) {
-        if (typeof item == 'object' && !item.item) {
-            var display = item.hidden ? 'none' : 'block';
+    draw_node: function(label, node, level) {
+        if (typeof node == 'object' && !node.item) {
+            var display = node.expanded ? 'block' : 'none';
             return m('.module', {
-                class: item.class_module,
-                style: 'display:' + item.display
+                class: node.class_module,
+                style: 'display:' + node.display
             }, [
                 m('i', {
                     class: [
-                        item.hidden ? 'fa fa-angle-right': 'fa fa-angle-down',
-                        item.class_label || 'f'+level,
-                        'mr1',
+                        node.expanded ? 'fa fa-angle-down': 'fa fa-angle-right',
+                        node.class_label || 'f'+level,
+                        'w1',
                         'light-silver'
                     ].join(' '),
                     onclick: function(e) {
-                        item.hidden = !item.hidden;
+                        node.expanded = !node.expanded;
                     }
                 }),
                 m('.label', {
-                    class: item.class_label || ' f'+level,
+                    class: node.class_label || ' f'+level,
                     style: 'display: inline',
                     onclick: function(e) {
-                        item.hidden = !item.hidden;
+                        node.expanded = !node.expanded;
                     },
                     oncontextmenu: function(event) {
                         contents.context_module = label;
@@ -65,29 +65,33 @@ contents = {
                         return false;
                     }
                 }, label),
-                !item.count || !config.admin ? '' : m('span', {
+                !node.count || !config.admin ? '' : m('span', {
                     class: 'ml2 light-silver'
-                }, '(' + item.count + ')'),
+                }, '(' + node.count + ')'),
                 m('.content', {
-                    class: item.class_content,
+                    class: node.class_content,
                     style: 'display: ' + display
                     }, [
-                    Object.keys(item.subitems).map(function(label) {
-                        var subitem = item.subitems[label];
-                        if (_isArray(item.subitems)) {
+                    Object.keys(node.subitems).map(function(label) {
+                        var subitem = node.subitems[label];
+                        if (_isArray(node.subitems)) {
                             var obj = _get(ds.base, subitem);
                             if (obj === undefined) return;
                             label = obj.label;
                         }
-                        return contents.draw_item(label, subitem, level+1);
+                        return contents.draw_node(label, subitem, level+1);
                     })
                 ])
             ]);
         } else {
-            if (typeof item == 'object') {
-                var subitems = item.subitems;
-                item = item.item;
-            } else subitems = false
+            var subitems;
+            if (typeof node == 'object') {
+                subitems = node.subitems;
+                item = node.item;
+            } else {
+                subitems = false;
+                item = node;
+            }
             var object = _get(ds.base, item, ds.base.tables[item]);
             if (item.indexOf('.') == -1) item = 'tables.' + item;
             if (object.hidden && !config.admin) return;
@@ -119,8 +123,21 @@ contents = {
                     return false;
                 }
             }, [
+                typeof node != 'object' ? '' : m('i', {
+                    class: [
+                        node.expanded ? 'fa fa-angle-down' : 'fa fa-angle-right',
+                        'w1',
+                        'light-silver'
+                    ].join(' '),
+                    onclick: function (e) {
+                        node.expanded = !node.expanded;
+                    }
+                }),
                 m('i', {
-                    class: icon_color + ' mr1 fa ' + icon,
+                    class: [
+                        icon_color + ' mr1 fa ' + icon,
+                        typeof node == 'object' ? '' : 'ml3'
+                    ].join(' '),
                     style: 'display:' + display,
                     title: title
                 }),
@@ -137,12 +154,12 @@ contents = {
                     class: 'ml2 light-silver',
                     style: 'display:' + display
                 }, '(' + object.count_rows + ')'),
-                !subitems ? '' : m('.content', {
+                !subitems || !node.expanded ? '' : m('.content', {
                     style: 'margin-left:' + 18 + 'px',
                 }, [
                     Object.keys(subitems).map(function(label) {
                         var subitem = subitems[label];
-                        return contents.draw_item(label, subitem, level + 1);
+                        return contents.draw_node(label, subitem, level + 1);
                     })
                 ])
             ]);
@@ -225,12 +242,12 @@ contents = {
                         var item = ds.base.contents[label];
                         item.display = Stream('none');
                         contents.check_display(item);
-                        var retur = contents.draw_item(label, item, 3);
+                        var retur = contents.draw_node(label, item, 3);
                         return retur;
                     })
                     : Object.keys(ds.base.tables).map(function(name) {
                         var table = ds.base.tables[name];
-                        return contents.draw_item(table.label, 'tables.'+name, 3);
+                        return contents.draw_node(table.label, 'tables.'+name, 3);
                     }),
             ]),
         ]);

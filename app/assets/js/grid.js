@@ -295,13 +295,14 @@ var grid = {
         var params = m.route.param();
         var base_name = params['base'] ? params['base'] : ds.urd_base;
         var table_name = params['table'] ? params['table'] : 'database_';
+        var search = params['query'] ? params['query'] : null;
+        var condition = params['where'] ? params['where'] : null;
 
-        ds.load_database(base_name, function(data) {
-            var search = params['query'] ? params['query'] : null;
-            var condition = params['where'] ? params['where'] : null;
+        filterpanel.advanced = condition ? true : false;
 
-            filterpanel.advanced = condition ? true : false;
-
+        if (ds.base.name == base_name) {
+            grid.get({ base: base_name, table: table_name, filter: search, condition: condition });
+        } else ds.load_database(base_name, function(data) {
             grid.get({base: base_name, table: table_name, filter: search, condition: condition});
         });
 
