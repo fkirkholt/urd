@@ -302,6 +302,28 @@ class Record {
             }
         }
 
+        // Get autoinc values for compound primary keys
+        $last_pk_col = end($this->tbl->primary_key);
+        if (
+            count($this->tbl->primary_key) > 1 &&
+            $this->tbl->fields[$last_pk_col]->extra == 'auto_increment'
+        ) {
+            $length = count($this->tbl->primary_key) - 1;
+            $cols = array_slice($this->tbl->primary_key, 0 , $length);
+            $vals = [];
+
+            foreach ($cols as $col) {
+                $vals[$col] = $values->$col;
+            }
+
+            $next = $this->db->fetchSingle(
+                'select case when max(%n) is null then 1 else max(%n) +1 end from %n where %and', 
+                $last_pk_col, $last_pk_col, $this->tbl->name, $vals
+            );
+
+            $values->$last_pk_col = $next;
+        }
+
         // Array of values to be inserted, grouped by table, in order to support
         // extension tables, i.e 1:1 relations
         $tbl_inserts = [];
@@ -317,6 +339,7 @@ class Record {
 
             $tbl_inserts[$field->table][$field->name] = $value;
         }
+
 
         // Inserts into main table first
         {
