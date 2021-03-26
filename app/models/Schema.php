@@ -686,8 +686,8 @@ class Schema {
                         // Don't show hidden columns
                         if (substr($field->name, 0, 1) === '_') return false;
                         if (!empty($field->hidden)) return false;
-                        // an autoinc column is an integer column that is also primary key (like in SQLite)
-                        return !($field->datatype == 'integer' && [$field->name] == $table->primary_key)
+                        // don't show autoinc columns
+                        return !(isset($field->extra) && $field->extra == 'auto_increment')
                                // but we show autoinc columns for reference tables
                                || $table->type == 'reference';
                     })), 0, 5),
