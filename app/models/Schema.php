@@ -358,7 +358,7 @@ class Schema {
 
                     $label = $config->urd_structure && $key_index
                     ? str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name))
-                    : $tbl_alias;
+                    : str_replace('_', ' ', $tbl_alias);
 
                     if ($label == '') $label = $tbl_alias;
 
@@ -851,7 +851,7 @@ class Schema {
                     });
 
                     if (count($indexes) && empty($rel_table->hidden)) {
-                        $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst($alias);
+                        $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst(str_replace('_', ' ', $alias));
                         $table->form['items'][$label] = 'relations.'.$alias;
                     }
 
