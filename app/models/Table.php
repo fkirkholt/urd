@@ -657,7 +657,7 @@ class Table {
     public function get_values($selects, $join, $condition, $order) {
         $cols = [];
         foreach ($selects as $key=>$value) {
-            if (isset($this->fields[$key]) && empty($this->fields[$key]->view)) {
+            if (isset($this->fields[$key])) {
                 $cols[] = $this->name . '.' . $key;
             }
         }
