@@ -126,7 +126,7 @@ contents = {
                 typeof node != 'object' ? '' : m('i', {
                     class: [
                         node.expanded ? 'fa fa-angle-down' : 'fa fa-angle-right',
-                        'w1',
+                        'w1 tc',
                         'light-silver'
                     ].join(' '),
                     onclick: function (e) {

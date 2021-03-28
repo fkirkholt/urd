@@ -118,7 +118,7 @@ var control = {
 
             return readOnly ? m('input', {disabled: true, value: option ? option.label : field.value}) : m(select, {
                 name: field.name,
-                style: field.expandable ? 'width: calc(100% - 30px)' : '',
+                // style: field.expandable ? 'width: calc(100% - 30px)' : '',
                 class: [
                     'max-w7',
                     maxlength >= 30 ? 'w-100' : '',
@@ -241,12 +241,13 @@ var control = {
                 },
                 checked: +field.value
             });
-        } else if (field.element == 'input[type=date]' && field.datatype == 'date') {
+        } else if (field.element == 'input[type=date]') {
             var value = typeof field.value === 'object' && field.value !== null
                 ? field.value.date
                 : field.value;
             return m(datepicker, {
                 name: field.name,
+                class: 'w4',
                 // required: !field.nullable,
                 disabled: readOnly,
                 dateFormat: 'yy-mm-dd',
@@ -264,9 +265,7 @@ var control = {
                 }
             });
         } else {
-            var width = (field.size === null || field.size > 20)
-                ? '100%'
-                : field.size + 'em';
+           var width = Math.round(field.size * 0.6) + 'em';
 
             value = typeof field.value === 'string'
                 ? field.value.replace(/\n/g, '\u21a9')
@@ -284,7 +283,7 @@ var control = {
                 class: [
                     !field.nullable && field.value === '' ? 'invalid' : '',
                     field.size >= 30 ? 'w-100' : '',
-                    'max-w7 border-box',
+                    'min-w3 max-w7 border-box',
                 ].join(' '),
                 style: [
                     'width: ' + width,
