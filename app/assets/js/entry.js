@@ -624,7 +624,10 @@ var entry = {
                                 // if value changed, use this value, else get from primary key
                                 field.value = rec.fields[field_name].value
                                     ? rec.fields[field_name].value
-                                    : rec.primary_key[field_name];
+                                    // : rec.primary_key[field_name];
+                                    : (rec.values)
+                                        ? rec.values[field_name]
+                                        : null;
                                 field.text = rec.columns[field_name];
                                 field.editable = rel.permission.edit;
 
@@ -669,8 +672,16 @@ var entry = {
         var count_columns = 0;
         var group = rel.gruppe;
 
-        if (Object.keys(rel.fields).length == rel.primary_key.length) {
-            rel.type = "xref";
+        // count columns that should be shown
+        $.each(rel.grid.columns, function(idx, field_name) {
+            var field = rel.fields[field_name];
+            if (!(field.defines_relation)) {
+                count_columns++;
+            }
+        });
+
+        // Make list instead of table of relations if only one column shown
+        if (count_columns == 1) {
             return entry.draw_relation_list(rel, record);
         }
 

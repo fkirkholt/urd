@@ -655,6 +655,33 @@ class Table {
     }
 
     public function get_values($selects, $join, $condition, $order) {
+        $cols = [];
+        foreach ($selects as $key=>$value) {
+            if (isset($this->fields[$key]) && empty($this->fields[$key]->view)) {
+                $cols[] = $this->name . '.' . $key;
+            }
+        }
+        $select = implode(', ', $cols);
+        $view = $this->get_view();
+
+        $sql = "SELECT $select
+                FROM $this->name
+                $join
+                %SQL
+                $order
+                %lmt %ofs";
+
+        $rader = $this->db->conn->query($sql, $condition, $this->limit, $this->offset)
+            ->setFormat(Type::DATETIME, 'Y-m-d H:i:s')
+            ->setFormat(Type::DATE, 'Y-m-d')
+            ->fetchAll();
+
+        foreach ($rader as $i => $rad) {
+            $this->records[$i]['values'] = $rad;
+        }
+    }
+
+    public function get_grid_values($selects, $join, $condition, $order) {
         foreach ($selects as $key=>$value) {
             $selects[$key] = "$value AS $key";
         }
@@ -1023,6 +1050,7 @@ class Table {
 
         $order_by = $this->make_order_by($selects);
 
+        $this->get_grid_values($selects, $join, $condition, $order_by);
         $this->get_values($selects, $join, $condition, $order_by);
         $row_formats = $this->get_format($join, $condition, $order_by);
         foreach ($row_formats as $i=>$rad) {
