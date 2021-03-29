@@ -96,6 +96,10 @@ var control = {
 
         placeholder = placeholder || field.placeholder;
 
+        if (!placeholder && field.extra == 'auto_increment') {
+            placeholder = 'autoincr.';
+        }
+
         if (field.element == 'select' && (field.options || field.optgroups)) {
             var filtered_optgroups;
 
