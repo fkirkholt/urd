@@ -288,9 +288,7 @@ class Schema {
             {
                 $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
-                if (!isset($table->foreign_keys)) {
-                    $table->foreign_keys = [];
-                }
+                $table->foreign_keys = [];
 
                 foreach ($foreign_keys as $key) {
                     $key = (object) $key;
@@ -841,6 +839,12 @@ class Schema {
 
                     if (!empty($rel_table->hidden)) {
                         $table->relations[$alias]['hidden'] = true;
+                    }
+
+                    // Remove relations to foreign keys that doesn't exist
+                    if (!isset($rel_table->foreign_keys[$relation->foreign_key])) {
+                        unset($table->relations[$alias]);
+                        continue;
                     }
 
                     $fk = $rel_table->foreign_keys[$relation->foreign_key];
