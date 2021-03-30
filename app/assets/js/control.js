@@ -192,7 +192,7 @@ var control = {
                     field.coltext = $(event.target).data('coltext');
 
                     if (field.value === value) {
-                        // return;
+                        return;
                     }
 
                     control.validate(value, field);

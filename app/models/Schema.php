@@ -1080,7 +1080,7 @@ class Schema {
             $in_modules = [];
 
             foreach ($table->relations as $rel) {
-                if ($rel->hidden) continue;
+                if (!empty($rel->hidden)) continue;
                 $rel = (object) $rel;
                 foreach ($modules as $i => $module) {
                     if (in_array($rel->table, $module)) {
