@@ -1095,6 +1095,7 @@ class Table {
         // TODO: Is this needed anymore?
         $data['type'] = $this->type;
         $data['primary_key'] = $this->primary_key;
+        $data['foreign_keys'] = $this->foreign_keys;
         $data['label'] = $this->label;
         $data['actions'] = isset($this->actions) ? $this->actions : [];
         // TODO: Seems that these two doesn't belong here

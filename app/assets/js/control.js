@@ -59,10 +59,20 @@ var control = {
         var kandidatbetingelser = [];
         var filter;
 
-        if (field.foreign_key) {
+        var keys = [];
+        Object.keys(rec.table.foreign_keys).map(function(label) {
+            key = rec.table.foreign_keys[label];
 
-            if (field.foreign_key.filter) {
-                filter = field.foreign_key.filter;
+            if ($.inArray(field.name, key.local) !== -1) {
+                key.local_idx = $.inArray(field.name, key.local);
+                keys.push(key);
+            }
+        });
+
+        $.each(keys, function(idx, key) {
+
+            if (key.filter) {
+                filter = key.filter;
                 $.each(rec.fields, function(name, field2) {
                     var re = new RegExp('\\b'+field2.table+'\\.'+field2.name+'\\b', 'g');
                     filter = filter.replace(re, "'"+field2.value+"'");
@@ -74,17 +84,30 @@ var control = {
                 kandidatbetingelser.push(filter);
             }
 
-            if (field.foreign_key.local && field.foreign_key.local.length > 1) {
-                $.each(field.foreign_key.local, function(i, column) {
-                    if (column === field.name) return;
-                    // Just fields that is editable on their own participates in the condition
-                    if (rec.fields[column].value != null && column in rec.fields) {
-                        var condition = field.name + '.' + field.foreign_key.foreign[i] + ' = ' + "'" + rec.fields[column].value + "'";
-                        kandidatbetingelser.push(condition);
-                    }
-                });
+            if (key.local && key.local.length > 1) {
+                if (key.name == field.foreign_key.name) {
+                    $.each(key.local, function(i, column) {
+                        if (column === field.name) return;
+                        // Just fields that is editable on their own participates in the condition
+                        if (rec.fields[column].value != null && column in rec.fields) {
+                            var condition = field.name + '.' + key.foreign[i] + ' = ' + "'" + rec.fields[column].value + "'";
+                            kandidatbetingelser.push(condition);
+                        }
+                    });
+                } else {
+                    $.each(key.local, function(i, column) {
+                        if (column === field.name) return;
+                        if (rec.fields[column].value != null && column in rec.fields) {
+                            var col = field.foreign_key.foreign.slice(-1)[0];
+                            var condition = col + ' in (select ' + key.foreign[key.local_idx];
+                            condition += ' from ' + key.table + ' where ' + key.foreign[i];
+                            condition += " = '" + rec.fields[column].value + "')";
+                            kandidatbetingelser.push(condition); 
+                        }
+                    });
+                }
             }
-        }
+        });
 
         return kandidatbetingelser.join(' AND ');
     },
@@ -720,4 +743,5 @@ var config = require('./config.js');
 var sprintf = require("sprintf-js").sprintf
 
 // TODO: Dette fører til sirkulær avhengighet, som gjør at entry blir tomt objekt.
-var entry = require('./entry.js');
+var entry = require('./entry.js');const { keys } = require('lodash');
+
