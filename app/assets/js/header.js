@@ -5,6 +5,7 @@ var header = {
 
     set_admin: function(value) {
         config.admin = value;
+        if (value == 0) config.show_table = true;
         m.redraw();
     },
 
