@@ -543,7 +543,7 @@ class Schema {
 
                 // Desides what sort of input should be used
                 // todo: support more
-                if (!empty($table->fields[$key]->element)) {
+                if (!$config->urd_structure && !empty($table->fields[$key]->element)) {
                     $element = $table->fields[$key]->element;
                 } else if ($type === 'date') {
                     $element = 'input[type=date]';
