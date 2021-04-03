@@ -347,6 +347,14 @@ class Schema {
                         return $carry;
                     });
 
+                    $key_exists = false;
+                    foreach ($table->indexes as $index) {
+                        if (
+                            count($index->columns) >= count($key->local) &&
+                            array_slice($index->columns, 0, count($key->local)) == $key->local
+                        ) $key_exists = true;
+                    }
+
                     $patterns = [];
                     $patterns[] = '/^(fk_|idx_)/'; // find prefix
                     $patterns[] = '/(_' . $key->table . ')(_fk|_idx)?$/'; // find referenced table
@@ -372,12 +380,16 @@ class Schema {
 
                     $label = ucfirst($label);
 
+                    $rel = !empty($this->tables[$key_table_alias]->relations[$key->name])
+                        ? $this->tables[$key_table_alias]->relations[$key->name]
+                        : (object) [];
+
                     if (in_array($key->table, $db_tables) && !isset($table->extends)) {
                         $this->tables[$key_table_alias]->relations[$key->name] = [
                             "table" => $tbl_name,
                             "foreign_key" => $key_alias,
                             "label" => $label,
-                            "hidden" => (!$key_index && !empty($config->urd_structure)) || !empty($table->hidden)
+                            "hidden" => (!$key_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
                             ? true
                             : false
                         ];
@@ -843,6 +855,7 @@ class Schema {
 
                     if (!empty($rel_table->hidden)) {
                         $table->relations[$alias]['hidden'] = true;
+                        $relation->hidden = true;
                     }
 
                     // Remove relations to foreign keys that doesn't exist
@@ -858,7 +871,7 @@ class Schema {
                         return array_slice($index->columns, 0, count($fk->local)) === $fk->local;
                     });
 
-                    if (count($indexes) && empty($rel_table->hidden)) {
+                    if (count($indexes) && empty($relation->hidden)) {
                         $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst(str_replace('_', ' ', $alias));
                         $table->form['items'][$label] = 'relations.'.$alias;
                     }
