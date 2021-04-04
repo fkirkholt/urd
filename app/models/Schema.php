@@ -274,6 +274,10 @@ class Schema {
                         ? array_slice($grid_idx->columns, 0, 3)
                         : null
                     );
+                
+                $summation_cols = isset($table->indexes[$tbl_name . '_summation_idx'])
+                    ? $table->indexes[$tbl_name . '_summation_idx']->columns
+                    : null;
 
                 // Remove dropped indexes
                 foreach ($table->indexes as $alias => $index) {
@@ -692,7 +696,8 @@ class Schema {
             if ($grid_idx) {
                 $table->grid = (object) [
                     'columns' => $grid_idx->columns,
-                    'sort_columns' => $sort_cols
+                    'sort_columns' => $sort_cols,
+                    'summation_columns' => $summation_cols
                 ];
             } else {
                 $table->grid = (object) [
@@ -705,7 +710,8 @@ class Schema {
                                // but we show autoinc columns for reference tables
                                || $table->type == 'reference';
                     })), 0, 5),
-                    'sort_columns' => $sort_cols
+                    'sort_columns' => $sort_cols,
+                    'summation_columns' => $summation_cols
                 ];
             }
 

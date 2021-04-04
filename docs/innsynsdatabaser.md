@@ -74,6 +74,10 @@ Denne indexen brukes også til å angi hvilke kolonner man ser som visningsverdi
 
 Eksempel: Hvis man har referanse til saksansvarlig på en sak, vil man som regel se navnet på saksansvarlig. Og når man ser på persontabellen, vil man som regel ha standardsortering etter navn.
 
+### `<tabellnavn>_summation_idx`
+
+Hvis man ønsker å summere visse kolonner i en tabell, kan man opprette indeksen `<tabellnavn>_summation_idx` med de kolonnene man ønsker skal summeres. Da summeres de postene som er søkt fram.
+
 ### `<tabellnavn>_file_path_idx`
 
 Man kan angi at felter representerer filbaner ved å opprette en index med navn `<tabellnavn>_file_path_idx`. Da kan man også sette sammen filbaner vha. flere felter. F.eks. kan ett felt angi mappe, og ett kan angi filnavn. URD bygger opp filbanen ved å sette inn en slash - `/` - mellom verdiene angitt av de ulike kolonnene i indeksen.
