@@ -3,7 +3,7 @@ var control = {
 
     align: function(list, colname) {
         var col = list.fields[colname];
-        if (((col.datatype == 'integer' || col.datatype == 'float') && !col.foreign_key) && !col.element === 'input[type=checkbox]') {
+        if (((col.datatype == 'integer' || col.datatype == 'float') && !col.foreign_key) && col.element !== 'input[type=checkbox]') {
                 return 'right';
             } else {
                 return 'left';
