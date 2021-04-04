@@ -431,7 +431,7 @@ var grid = {
             ]),
             (!ds.table.grid.sums) ? null : m('tfoot', [
                 m('tr', {class: 'bg--light-gray'}, [
-                    m('td', {class: 'tl bt b--moon-gray pb0 bg-light-gray'}, m.trust('')),
+                    m('td', {class: 'tc bt b--moon-gray pb0 bg-light-gray'}, m.trust('Σ')),
                     Object.keys(ds.table.grid.columns).map(function(label, idx) {
                         var col = ds.table.grid.columns[label];
                         return m('td', {
