@@ -584,7 +584,7 @@ var control = {
                         }
                     }
                 }, [
-                    m('td.fa.tc', {
+                    m('td.fa.tc.w1', {
                         class: [
                             rel.expanded === true ? 'fa-angle-down' : 'fa-angle-right',
                             rel.invalid ? 'invalid' : rel.dirty ? 'dirty' : ''
@@ -637,7 +637,7 @@ var control = {
                 // TODO: sto i utgangspunktet list.betingelse. Finn ut hva jeg skal erstatte med.
                 m('tr', [
                     m('td', {class: 'tc v-top'}, [
-                        !field.foreign_key || !field.expandable || rec.fields[colname].value === null ? null : m('i.fa', {
+                        !field.foreign_key || !field.expandable || rec.fields[colname].value === null ? null : m('i.fa.w1', {
                             class: !field.expanded ? 'fa-angle-right' : field.expandable ? 'fa-angle-down' : '',
                             onclick: entry.toggle_relation.bind(this, rec, colname)
                         }),
@@ -650,9 +650,9 @@ var control = {
                     ]),
                     m('td.label', {
                         class: [
-                            'f6 nowrap pr1 v-top',
+                            'f6 pr1 v-top',
                             field.invalid ? 'invalid' : field.dirty ? 'dirty' : '',
-                            'max-w5 truncate'
+                            'max-w5 w1 truncate'
                         ].join(' '),
                         title: label,
                         onclick: function() {
