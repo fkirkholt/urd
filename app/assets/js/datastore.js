@@ -21,8 +21,8 @@ var store = {
             store.base = data.base;
             store.user = data.user;
 
-            if (data.criteria) {
-                $.extend(store.schema.config, data.criteria);
+            if (data.config) {
+                $.extend(store.schema.config, data.config);
             }
 
             if (typeof callback === 'function') {

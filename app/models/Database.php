@@ -120,7 +120,7 @@ class Database {
         $this->relations = isset($schema->relations) ? $schema->relations : [];
         $this->reports = isset($schema->reports) ? $schema->reports : [];
         $this->contents = isset($schema->contents) ? $schema->contents : null;
-        $this->criteria = isset($schema->criteria) ? $schema->criteria : null;
+        $this->config = isset($schema->config) ? $schema->config : null;
     }
 
     public static function get($db_name=null) {
@@ -183,7 +183,7 @@ class Database {
         $info->base->label = $this->label;
         $info->base->branch = $branch;
         $info->banner = $banner;
-        $info->criteria = $this->criteria;
+        $info->config = $this->config;
         $info->user = new \StdClass;
         $info->user->name = $_SESSION['user_name'];
         $info->user->id = $_SESSION['user_id'];

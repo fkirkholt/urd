@@ -14,7 +14,7 @@ class Schema {
     public $tables;
     public $reports;
     public $contents;
-    private $config;
+    public $config;
     private $terms;
 
     function __construct($schema_name) {
@@ -31,7 +31,7 @@ class Schema {
         $this->tables = (array) $schema->tables;
         $this->reports = isset($schema->reports) ? (array) $schema->reports : [];
         $this->contents = isset($schema->contents) ? (array) $schema->contents : [];
-        $this->criteria = isset($schema->criteria) ? $schema->criteria : null;
+        $this->config = isset($schema->config) ? (array) $schema->config : [];
 
         foreach ($this->tables as $alias => $table) {
             $table->fields = isset($table->fields) ? (array) $table->fields : [];
@@ -1244,11 +1244,6 @@ class Schema {
 
         $this->contents = $contents;
 
-        if (!empty($config->add_criteria)) {
-            unset($config->dirty);
-            $this->criteria = $config;
-        }
-
         $_SESSION['progress'] = 100;
         session_write_close();
         session_start();
@@ -1263,8 +1258,6 @@ class Schema {
         }
 
         // remove attributes that shouldn't be written to schema.json
-        unset($this->config);
-        unset($this->terms);
 
         $json_string = json_encode(get_object_vars($this), JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

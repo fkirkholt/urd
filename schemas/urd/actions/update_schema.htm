@@ -64,13 +64,6 @@ var schema_dialog = {
                         ds.schema.config.norwegian_chars = $(event.target).prop('checked');
                     }
                 }), " ae → æ, oe → ø, aa → å",
-                m('br'),
-                m('input[type=checkbox]', {
-                    checked: ds.schema.config.add_criteria,
-                    onchange: function(event) {
-                        ds.schema.config.add_criteria = $(event.target).prop('checked');
-                    }
-                }), ' Legg disse kriteriene inn i skjemaet',
             ]),
             m('div[name=buttons]', {class: "bottom-0 max-w8 mt2"}, [
                 m('input[type=button]', {
