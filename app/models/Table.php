@@ -657,12 +657,11 @@ class Table {
     public function get_values($selects, $join, $condition, $order) {
         $cols = [];
         foreach ($selects as $key=>$value) {
-            if (isset($this->fields[$key])) {
+            if (isset($this->fields[$key]) && empty($this->fields[$key]->source)) {
                 $cols[] = $this->name . '.' . $key;
             }
         }
         $select = implode(', ', $cols);
-        $view = $this->get_view();
 
         $sql = "SELECT $select
                 FROM $this->name
