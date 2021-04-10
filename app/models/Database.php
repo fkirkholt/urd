@@ -147,11 +147,6 @@ class Database {
     }
 
     public function get_info() {
-        if (file_exists('../../public/schemas/' . $this->schema . '/img/banner.png')) {
-            $banner = 'schemas/' . $this->schema . '/img/banner.png';
-        } else {
-            $banner = 'img/banner.png';
-        }
 
         $branch = exec('git rev-parse --abbrev-ref HEAD');
         if ($branch === 'master') {
@@ -182,7 +177,6 @@ class Database {
         $info->base->schema = $this->schema;
         $info->base->label = $this->label;
         $info->base->branch = $branch;
-        $info->banner = $banner;
         $info->config = $this->config;
         $info->user = new \StdClass;
         $info->user->name = $_SESSION['user_name'];
