@@ -708,7 +708,7 @@
     },
     "contents": {
         "Brukeradministrasjon": {
-            "items": [
+            "subitems": [
                 "tables.organization",
                 "tables.user_",
                 "tables.role",
@@ -716,7 +716,7 @@
             ]
         },
         "Annet": {
-            "items": [
+            "subitems": [
                 "tables.database_",
                 "tables.filter",
                 "tables.format"
