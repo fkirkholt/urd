@@ -126,6 +126,7 @@ class Record {
                 if ($searchable) continue;
 
                 if (isset($field->view)) {
+                    if (!isset($field->column_view)) $field->column_view = $field->view;
                     $field->options = $this->tbl->get_options($field, $fields);
                 }
 

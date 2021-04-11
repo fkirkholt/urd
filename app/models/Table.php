@@ -944,6 +944,10 @@ class Table {
 
             // TODO: lazy dropdown hvis feltet beror på annet felt
 
+            if (!empty($field->view) && !isset($field->column_view)) {
+                $field->column_view = $field->view;
+            }
+
             if (!empty($this->foreign_keys[$field_alias]) && !empty($field->view)) {
                 $field->options = $this->get_options($field);
             }
@@ -953,10 +957,6 @@ class Table {
             }
 
             $fk = isset($this->foreign_keys[$field_alias]) ? $this->foreign_keys[$field_alias] : null;
-
-            if (!empty($field->view) && !isset($field->column_view)) {
-                $field->column_view = $field->view;
-            }
 
             if (isset($field->column_view)) {
                 $selects[$field->alias] = $field->column_view;
