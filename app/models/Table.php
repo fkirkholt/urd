@@ -1106,6 +1106,7 @@ class Table {
         $data['date_as_string'] = isset($this->date_as_string) ? $this->date_as_string : ["separator" => "-"];
         $data['expansion_column'] = isset($this->expansion_column) ? $this->expansion_column : null;
         $data['relations'] = $this->get_relations();
+        $data['saved_filters'] = $this->get_saved_searches();
 
         // Sjekker om det finnes en hjelpefil
         $filename = '../../schemas/'.$this->db->schema .'/hjelp/'.$this->name.'.html';

@@ -90,9 +90,6 @@ class TableController extends BaseController {
             return $this->response->body(json_encode(['message' => 'No permission']));
         }
 
-        // TODO: hører ikke hjemme her, men i modellen!
-        $data['saved_filters'] = $tbl->get_saved_searches();
-
         // TODO: Vurder å legge dette til egen funksjon i /models/Table.php
         if ($tbl->csv) {
             header("Cache-Control: ");
