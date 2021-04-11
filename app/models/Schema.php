@@ -1016,6 +1016,22 @@ class Schema {
                         $top_level = false;
                     }
                 }
+
+                if (!isset($table->fields[$alias])) continue;
+
+                $field = $table->fields[$alias];
+                $ref_schema = Schema::get($fk->schema);
+                $ref_tbl = $ref_schema->tables[$fk->table]; 
+
+                foreach ($ref_tbl->indexes as $index) {
+                    if (!$index->primary && $index->unique) {
+                        $columns = array_map(function($col) use ($alias) {
+                            return "$alias.$col";
+                        }, $index->columns);
+                        $field->view = implode(' || ', $columns);
+                        break;
+                    } 
+                }
             }
 
             if ($top_level) {

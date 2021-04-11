@@ -132,10 +132,7 @@ class Table {
     public function get_joins() {
         $joins = [];
         foreach ($this->fields as $alias => $field) {
-            if (
-                !isset($this->foreign_keys[$alias]) || !isset($field->view) ||
-                (isset($field->column_view) && $field->column_view === null)
-            ) continue;
+            if (!isset($this->foreign_keys[$alias]) || !isset($field->view)) continue;
 
             $fk = $this->foreign_keys[$alias];
 
@@ -240,10 +237,6 @@ class Table {
             if (isset($field->view)) {
                 $view_parts = explode('||', $field->view);
                 $field->view = $this->db->expr()->concat_ws('', $view_parts);
-
-                if (empty($field->column_view)) {
-                    $field->column_view = $field->view;
-                }
             }
 
             if (empty($field->label)) {
@@ -251,11 +244,12 @@ class Table {
             }
 
 
-            // TODO What is this?
+            // Handling of special values not in reference tables
+            // for instance boolean Y and N in oracle, or set in MySQL
             if (
                 $field->element == 'select' &&
                 isset($field->options) &&
-                !isset($field->relation) &&
+                !isset($field->foreign_key) &&
                 !isset($field->view)
             ) {
                 $table_name = isset($field->table) ? $field->table : $this->name;
@@ -324,19 +318,6 @@ class Table {
             // Make fields that link to data tables (not reference tables) expandable
             if (($ref_tbl->type === 'data' && !isset($field->expandable)) || !isset($field->view)) {
                 $field->expandable = true;
-            }
-
-            if (!isset($field->view) && isset($ref_tbl->indexes)) {
-                foreach ($ref_tbl->indexes as $index) {
-                    if (!$index->primary && $index->unique) {
-                        $columns = array_map(function($col) use ($alias) {
-                            return "$alias.$col";
-                        }, $index->columns);
-                        $field->view = $this->db->expr()->concat_ws(', ', $columns);
-                        $field->column_view = $field->view;
-                        break;
-                    }
-                }
             }
 
             $fields[$alias] = $field;
@@ -973,10 +954,11 @@ class Table {
 
             $fk = isset($this->foreign_keys[$field_alias]) ? $this->foreign_keys[$field_alias] : null;
 
-            if (
-                isset($field->column_view) &&
-                ($fk === null || $field->column_view !== $fk->table . '.' . $fk->foreign[0])
-            ) {
+            if (!empty($field->view) && !isset($field->column_view)) {
+                $field->column_view = $field->view;
+            }
+
+            if (isset($field->column_view)) {
                 $selects[$field->alias] = $field->column_view;
             } else if ($field->element == 'textarea') {
                 $selects[$field->alias] = "substr($this->name.$field->alias, 1, 256)";
