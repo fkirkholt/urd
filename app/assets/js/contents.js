@@ -45,8 +45,8 @@ contents = {
                 m('i', {
                     class: [
                         node.expanded ? 'fa fa-angle-down': 'fa fa-angle-right',
-                        node.class_label || 'f'+level,
-                        'w1',
+                        node.class_label,
+                        'pr1 di',
                         'light-silver'
                     ].join(' '),
                     onclick: function(e) {
@@ -54,8 +54,10 @@ contents = {
                     }
                 }),
                 m('.label', {
-                    class: node.class_label || ' f'+level,
-                    style: 'display: inline',
+                    class: [
+                        node.class_label,
+                        'di b'
+                    ].join(' '),
                     onclick: function(e) {
                         node.expanded = !node.expanded;
                     },
@@ -143,7 +145,7 @@ contents = {
                 }),
                 m('a', {
                     class: [
-                        'black underline-hover',
+                        'black underline-hover nowrap',
                         object.description ? 'dot' : 'link'
                     ].join(' '),
                     title: object.description ? object.description : '',
