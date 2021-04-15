@@ -48,27 +48,7 @@ class Table {
         $this->name = $tbl_name;
 
         if (!isset($tbl->form)) {
-            $this->form = new \StdClass;
-            $this->form->items = [];
-
-            foreach ($this->fields as $alias => $field) {
-                if ($field->table !== $this->name) continue;
-
-                $this->form->items[] = $field->alias;
-            }
-
-            foreach ($this->extension_tables as $table_name) {
-                $item = ['label' => $table_name, 'items' => []];
-                foreach ($this->fields as $alias => $field) {
-                    if ($field->table !== $table_name) continue;
-                    $item['items'][] = $alias;
-                }
-                $this->form->items[] = $item;
-            }
-
-            foreach ($this->relations as $alias => $relation) {
-                $this->form->items[] = 'relations.' . $alias;
-            }
+            $this->form = $this->get_form();
         }
     }
 
@@ -1160,6 +1140,32 @@ class Table {
         }
 
         return $result;
+    }
+
+    function get_form() {
+        $form = new \StdClass;
+        $form->items = [];
+
+        foreach ($this->fields as $alias => $field) {
+            if ($field->table !== $this->name) continue;
+
+            $form->items[] = $field->alias;
+        }
+
+        foreach ($this->extension_tables as $table_name) {
+            $item = ['label' => $table_name, 'items' => []];
+            foreach ($this->fields as $alias => $field) {
+                if ($field->table !== $table_name) continue;
+                $item['items'][] = $alias;
+            }
+            $form->items[] = $item;
+        }
+
+        foreach ($this->relations as $alias => $relation) {
+            $form->items[] = 'relations.' . $alias;
+        }
+
+        return $form;
     }
 
 
