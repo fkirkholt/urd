@@ -183,15 +183,11 @@ class Database {
         $info->user->id = $_SESSION['user_id'];
         $info->user->admin = $is_admin;
 
-
         $this->user = $info->user;
 
-
-        $contents = $this->get_contents();
-
-        $info->base->tables = $contents->tables;
-        $info->base->reports = $contents->reports;
-        $info->base->contents = $contents->contents;
+        $info->base->tables = $this->filter_tables();
+        $info->base->reports = $this->reports;
+        $info->base->contents = $this->contents;
         return $info;
     }
 
@@ -221,7 +217,7 @@ class Database {
         return $admin_schemas;
     }
 
-    public function get_contents()
+    public function filter_tables()
     {
 
         $user_roles = $this->get_user_roles();
@@ -267,13 +263,7 @@ class Database {
             $data_arr[$table_name] = $table;
         }
 
-        $data = new \StdClass;
-        // $data->rapporter = $this->get_reports();
-        $data->reports = isset($this->reports) ? $this->reports : [];
-        $data->contents = isset($this->contents) ? $this->contents : null;
-        $data->tables = $data_arr;
-
-        return $data;
+        return $data_arr;
     }
 
     public function get_reports() {
