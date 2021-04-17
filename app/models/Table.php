@@ -706,9 +706,9 @@ class Table {
               $condition";
 
             $summer = $this->db->fetch($sql);
-
-            return $summer;
         }
+        
+        return $summer;
     }
 
     public function get_parent_fk() {
