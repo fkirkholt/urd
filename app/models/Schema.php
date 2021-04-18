@@ -272,12 +272,12 @@ class Schema {
                     ? $table->indexes[$tbl_name . '_sort_idx']->columns
                     : ( $grid_idx
                         ? array_slice($grid_idx->columns, 0, 3)
-                        : null
+                        : []
                     );
                 
                 $summation_cols = isset($table->indexes[$tbl_name . '_summation_idx'])
                     ? $table->indexes[$tbl_name . '_summation_idx']->columns
-                    : null;
+                    : [];
 
                 // Remove dropped indexes
                 foreach ($table->indexes as $alias => $index) {
