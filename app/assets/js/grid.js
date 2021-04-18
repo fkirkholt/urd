@@ -301,9 +301,9 @@ var grid = {
         filterpanel.advanced = condition ? true : false;
 
         if (ds.base.name == base_name) {
-            grid.get({ base: base_name, table: table_name, filter: search, condition: condition });
+            grid.get({ base: base_name, table: table_name, filter: search, condition: condition, limit: config.limit });
         } else ds.load_database(base_name, function(data) {
-            grid.get({base: base_name, table: table_name, filter: search, condition: condition});
+            grid.get({base: base_name, table: table_name, filter: search, condition: condition, limit: config.limit});
         });
 
         $('div[name="vis"]').removeClass('inactive');

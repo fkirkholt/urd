@@ -27,6 +27,7 @@ var pagination = {
             filter: m.route.param('query') ? decodeURI(m.route.param('query')) : null,
             condition: m.route.param('where') ? decodeURI(m.route.param('where')) : null,
             sort: JSON.stringify(sort),
+            limit: config.limit,
             offset: offset
         };
 
