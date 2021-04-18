@@ -429,7 +429,7 @@ var grid = {
                     return record.hidden ? '' : grid.draw_row(record, idx, 0);
                 })
             ]),
-            (!ds.table.grid.sums.length) ? null : m('tfoot', [
+            (!Object.keys(ds.table.grid.sums).length) ? null : m('tfoot', [
                 m('tr', {class: 'bg--light-gray'}, [
                     m('td', {class: 'tc bt b--moon-gray pb0 bg-light-gray'}, m.trust('Σ')),
                     Object.keys(ds.table.grid.columns).map(function(label, idx) {
