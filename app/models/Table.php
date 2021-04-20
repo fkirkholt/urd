@@ -111,10 +111,24 @@ class Table {
 
     public function get_joins() {
         $joins = [];
-        foreach ($this->fields as $alias => $field) {
-            if (!isset($this->foreign_keys[$alias]) || !isset($field->view)) continue;
 
-            $fk = $this->foreign_keys[$alias];
+        // Joins extension tables
+        foreach ($this->extension_tables as $table_name) {
+            $table = Table::get($this->db->name, $table_name);
+            $view = $table->get_view();
+            $conditions = [];
+            foreach ($table->primary_key as $i => $field) {
+                $conditions[] = "$table_name.$field = $this->name.{$this->primary_key[$i]}";
+            }
+
+            $joins[$table_name] = "LEFT JOIN $view $table_name ON " . implode(' AND ', $conditions);
+        }
+
+        foreach ($this->fields as $alias => $field) {
+
+            if (!isset($field->foreign_key) || !isset($field->view)) continue;
+
+            $fk = $field->foreign_key;
 
             if (!isset($fk->schema)) $fk->schema = $this->db->schema;
 
@@ -140,23 +154,11 @@ class Table {
             foreach ($fk->local as $n => $fk_column) {
                 $ref_field_name = $fk->foreign[$n];
 
-                $conditions[] = "$alias.$ref_field_name = $this->name.$fk_column";
+                $conditions[] = "$alias.$ref_field_name = $field->table.$fk_column";
             }
             $conditions_list = implode(' AND ', $conditions);
 
             $joins[$alias] = "LEFT JOIN $view $alias ON $conditions_list";
-        }
-
-        // Joins extension tables
-        foreach ($this->extension_tables as $table_name) {
-            $table = Table::get($this->db->name, $table_name);
-            $view = $table->get_view();
-            $conditions = [];
-            foreach ($table->primary_key as $i => $field) {
-                $conditions[] = "$table_name.$field = $this->name.{$this->primary_key[$i]}";
-            }
-
-            $joins[$table_name] = "LEFT JOIN $view $table_name ON " . implode(' AND ', $conditions);
         }
 
         return $joins;
@@ -275,11 +277,12 @@ class Table {
                 $field->optgroup_field = 'schema_';
             }
 
-            if (!isset($this->foreign_keys[$alias])) continue;
+            //if (!isset($this->foreign_keys[$alias])) continue;
+            if (!isset($this->db->tables[$field->table]->foreign_keys[$alias])) continue;
 
             // Handle foreign key columns
 
-            $fk = $this->foreign_keys[$alias];
+            $fk = $this->db->tables[$field->table]->foreign_keys[$alias];
 
             if (!isset($fk->schema) || $fk->schema === $this->db->schema) {
                 $fk->schema = $this->db->schema;
@@ -389,7 +392,7 @@ class Table {
     {
         $field = (object) $field;
 
-        $fk = $this->foreign_keys[$field->alias];
+        $fk = $this->db->tables[$field->table]->foreign_keys[$field->alias];
 
         if (!isset($fk->schema) || $fk->schema === $this->db->schema) {
             $fk->schema = $this->db->schema;

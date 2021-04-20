@@ -756,6 +756,9 @@ class Schema {
                         )
                     ) continue;
 
+                    // Don't add columns part of pk of extension tables
+                    if (isset($table->extends) and in_array($field->name, $table->primary_key)) continue;
+
                     // Group by prefix
                     $parts = explode('_', $field->name);
                     $group = $parts[0];
