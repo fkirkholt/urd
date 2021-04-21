@@ -35,12 +35,7 @@ class Record {
         $selects = [];
 
         foreach ($this->tbl->fields as $field_alias => $field) {
-
-            if (isset($field->view) && !isset($field->datatype)) {
-                $selects[$field_alias] = "($field->view)" . ' AS ' . $field_alias;
-            } else {
-                $selects[$field_alias] = $field->table . '.' . $field_alias;
-            }
+            $selects[$field_alias] = $field->table . '.' . $field_alias;
         }
 
         $join = implode("\n", $joins);
