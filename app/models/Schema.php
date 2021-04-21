@@ -421,6 +421,10 @@ class Schema {
                 // Keep virtual columns
                 if (isset($field->source)) continue;
 
+                if (!isset($field->name)) {
+                    $field->name = $alias;
+                }
+
                 if (!in_array($field->name, $colnames) && !in_array($alias, $colnames)) {
                     unset($table->fields[$alias]);
                 }
