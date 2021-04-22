@@ -571,6 +571,16 @@ var control = {
             var relation = rec.table.relations[key];
             var rel = rec.relations && rec.relations[key] ? rec.relations[key] : {};
 
+            if (rel.expanded && rel.records) {
+                fk = rel.foreign_keys[relation.foreign_key];
+                console.log('fk.local', fk.local);
+                if (_isEqual(fk.local, rel.primary_key)) {
+                    relation.type = '1:1'
+                } else {
+                    relation.type = '1:M'
+                }
+            }
+
             if (relation === undefined) return '';
 
             label = relation.label ? relation.label : label;
@@ -747,5 +757,5 @@ var config = require('./config.js');
 var sprintf = require("sprintf-js").sprintf
 
 // TODO: Dette fører til sirkulær avhengighet, som gjør at entry blir tomt objekt.
-var entry = require('./entry.js');const { keys } = require('lodash');
+var entry = require('./entry.js');
 

@@ -389,7 +389,6 @@ class Schema {
                             "table" => $tbl_name,
                             "foreign_key" => $key_alias,
                             "label" => $label,
-                            "type" => isset($table->extends) ? '1:1' : '1:M',
                             "hidden" => (!$key_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
                             ? true
                             : false
