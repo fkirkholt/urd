@@ -612,7 +612,11 @@ var control = {
                         rel.dirty ? m('i', {class: 'fa fa-pencil ml1 light-gray'}) : '',
                     ]),
                 ]),
-                rel.expanded && rel.records ? entry.draw_relation_table(rel, rec) : null
+                rel.expanded && rel.records 
+                    ? relation.type == '1:1' 
+                        ? entry.draw_relation_list(rel, rec, '1:1')
+                        : entry.draw_relation_table(rel, rec) 
+                    : null
             ];
         } else if (typeof colname === "string" && colname.indexOf('actions.') > -1) {
             m('tr', [

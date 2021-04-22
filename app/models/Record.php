@@ -320,51 +320,35 @@ class Record {
             $values->$last_pk_col = $next;
         }
 
-        // Array of values to be inserted, grouped by table, in order to support
-        // extension tables, i.e 1:1 relations
+        // Array of values to be inserted
         $tbl_inserts = [];
 
         foreach ($values as $field_alias => $value) {
             $field = $this->tbl->fields[$field_alias];
 
-            if (!isset($tbl_inserts[$field->table])) $tbl_inserts[$field->table] = [];
-
             if ($value === '') {
                 $value = null;
             }
 
-            $tbl_inserts[$field->table][$field->name] = $value;
+            $tbl_inserts[$field->name] = $value;
         }
 
 
-        // Inserts into main table first
-        {
-            // Finds if primary key is auto_increment
-            $first_pk_field = $this->tbl->primary_key[0];
-            $autoinc = $this->tbl->fields[$first_pk_field]->extra == 'auto_increment';
+        // Finds if primary key is auto_increment
+        $first_pk_field = $this->tbl->primary_key[0];
+        $autoinc = $this->tbl->fields[$first_pk_field]->extra == 'auto_increment';
 
-            if ($autoinc) {
-                $result = $this->db->insert($this->tbl->name, $tbl_inserts[$this->tbl->name])->execute(\dibi::IDENTIFIER);
+        if ($autoinc) {
+            $result = $this->db->insert($this->tbl->name, $tbl_inserts)->execute(\dibi::IDENTIFIER);
 
-                foreach ($this->tbl->primary_key as $fieldname) {
-                    $this->primary_key->$fieldname = $result;
-                }
-            } else {
-                $result = $this->db->insert($this->tbl->name, $tbl_inserts[$this->tbl->name])->execute();
+            foreach ($this->tbl->primary_key as $fieldname) {
+                $this->primary_key->$fieldname = $result;
             }
-
-            unset($tbl_inserts[$this->tbl->name]);
+        } else {
+            $result = $this->db->insert($this->tbl->name, $tbl_inserts)->execute();
         }
 
-        // Inserts into extension tables
-        foreach ($tbl_inserts as $tbl_name => $insert) {
-
-            $primary_key = $this->get_pk_values($tbl_name);
-
-            $insert = array_merge($insert, (array) $primary_key);
-
-            $result = $this->db->insert($tbl_name, $insert)->execute();
-        }
+        unset($tbl_inserts[$this->tbl->name]);
 
         return $this->primary_key;
     }
@@ -385,8 +369,7 @@ class Record {
             }
         }
 
-        // Array of values to be updated, grouped by table, in order to support
-        // extension tables, i.e 1:1 relations
+        // Array of values to be updated
         $tbl_values = [];
 
         foreach ($values as $field_alias => $value) {
@@ -394,30 +377,12 @@ class Record {
                 $value = null;
             }
             $fields = $this->tbl->fields;
-            $tbl_name = $fields[$field_alias]->table;
             $field_name = $fields[$field_alias]->name;
-            if (!isset($tbl_values[$tbl_name])) $tbl_values[$tbl_name] = [];
-            $tbl_values[$tbl_name][$field_name] = $value;
+            $tbl_values[$field_name] = $value;
         }
 
-        // Updates database
-        foreach ($tbl_values as $tbl_name => $tbl_values) {
-            // Check if field is in 1:1 relation table and that record exists
-            $primary_key = $this->get_pk_values($tbl_name);
-            $count = $this->db->select('*')
-                ->from($tbl_name)
-                ->where((array) $primary_key)
-                ->count();
-
-            if ($count === 0) {
-                // If a record doesn't exist in extension table, we make an insert
-                $tbl_values = array_merge($tbl_values, (array) $primary_key);
-                $sql = $this->db->insert($tbl_name, $tbl_values)->execute();
-            } else {
-                $result = $this->db->update($tbl_name, (array) $tbl_values)
-                    ->where((array) $primary_key)->execute();
-            }
-        }
+        $result = $this->db->update($this->tbl->name, (array) $tbl_values)
+                ->where((array) $this->primary_key)->execute();
 
         return $values;
     }
@@ -433,35 +398,10 @@ class Record {
             }
         }
 
-        $primary_key = $this->get_pk_values($this->tbl->name);
-
         $result = $this->db->delete($this->tbl->name)
-            ->where((array) $primary_key)->execute();
+            ->where((array) $this->primary_key)->execute();
 
         return $result;
-    }
-
-    /**
-     * Get primary key values for record
-     *
-     * @param string $table_name - table name
-     */
-    protected function get_pk_values($table_name)
-    {
-        // if ($table_name === $this->tbl->name) return $this->primary_key;
-
-        $prim_key = [];
-
-        // Can't use $this->tbl because the table might be extension table
-        $table = Table::get($this->db->name, $table_name);
-        $pk_keys = array_keys((array) $this->primary_key);
-
-        foreach ($table->primary_key as $i => $field_alias) {
-            $field_name = $table->fields[$field_alias]->name;
-            $prim_key[$field_name] = $this->primary_key->{$pk_keys[$i]};
-        }
-
-        return (object) $prim_key;
     }
 
     public function get_file_path()

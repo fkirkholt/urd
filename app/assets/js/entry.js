@@ -602,8 +602,7 @@ var entry = {
         ]
     },
 
-    draw_relation_list: function(rel, record) {
-        console.log('ds', ds);
+    draw_relation_list: function(rel, record, type='1:M') {
         return m('tr', [
             m('td', {}),
             m('td', {colspan:3}, [
@@ -660,7 +659,7 @@ var entry = {
                                     rel.modus = 'edit';
                                     record.active_relation = rec;
                                 }
-                            }, m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
+                            }, (type == '1:1' && rel.records.length) ? '' : m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
                         ])
                     ]),
                 ])

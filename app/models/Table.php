@@ -112,18 +112,6 @@ class Table {
     public function get_joins() {
         $joins = [];
 
-        // Joins extension tables
-        foreach ($this->extension_tables as $table_name) {
-            $table = Table::get($this->db->name, $table_name);
-            $view = $table->get_view();
-            $conditions = [];
-            foreach ($table->primary_key as $i => $field) {
-                $conditions[] = "$table_name.$field = $this->name.{$this->primary_key[$i]}";
-            }
-
-            $joins[$table_name] = "LEFT JOIN $view $table_name ON " . implode(' AND ', $conditions);
-        }
-
         foreach ($this->fields as $alias => $field) {
 
             if (!isset($field->foreign_key) || !isset($field->view)) continue;
@@ -180,23 +168,6 @@ class Table {
     {
         $fields = $this->fields;
         $tables = $this->db->tables;
-
-        // Get columns from tables with one-to-one relation
-        $this->extension_tables = isset($this->extension_tables) ? $this->extension_tables : [];
-        foreach ($this->extension_tables as $tbl_name) {
-            $permission = $this->get_user_permission($tbl_name);
-            $rel_fields = $tables[$tbl_name]->fields;
-            foreach ($rel_fields as $fieldname => $field) {
-                if (in_array($fieldname, $tables[$tbl_name]->primary_key)) {
-                    unset($rel_fields[$fieldname]);
-                    continue;
-                }
-                $field->editable = isset($field->editable) && $field->editable === false ? false : $permission->edit;
-                $field->table = $tbl_name;
-                $rel_fields[$fieldname] = $field;
-            }
-            $fields = array_merge($rel_fields, $fields);
-        }
 
         foreach ($fields as $alias => $field) {
 
@@ -314,8 +285,7 @@ class Table {
 
         $repl_connection = $this->db->get_replication_connection();
 
-        $select_tables = $this->extension_tables;
-        $select_tables[] = $this->name;
+        $select_tables = [$this->name];
         foreach ($select_tables as $tbl_name) {
             // Break if connected with user who doesn't own the tables
             if (!$repl_connection->getDatabaseInfo()->hasTable($tbl_name)) break;
@@ -1153,15 +1123,6 @@ class Table {
             if ($field->table !== $this->name) continue;
 
             $form->items[] = $field->alias;
-        }
-
-        foreach ($this->extension_tables as $table_name) {
-            $item = ['label' => $table_name, 'items' => []];
-            foreach ($this->fields as $alias => $field) {
-                if ($field->table !== $table_name) continue;
-                $item['items'][] = $alias;
-            }
-            $form->items[] = $item;
         }
 
         foreach ($this->relations as $alias => $relation) {

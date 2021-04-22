@@ -326,20 +326,11 @@ class Schema {
                         $this->tables[$key_table_alias] = (object) [
                             "name" => $key->table,
                             "relations" => [],
-                            "extension_tables" => [],
                         ];
                     }
 
                     // Checks if the relation defines this as an extension table
                     if ($key->local === $pk_columns) {
-                        // TODO: Dokumenter
-                        if (!isset($this->tables[$key_table_alias]->extension_tables)) {
-                            $this->tables[$key_table_alias]->extension_tables = [];
-                        }
-                        if (!in_array($tbl_alias, $this->tables[$key_table_alias]->extension_tables)) {
-                            $this->tables[$key_table_alias]->extension_tables[] = $tbl_alias;
-                        }
-
                         $table->extends = $key->table;
                     }
 
@@ -374,6 +365,11 @@ class Schema {
                     ? str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name))
                     : str_replace('_', ' ', $tbl_alias);
 
+                    // Avoid "Primary" as label
+                    if (isset($table->extends)) {
+                        $label = str_replace($table->extends . '_', '', $table->name);
+                    }
+
                     if ($label == '') $label = $tbl_alias;
 
                     if ($config->norwegian_chars) {
@@ -388,11 +384,12 @@ class Schema {
                         ? $this->tables[$key_table_alias]->relations[$key->name]
                         : (object) [];
 
-                    if (in_array($key->table, $db_tables) && !isset($table->extends)) {
+                    if (in_array($key->table, $db_tables)) {
                         $this->tables[$key_table_alias]->relations[$key->name] = [
                             "table" => $tbl_name,
                             "foreign_key" => $key_alias,
                             "label" => $label,
+                            "type" => isset($table->extends) ? '1:1' : '1:M',
                             "hidden" => (!$key_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
                             ? true
                             : false
@@ -760,9 +757,6 @@ class Schema {
                         )
                     ) continue;
 
-                    // Don't add columns part of pk of extension tables
-                    if (isset($table->extends) and in_array($field->name, $table->primary_key)) continue;
-
                     // Group by prefix
                     $parts = explode('_', $field->name);
                     $group = $parts[0];
@@ -842,17 +836,6 @@ class Schema {
 
         // Add form data from associated tables
         foreach ($this->tables as $tbl_alias => $table) {
-
-            // Add fields from expansion tables
-            if (!empty($table->extension_tables)) {
-                foreach ($table->extension_tables as $ext) {
-                    $rest = str_replace($table->name . '_', '', $ext);
-                    $label = isset($terms[$rest]) ? $terms[$rest]['label'] : ucfirst($rest);
-                    $table->form["items"][$label] = [
-                        "items"=> $this->tables[$ext]->form["items"]
-                    ];
-                }
-            }
 
             // Add relations to form
             if (isset($table->relations)) {
