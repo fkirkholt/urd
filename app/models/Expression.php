@@ -139,17 +139,6 @@ class Expression {
         }
     }
 
-    public function range($limit, $offset = 0) {
-        if (in_array($this->platform, ['mysql', 'sqlite'])) {
-            $this->expr = $this->expr . " LIMIT $limit OFFSET $offset";
-        } elseif ($this->platform == 'oracle') {
-            $this->expr = $this->expr . " OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY";
-        }
-
-        return $this;
-    }
-
-
     public function replace_vars($sql) {
         $sql = str_replace('$user_id', $_SESSION['user_id'], $sql);
         $sql = str_replace('$user_name', $_SESSION['user_name'], $sql);
