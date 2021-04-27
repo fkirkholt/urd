@@ -598,7 +598,7 @@ class Table {
         $select = implode(', ', $cols);
 
         $sql = "SELECT $select
-                FROM $this->name
+                FROM $this->view $this->name
                 $join
                 %SQL
                 $order
