@@ -342,12 +342,12 @@ class Schema {
                         return $carry;
                     });
 
-                    $key_exists = false;
+                    $index_exists = false;
                     foreach ($table->indexes as $index) {
                         if (
                             count($index->columns) >= count($key->local) &&
                             array_slice($index->columns, 0, count($key->local)) == $key->local
-                        ) $key_exists = true;
+                        ) $index_exists = true;
                     }
 
                     $patterns = [];
@@ -389,7 +389,8 @@ class Schema {
                             "table" => $tbl_name,
                             "foreign_key" => $key_alias,
                             "label" => $label,
-                            "hidden" => (!$key_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
+                            "filter" => isset($rel->filter) ? $rel->filter : null,
+                            "hidden" => (!$index_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
                             ? true
                             : false
                         ];
