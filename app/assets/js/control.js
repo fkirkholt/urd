@@ -292,7 +292,10 @@ var control = {
                 }
             });
         } else {
-           var width = Math.round(field.size * 0.6) + 'em';
+            var size = field.datatype == 'float'
+                ? field.size + 1
+                : field.size
+            var width = Math.round(size * 0.6) + 'em';
 
             value = typeof field.value === 'string'
                 ? field.value.replace(/\n/g, '\u21a9')
@@ -305,7 +308,7 @@ var control = {
 
             return m('input', {
                 name: field.name,
-                maxlength: field.size,
+                maxlength: size,
                 // required: !field.nullable && field.extra !== 'auto_increment',
                 class: [
                     !field.nullable && field.value === '' ? 'invalid' : '',
