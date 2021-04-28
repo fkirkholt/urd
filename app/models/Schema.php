@@ -1010,8 +1010,14 @@ class Schema {
                 if (!isset($table->fields[$alias])) continue;
 
                 $field = $table->fields[$alias];
-                $ref_schema = Schema::get($fk->schema);
+                if ($fk->schema !== $this->name) {
+                    $ref_schema = Schema::get($fk->schema);
+                    $ref_tbl = $ref_schema->tables[$fk->table];
                 $ref_tbl = $ref_schema->tables[$fk->table]; 
+                    $ref_tbl = $ref_schema->tables[$fk->table];
+                } else {
+                    $ref_tbl = $this->tables[$fk->table];
+                } 
 
                 foreach ($ref_tbl->indexes as $index) {
                     if (!$index->primary && $index->unique) {
