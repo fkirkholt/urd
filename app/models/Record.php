@@ -301,6 +301,7 @@ class Record {
         // Get autoinc values for compound primary keys
         $last_pk_col = end($this->tbl->primary_key);
         if (
+            empty($values->$last_pk_col) &&
             count($this->tbl->primary_key) > 1 &&
             $this->tbl->fields[$last_pk_col]->extra == 'auto_increment'
         ) {
