@@ -855,7 +855,11 @@ class Schema {
                     }
 
                     // Remove relations to foreign keys that doesn't exist
-                    if (!isset($rel_table->foreign_keys[$relation->foreign_key])) {
+                    $fk_names = [];
+                    foreach($rel_table->foreign_keys as $key) {
+                        $fk_names[] = $key->name;
+                    }
+                    if (!in_array($alias, $fk_names)) {
                         unset($table->relations[$alias]);
                         continue;
                     }
