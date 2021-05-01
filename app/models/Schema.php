@@ -221,10 +221,12 @@ class Schema {
                     'primary_key' => $pk_columns,
                     'description' => isset($terms[$tbl_name]) ? $terms[$tbl_name]['description'] : null,
                     'relations' => [],
+                    'hidden' => false
                 ];
 
             } else {
                 $table = $this->tables[$tbl_alias];
+                if (!isset($table->hidden)) $table->hidden = false;
                 $table->label = isset($terms[$tbl_name])
                     ? $terms[$tbl_name]['label'] : (
                         isset($table->label) ? $table->label : null
@@ -1016,8 +1018,6 @@ class Schema {
                 $field = $table->fields[$alias];
                 if ($fk->schema !== $this->name) {
                     $ref_schema = Schema::get($fk->schema);
-                    $ref_tbl = $ref_schema->tables[$fk->table];
-                $ref_tbl = $ref_schema->tables[$fk->table]; 
                     $ref_tbl = $ref_schema->tables[$fk->table];
                 } else {
                     $ref_tbl = $this->tables[$fk->table];
