@@ -288,7 +288,7 @@ class Schema {
 
             }
 
-            // Updates foreign keys
+            // Update foreign keys
             {
                 $foreign_keys = $reflector->getForeignKeys($tbl_name);
 
@@ -298,7 +298,6 @@ class Schema {
                     $key = (object) $key;
                     unset($key->onDelete);
                     unset($key->onUpdate);
-                    $key->name = strtolower($key->name);
                     $key->schema = $this->name;
                     $key->table = strtolower($key->table);
                     $key->local = array_map('strtolower', $key->local);
@@ -308,6 +307,7 @@ class Schema {
                     if (isset($table->foreign_keys[$key_alias])) {
                         $key_alias = $key_alias . '_2';
                     }
+                    $key->name = "{$table->name}_{$key_alias}_fkey";
 
                     // Checks if reference table exists.
                     // This might not be the case if foreign key check is disabled
