@@ -260,9 +260,19 @@ class Schema {
 
                 foreach ($indexes as $index) {
                     $index = (object) $index;
+                    unset($index->primary);
                     $index->name = strtolower($index->name);
-                    $index_names[] = $index->name;
                     $index->columns = array_map('strtolower', $index->columns);
+
+                    if ($index->columns == $table->primary_key) {
+                        $index->name = $tbl_name . "_pkey";
+                    }
+                    else if (strpos($index->name, $tbl_name) !== 0) {
+                        $index->name = $tbl_name . "_" . implode("_", $index->columns);
+                        $index->name = str_replace("__", "_", $index->name);
+                    }
+                    $index_names[] = $index->name;
+                    if ($tbl_name == "stykke") error_log($index->name);
                     $table->indexes[$index->name] = $index;
                 }
 
@@ -1024,7 +1034,7 @@ class Schema {
                 } 
 
                 foreach ($ref_tbl->indexes as $index) {
-                    if (!$index->primary && $index->unique) {
+                    if (!$index->columns == $table->primary_key && $index->unique) {
                         $columns = array_map(function($col) use ($alias) {
                             return "$alias.$col";
                         }, $index->columns);
@@ -1526,7 +1536,7 @@ class Schema {
 
             foreach ($table->indexes as $index) {
 
-                if ($index->primary == true) continue;
+                if ($index->columns == $table->primary_key) continue;
 
                 $columns = [];
                 foreach ($index->columns as $column) {
