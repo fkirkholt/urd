@@ -159,8 +159,8 @@ class Schema {
             }
         }
 
-        if (in_array('meta_terminology', $db_tables)) {
-            $sql = "select * from meta_terminology";
+        if (in_array('meta_term', $db_tables)) {
+            $sql = "select * from meta_term";
             $terms = $db->conn->query($sql)->fetchAssoc('term');
         } else {
             $terms = [];
