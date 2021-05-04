@@ -391,7 +391,7 @@ var grid = {
 
         if (ds.table.search) return;
 
-        return [m('table#urdgrid.tbl', {class: 'max-w10 ba b--moon-gray flex flex-column overflow-auto', style: 'border-spacing: 0;'}, [
+        return [m('table#urdgrid.tbl', {class: 'max-w10 bb bt b--moon-gray flex flex-column overflow-auto bg-white', style: 'border-spacing: 0;'}, [
             m('thead', {class: 'db'}, [
                 m('tr', {class: 'cursor-default'}, [
                     m('th', {class: 'tl bb b--moon-gray bg-light-gray normal f6 pb0 w1'}, ''),

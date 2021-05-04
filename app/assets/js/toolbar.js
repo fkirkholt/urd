@@ -146,93 +146,11 @@ var toolbar = {
 
     view: function(vnode) {
 
-        if ((ds.type == 'contents' || !config.show_table) && config.admin) {
-            return m('ul', {target: '_blank', class: 'f6 list pl0 mb0 mt0'}, [
-                m('li', {class: 'dib'}, [
-                    m('i', {
-                        class: [
-                            'fa ml1 mr3 pointer dim',
-                            config.show_table ? 'fa-project-diagram' : 'fa-table'
-                        ].join(' '),
-                        title: config.show_table ? 'Vis ER-diagram' : 'Vis tabell',
-                        onclick: function() {
-                            config.show_table = !config.show_table;
-
-                            if (config.show_table) {
-                                m.redraw();
-                                grid.align_thead();
-                            }
-                        }
-                    })
-                ]),
-                m('li', {class: 'dib'}, [
-                    m('i', {
-                        class: 'fa fa-edit',
-                        title: 'Oppdater skjema fra database',
-                        onclick: function() {
-                            $('#action-dialog').load('urd/dialog_schema?version=1');
-                            $('div.curtain').show();
-                            $('#action-dialog').show();
-                        }
-                    })
-                ])
-            ]);
-        }
-
         if (!ds.table || !ds.table.records || ds.type === 'dblist') return;
 
         var param = m.route.param();
 
-        if (ds.table.search) {
-            return [
-                m('input[type=button]', {
-                    value: 'Utfør søk',
-                    onclick: function() {
-                        filterpanel.search();
-                    }
-                }),
-                m('input[type=button]', {
-                    value: 'Avbryt',
-                    onclick: function() {
-                        ds.table.search = !ds.table.search;
-                        m.redraw();
-                    }
-                }),
-                /*
-                m('input[type=button]', {
-                    value: 'Avansert',
-                    onclick: function() {
-                        config.filter = true;
-                        ds.table.filters = filterpanel.parse_query(ds.table.query);
-                        filterpanel.expanded = true;
-                        config.search = false;
-                        ds.table.search = false;
-                    }
-                }),
-                */
-                m('input[type=button]', {
-                    value: 'Nullstill skjema',
-                    disabled: Object.keys(ds.table.filters).filter(function(label) {
-                        var filter = ds.table.filters[label];
-                        return filter.value || ['IS NULL', 'IS NOT NULL'].includes(filter.operator);
-                    }).length === 0,
-                    onclick: function() {
-                        ds.table.filters = {};
-                    }
-                }),
-                m('input[type=checkbox]', {
-                    class: 'ml2',
-                    checked: config.edit_search,
-                    onchange: function() {
-                        config.edit_search = !config.edit_search;
-                        Cookies.set('edit_search', config.edit_search, {expires:14});
-                        if (config.edit_search) {
-                            ds.table.filters = filterpanel.parse_query(ds.table.query);
-                        }
-                    }
-                }), ' Vis aktive søkekriterier'
-            ]
-        } else if (ds.table.edit) {
+        if (ds.table.edit) {
             return [
                 m('input[type=button]', {
                     value: 'Lagre og lukk',
@@ -260,7 +178,7 @@ var toolbar = {
             ]
         }
 
-        return m('ul', {target: '_blank', class: 'f6 list pl0 mb0 mt0'}, [
+        return m('ul', {target: '_blank', class: 'f6 list pl1 mt1 mb1'}, [
             m('li', [
                 m('form#action', [
                     m('input', {type: 'hidden', name: 'base', value: ds.base.name}),

@@ -145,23 +145,72 @@ var search = {
 
         var table = vnode.attrs.table ? vnode.attrs.table : ds.table;
 
-        return m('form[name="search"]', {
-            class: 'flex flex-column',
-            style: 'flex: 0 0 550px;'
-        }, m('table[name=search]', {
-            class: 'pt1 pl1 pr2 flex flex-column',
-            style: '-ms-overflow-style:-ms-autohiding-scrollbar'
-        }, m('tbody', [
-            Object.keys(table.form.items).map(function(label, idx) {
-                var item = table.form.items[label];
-
-                if (typeof item !== 'object' && item.indexOf('.') === -1 && table.fields[item].defines_relaton) {
-                    return;
+        return [
+            m('div',[
+            m('input[type=button]', {
+                value: 'Utfør søk',
+                onclick: function () {
+                    filterpanel.search();
                 }
+            }),
+            m('input[type=button]', {
+                value: 'Avbryt',
+                onclick: function () {
+                    ds.table.search = !ds.table.search;
+                    m.redraw();
+                }
+            }),
+            /*
+            m('input[type=button]', {
+                value: 'Avansert',
+                onclick: function() {
+                    config.filter = true;
+                    ds.table.filters = filterpanel.parse_query(ds.table.query);
+                    filterpanel.expanded = true;
+                    config.search = false;
+                    ds.table.search = false;
+                }
+            }),
+            */
+            m('input[type=button]', {
+                value: 'Nullstill skjema',
+                disabled: Object.keys(ds.table.filters).filter(function (label) {
+                    var filter = ds.table.filters[label];
+                    return filter.value || ['IS NULL', 'IS NOT NULL'].includes(filter.operator);
+                }).length === 0,
+                onclick: function () {
+                    ds.table.filters = {};
+                }
+            }),
+            m('input[type=checkbox]', {
+                class: 'ml2',
+                checked: config.edit_search,
+                onchange: function () {
+                    config.edit_search = !config.edit_search;
+                    Cookies.set('edit_search', config.edit_search, { expires: 14 });
+                    if (config.edit_search) {
+                        ds.table.filters = filterpanel.parse_query(ds.table.query);
+                    }
+                }
+            }), ' Vis aktive søkekriterier',
+            m('form[name="search"]', {
+                class: 'flex flex-column',
+                style: 'flex: 0 0 550px;'
+            }, m('table[name=search]', {
+                class: 'pt1 pl1 pr2 flex flex-column',
+                style: '-ms-overflow-style:-ms-autohiding-scrollbar'
+            }, m('tbody', [
+                Object.keys(table.form.items).map(function(label, idx) {
+                    var item = table.form.items[label];
 
-                return search.draw_field(table, item, label);
-            })
-        ])))
+                    if (typeof item !== 'object' && item.indexOf('.') === -1 && table.fields[item].defines_relaton) {
+                        return;
+                    }
+
+                    return search.draw_field(table, item, label);
+                })
+            ])))])
+        ]
     }
 }
 

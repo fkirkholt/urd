@@ -239,6 +239,39 @@ contents = {
                 }, 'Sett til referansetabell')
             ]),
             m('.list', {class: "flex flex-column overflow-auto min-w5"}, [
+                m('div', [
+                    !((ds.type == 'contents' || !config.show_table) && config.admin)
+                        ? '' : m('ul', { target: '_blank', class: 'f6 list pa1' }, [
+                            m('li', { class: 'dib' }, [
+                                m('i', {
+                                    class: [
+                                        'fa ml1 mr3 pointer dim',
+                                        config.show_table ? 'fa-project-diagram' : 'fa-table'
+                                    ].join(' '),
+                                    title: config.show_table ? 'Vis ER-diagram' : 'Vis tabell',
+                                    onclick: function () {
+                                        config.show_table = !config.show_table;
+
+                                        if (config.show_table) {
+                                            m.redraw();
+                                            grid.align_thead();
+                                        }
+                                    }
+                                })
+                            ]),
+                            m('li', { class: 'dib' }, [
+                                m('i', {
+                                    class: 'fa fa-edit',
+                                    title: 'Oppdater skjema fra database',
+                                    onclick: function () {
+                                        $('#action-dialog').load('urd/dialog_schema?version=1');
+                                        $('div.curtain').show();
+                                        $('#action-dialog').show();
+                                    }
+                                })
+                            ])
+                         ]),
+                ]),
                 ds.base.contents && Object.keys(ds.base.contents).length
                     ? Object.keys(ds.base.contents).map(function(label) {
                         var item = ds.base.contents[label];

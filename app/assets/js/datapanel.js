@@ -36,8 +36,13 @@ var datapanel = {
             ? ''
             : m('div#gridpanel', {
                 class: 'flex flex-column ml2',
-                style: ds.table.hide ? 'display: none' : ''
+                style: [
+                    'background: #f9f9f9',
+                    'border: 1px solid lightgray',
+                    ds.table.hide ? 'display: none' : ''
+                ].join(';')
             }, [
+                m(toolbar),
                 m(grid),
                 m(pagination, {
                     from: Number(ds.table.offset) + 1,

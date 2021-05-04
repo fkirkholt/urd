@@ -116,9 +116,6 @@ m.mount($header[0], header);
 var $filterpanel = $('#filterpanel');
 m.mount($filterpanel[0], filterpanel);
 
-var $toolbar = $('#toolbar');
-m.mount($toolbar[0], toolbar);
-
 var $export = $('#export-dialog');
 m.mount($export[0], export_dialog);
 

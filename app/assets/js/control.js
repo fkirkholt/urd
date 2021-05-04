@@ -441,6 +441,7 @@ var control = {
 
         return m('td', {
             class: [
+                field.datatype == 'string' && field.size > 20 ? 'w-100' : '',
                 control.align(list, col) === 'right' ? 'tr' : 'tl',
                 options.compressed || (field.datatype !== 'string' && field.datatype !== 'binary' && field.element != 'select') || (value.length < 30) ? 'nowrap' : '',
                 options.compressed && value.length > 30 ? 'pt0 pb0' : '',

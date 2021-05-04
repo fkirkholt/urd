@@ -61,10 +61,10 @@ var pagination = {
         var param = m.route.param();
         return m('div', [
             m('div[name="statuslinje"]', {
-                class: 'f6 fl mb1 mt1'
+                class: 'f6 fl mb1 mt1 ml1'
             }, [args.count ? args.from + '-' + args.to + ' av ' + args.count : args.count]),
             m('div[name="navigation"]', {
-                class: 'fr ml2 mb1 mt1',
+                class: 'fr ml2 mb1 mt1 mr1',
                 onclick: function(e) {
                     pagination.navigate(e.target.name);
                 }
