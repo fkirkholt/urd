@@ -63,9 +63,9 @@ diagram = {
         Object.keys(table.foreign_keys).map(function(alias) {
             var fk = table.foreign_keys[alias];
             var field = table.fields[alias];
-            var label = field.label ? field.label : alias;
+            var label = field && field.label ? field.label : alias;
             var fk_table = ds.base.tables[fk.table];
-            var line = field.hidden ? '..' : '--';
+            var line = field && field.hidden ? '..' : '--';
             def.push(fk.table + ' <' + line + ' ' + table.name + ' : ' + label);
             if ($.inArray('class ' + fk.table, def) !== -1) return;
             if (fk_table === undefined) return;
