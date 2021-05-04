@@ -602,7 +602,7 @@ var entry = {
         ]
     },
 
-    draw_relation_list: function(rel, record, type='1:M') {
+    draw_relation_list: function(rel, record) {
         return m('tr', [
             m('td', {}),
             m('td', {colspan:3}, [
@@ -615,29 +615,40 @@ var entry = {
                         rec.table = rel;
                         rec.loaded = true;
 
-                        return [
-                            Object.keys(rel.grid.columns).map(function(label, colidx) {
-                                var field_name = rel.grid.columns[label];
-                                // var field = rel.fields[field_name];
-                                var field = rec.fields[field_name];
-                                // if value changed, use this value, else get from primary key
-                                field.value = rec.fields[field_name].value
-                                    ? rec.fields[field_name].value
-                                    // : rec.primary_key[field_name];
-                                    : (rec.values)
-                                        ? rec.values[field_name]
-                                        : null;
-                                field.text = rec.columns[field_name];
+                        // set value of pk fields for 1:1 relations
+                        if (rec.new && rec.dirty) {
+                            $.each(rel.conditions, function (i, condition) {
+                                var filter = filterpanel.parse_query(condition)[0];
+                                var parts = filter.field.split('.');
+                                var fieldname = parts.pop();
+                                rec.fields[fieldname].value = filter.value;
+                                rec.fields[fieldname].dirty = true;
+                            });
+                        }
+
+                        Object.keys(rel.fields).map(function (key) {
+                            var field = rec.fields[key];
+                            if (field.value === undefined) {
+                                field.value = rec.values
+                                    ? rec.values[key]
+                                    : null;
+                                field.text = rec.columns[key];
                                 field.editable = rel.permission.edit;
+                            }
+                        });
 
-                                return field.defines_relation
-                                    ? ''
-                                    : control.draw_field(rec, field_name, label);
-                            }),
+                        return [    
+                            Object.keys(rel.form.items).map(function (label, idx) {
+                                var item = rel.form.items[label];
 
+                                if (typeof item !== 'object' && item.indexOf('.') === -1 && rel.fields[item].defines_relation) {
+                                    return;
+                                }
+                                return control.draw_field(rec, item, label);
+                            })
                         ];
                     }),
-                    record.readonly || !config.edit_mode ? '' : m('tr', [
+                    record.readonly || !config.edit_mode || rel.relationship == "1:1" ? '' : m('tr', [
                         m('td'),
                         config.relation_view !== 'expansion' ? '' : m('td'),
                         m('td', [
@@ -659,7 +670,7 @@ var entry = {
                                     rel.modus = 'edit';
                                     record.active_relation = rec;
                                 }
-                            }, (type == '1:1' && rel.records.length) ? '' : m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
+                            }, (rel.records.length) ? '' : m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
                         ])
                     ]),
                 ])

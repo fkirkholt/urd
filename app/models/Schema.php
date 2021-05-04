@@ -892,6 +892,12 @@ class Schema {
                     $ref_field = $this->tables[$relation->table]->fields[$ref_field_name];
                     $ref_tbl_col = $relation->table . '.' . $ref_field_name;
 
+                    if ($ref_field->name[0] == "_") {
+                        $relation->show_if = [
+                            end($fk->foreign) => $ref_field->default
+                        ];
+                    }
+
                     // Don't show relations coming from hidden fields
                     if (empty($config->urd_structure) && !empty($ref_field->hidden)) {
                         $relation->hidden = true;

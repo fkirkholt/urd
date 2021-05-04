@@ -1105,7 +1105,7 @@ class Table {
                 }
             }
 
-            // Iterates of all the relations to the record
+            // Iterates over all the relations to the record
             foreach ($rec->relations as $rel) {
                 $rel_table = Table::get($rel->base_name, $rel->table_name);
                 $rel_table->save($rel->records);

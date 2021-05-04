@@ -64,6 +64,8 @@ class Record {
             ->setFormat(Type::DATE, 'Y-m-d')
             ->fetch();
 
+        $new = false;
+        if (!$row) $new = true;
 
         // Build array over fields, with value and other properties
         $this->tbl->permission = $this->tbl->get_user_permission($this->tbl->name);
@@ -144,6 +146,7 @@ class Record {
             'table_name'   => $this->tbl->name,
             'primary_key'  => $this->primary_key,
             'fields'       => $fields,
+            'new'          => $new,
             'sql'          => $sql,
         ];
     }
@@ -179,6 +182,14 @@ class Record {
             $rel->fk_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->local;
             $rel->ref_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->foreign;
 
+            if (array_intersect($rel->fk_columns, $tbl_rel->primary_key) == $tbl_rel->primary_key) {
+                $rel->type = '1:1';
+            } else {
+                $rel->type = '1:M';
+            }
+
+            $pk = [];
+
             // Add condition to fetch only rows that link to record
             foreach ($rel->fk_columns as $i => $fk_field_alias) {
                 $fk_field = $tbl_rel->fields[$fk_field_alias];
@@ -187,6 +198,7 @@ class Record {
 
                 $value = reset($this->primary_key) ? $rec['fields'][$ref_field_alias]->value : null;
                 $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
+                $pk[$fk_field_alias] = $value;
             }
 
             if (!empty($rel->filter)) {
@@ -214,9 +226,10 @@ class Record {
                     'time' => $end - $start,
                     'name' => $rel->table,
                     'conditions' => $conditions,
-                    'base_name' => $rel->db_name
+                    'base_name' => $rel->db_name,
+                    'relationship' => $rel->type
                 ];
-
+                if(isset($rel->show_if)) $relation['show_if'] = $rel->show_if;
             } else { // get all relations
                 // TODO: Are these necessary?
                 $tbl_rel->limit = 500;
@@ -239,6 +252,14 @@ class Record {
                 foreach ($rel->fk_columns as $idx => $fk_column) {
                     $relation['fields'][$fk_column]->default = $values[$idx];
                     $relation['fields'][$fk_column]->defines_relation = true;
+                }
+
+                if ($rel->type == "1:1") {
+                    $rec = new Record($this->db->name, $rel->table, $pk);
+                    $relation['records'] = [$rec->get()];
+                    $relation['relationship'] = "1:1";
+                } else {
+                    $relation['relationship'] = "1:M";
                 }
             }
 
@@ -346,6 +367,7 @@ class Record {
                 $this->primary_key->$fieldname = $result;
             }
         } else {
+            error_log(json_encode($tbl_inserts));
             $result = $this->db->insert($this->tbl->name, $tbl_inserts)->execute();
         }
 

@@ -575,17 +575,18 @@ var control = {
             var relation = rec.table.relations[key];
             var rel = rec.relations && rec.relations[key] ? rec.relations[key] : {};
 
-            if (rel.expanded && rel.records) {
-                fk = rel.foreign_keys[relation.foreign_key];
-                console.log('fk.local', fk.local);
-                if (_isEqual(fk.local, rel.primary_key)) {
-                    relation.type = '1:1'
-                } else {
-                    relation.type = '1:M'
-                }
-            }
-
             if (relation === undefined) return '';
+
+            if (rel.show_if) {
+                hidden = false
+                Object.keys(rel.show_if).map(function(key) {
+                    value = rel.show_if[key]
+                    if(rec.fields[key].value != value) {
+                        hidden = true
+                    }
+                })
+                if(hidden) return ''
+            }
 
             label = relation.label ? relation.label : label;
 
@@ -627,8 +628,8 @@ var control = {
                     ]),
                 ]),
                 rel.expanded && rel.records 
-                    ? relation.type == '1:1' 
-                        ? entry.draw_relation_list(rel, rec, '1:1')
+                    ? rel.relationship == '1:1' 
+                        ? entry.draw_relation_list(rel, rec)
                         : entry.draw_relation_table(rel, rec) 
                     : null
             ];
