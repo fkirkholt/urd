@@ -130,6 +130,7 @@ class TableController extends BaseController {
         }
         $tbl = Table::get($req->base, $req->table);
         $tbl->alias = isset($req->alias) ? $req->alias : $req->table;
+        $req->key = json_decode($req->key);
 
         $data = $tbl->get_select($req);
 

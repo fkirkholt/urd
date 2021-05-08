@@ -182,6 +182,8 @@ var control = {
             if (!field.foreign_key) field.text = field.value;
             if (field.foreign_key && field.foreign_key.table == field.table && field.foreign_key.foreign[0] == field.name) field.text = field.value;
 
+            key_json = JSON.stringify(field.foreign_key ? field.foreign_key.foreign : [field.name]);
+
             return m(autocomplete, {
                 name: field.name,
                 style: field.expandable ? 'width: calc(100% - 30px)' : 'width: 100%',
@@ -201,7 +203,7 @@ var control = {
                         alias: field.name,
                         view: field.view,
                         column_view: field.column_view,
-                        key: field.foreign_key ? field.foreign_key.foreign : [field.name],
+                        key: key_json,
                         condition: control.get_condition(rec, field)
                     }
                 },

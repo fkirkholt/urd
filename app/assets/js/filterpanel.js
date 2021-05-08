@@ -576,7 +576,7 @@ var filterpanel = {
             });
         } else if (field.element === 'select' && ['', 'LIKE', 'start', 'slutt', '>', '<'].includes(filter.operator) == false) {
 
-            var key = field.foreign_key;
+            var key_json = JSON.stringify(field.foreign_key ? field.foreign_key.foreign : [field.name]);
 
             return m(autocomplete, {
                 name: filter.field,
@@ -596,7 +596,7 @@ var filterpanel = {
                         alias: field.name,
                         view: field.view,
                         column_view: field.column_view,
-                        key: field.foreign_key ? field.foreign_key.foreign : [field.name],
+                        key: key_json,
                         condition: null
                     }
                 },

@@ -131,7 +131,10 @@ var autocomplete = {
             var data = JSON.parse(JSON.stringify(attrs.ajax.data));
             var value_string = vnode.attrs.multiple ? attrs.item.value.join("','") : attrs.item.value;
 
-            data.condition = data.alias + '.' + _last(data.key) + ' IN ' + "('" + value_string + "')";
+            key = JSON.parse(data.key)
+
+            data.condition = data.alias + '.' + _last(key) + ' IN ' + "('" + value_string + "')";
+
             $.ajax({
                 url: attrs.ajax.url,
                 type: 'GET',
