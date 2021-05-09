@@ -475,13 +475,14 @@ var entry = {
 
         if (changes.action == 'delete' || !traverse) return changes;
 
-
         $.each(rec.relations, function(alias, rel) {
             if (!rel.dirty) return;
+
             var changed_rel = {
                 base_name: ds.base.name,
                 table_name: rel.name,
                 condition: rel.conditions.join(' AND '),
+                fkey: rec.table.relations[alias].foreign_key,
                 records: []
             }
             $.each(rel.records, function(i, subrec) {
@@ -615,17 +616,6 @@ var entry = {
                         rec.table = rel;
                         rec.loaded = true;
 
-                        // set value of pk fields for 1:1 relations
-                        if (rec.new && rec.dirty) {
-                            $.each(rel.conditions, function (i, condition) {
-                                var filter = filterpanel.parse_query(condition)[0];
-                                var parts = filter.field.split('.');
-                                var fieldname = parts.pop();
-                                rec.fields[fieldname].value = filter.value;
-                                rec.fields[fieldname].dirty = true;
-                            });
-                        }
-
                         Object.keys(rel.fields).map(function (key) {
                             var field = rec.fields[key];
                             if (field.value === undefined) {
@@ -657,15 +647,6 @@ var entry = {
                                     e.stopPropagation();
                                     var rec = entry.create(rel, true);
                                     if (!rec) return;
-
-                                    // Tilordner verdier til felter som definerer relasjon:
-                                    $.each(rel.conditions, function(i, condition) {
-                                        var filter = filterpanel.parse_query(condition)[0];
-                                        var parts = filter.field.split('.');
-                                        var fieldname = parts.pop();
-                                        rec.fields[fieldname].value = filter.value;
-                                        rec.fields[fieldname].dirty = true;
-                                    });
 
                                     rel.modus = 'edit';
                                     record.active_relation = rec;
@@ -818,15 +799,6 @@ var entry = {
                                     e.stopPropagation();
                                     var rec = entry.create(rel, true);
                                     if (!rec) return;
-
-                                    // Tilordner verdier til felter som definerer relasjon:
-                                    $.each(rel.conditions, function(i, condition) {
-                                        var filter = filterpanel.parse_query(condition)[0];
-                                        var parts = filter.field.split('.');
-                                        var fieldname = parts.pop();
-                                        rec.fields[fieldname].value = filter.value;
-                                        rec.fields[fieldname].dirty = true;
-                                    });
 
                                     rel.modus = 'edit';
                                     record.active_relation = rec;

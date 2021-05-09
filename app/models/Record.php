@@ -270,6 +270,19 @@ class Record {
         return $relations;
     }
 
+    function get_values()
+    {
+        $conds = [];
+        foreach ($this->primary_key as $field_name => $value) {
+            $conds[] = "$field_name = '$value'";
+        }
+        $cond = implode(" and ", $conds);
+
+        $sql = "select * from {$this->tbl->name} where {$cond}";
+
+        return $this->db->conn->query($sql)->fetch();
+    }
+
     public function get_children()
     {
         $rec = $this->get();
@@ -406,6 +419,13 @@ class Record {
 
         $result = $this->db->update($this->tbl->name, (array) $tbl_values)
                 ->where((array) $this->primary_key)->execute();
+
+        // Update primary key
+        foreach ($values as $key => $value) {
+            if (isset($this->primary_key->{$key})) {
+                $this->primary_key->{$key} = $value;
+            }
+        }
 
         return $values;
     }

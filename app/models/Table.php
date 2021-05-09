@@ -1105,9 +1105,27 @@ class Table {
                 }
             }
 
+            $record_vals = $record->get_values();
+
             // Iterates over all the relations to the record
             foreach ($rec->relations as $rel) {
                 $rel_table = Table::get($rel->base_name, $rel->table_name);
+
+                // Set value of fkey columns to matched colums of record
+                $fkey = $rel_table->foreign_keys[$rel->fkey];
+                foreach ($rel->records as $rel_rec) {
+                    foreach ($fkey->local as $idx => $col) {
+                        $fcol = $fkey->foreign[$idx];
+                        $rel_rec->values->{$col} = $record_vals[$fcol];
+
+                        // Primary keys of relation may be updated by 
+                        // cascade if primary keys of record is updated
+                        if (isset($rel_rec->prim_key->{$col})) {
+                            $rel_rec->prim_key->{$col} = $record_vals[$fcol];
+                        }
+                    }
+                }
+
                 $rel_table->save($rel->records);
             }
         }
