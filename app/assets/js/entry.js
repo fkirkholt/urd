@@ -868,7 +868,9 @@ var entry = {
             class: 'flex flex-column',
             style: 'flex: 0 0 550px;'
         }, [
-            !ds.table.edit ? '' : m('div', [m(toolbar)]),
+            !ds.table.edit && !ds.table.hide 
+                ? '' 
+                : m('div', [m(toolbar)]),
             m('table[name=view]', {
                 class: [
                     'pt1 pl1 pr2 flex flex-column',

@@ -205,7 +205,7 @@ var toolbar = {
                     }
                 })
             ]),
-            !config.show_table ? '' : m('i', {
+            !config.show_table || ds.table.hide  ? '' : m('i', {
                 class: 'ml1 mr2 fa pointer ' + (config.compressed ? 'fa-expand' : 'fa-compress'),
                 title: config.compressed ? 'Ekspander' : 'Komprimer',
                 onclick: function() {
@@ -232,7 +232,7 @@ var toolbar = {
                     ds.table.search = !ds.table.search;
                 }
             }),
-            !config.show_table ? '' : m('select', {
+            !config.show_table || ds.table.hide ? '' : m('select', {
                 class: 'ml1 mr2',
                 name: 'btn_saved_searches',
                 title: 'Lagrede søk',
@@ -463,7 +463,7 @@ var toolbar = {
                     }) : ''
                 ]
             ]),
-            m('li', {class: 'dib'}, [
+            ds.table.hide ? '' : m('li', {class: 'dib'}, [
                 config.button_view != 'text' ? [
                     m('i', {
                         class: [
