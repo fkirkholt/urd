@@ -151,7 +151,7 @@ class Record {
         ];
     }
 
-    function get_relations($count = false, $relation_alias = null)
+    function get_relations($count = false, $relation_alias = null, $types = null)
     {
         // Don't try to get record for new records that's not saved
         if (!empty($this->primary_key) && !in_array(null, (array) $this->primary_key)) {
@@ -186,6 +186,14 @@ class Record {
                 $rel->type = '1:1';
             } else {
                 $rel->type = '1:M';
+            }
+
+            $parts = explode("_", $tbl_rel->name);
+            $suffix = end($parts);
+            if (count($types) && in_array($suffix, $types)) {
+                $show_if = ['type_' => $suffix];
+            } else {
+                $show_if = null;
             }
 
             $pk = [];
@@ -229,7 +237,7 @@ class Record {
                     'base_name' => $rel->db_name,
                     'relationship' => $rel->type
                 ];
-                if(isset($rel->show_if)) $relation['show_if'] = $rel->show_if;
+                if($show_if) $relation['show_if'] = $show_if;
             } else { // get all relations
                 // TODO: Are these necessary?
                 $tbl_rel->limit = 500;
