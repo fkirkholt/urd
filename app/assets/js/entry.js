@@ -517,7 +517,8 @@ var entry = {
         if (rec.columns && field.name in rec.columns) {
             rec.columns[field.name] =
                 field.coltext ? field.coltext :
-                field.text    ? field.text    : value.substring(0, 256);
+                field.text    ? field.text    :
+                typeof value == "string" ? value.substring(0, 256) : value;
         }
 
         rec.fields[field.name].value = value;

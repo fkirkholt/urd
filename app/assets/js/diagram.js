@@ -99,7 +99,6 @@ diagram = {
             var fk = table.foreign_keys[alias];
             var field = table.fields[alias];
             if (field.hidden) return;
-            console.log('module', module);
             if (Object.values(module.items).indexOf('tables.' + fk.table) == -1) return;
             def.push(fk.table + ' <-- ' + table.name);
         });
