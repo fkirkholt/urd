@@ -16,7 +16,7 @@ var grid = {
             $(v).css('width', '');
         })
         $bodyCells.each(function(i, v) {
-            $(v).css('width', '');
+            $(v).children('div').css('width', '');
         })
         $footCells.each(function(i, v) {
             $(v).css('width', '');
@@ -49,7 +49,8 @@ var grid = {
             $.each(colWidthHead, function(idx, width) {
                 var n;
                 if (width > colWidthBody[idx]) {
-                    $table.find('tbody tr:first td:nth-child(' + (idx+1) + ')').width(width);
+                    $col = $table.find('tbody tr:first td:nth-child(' + (idx+1) + ') div' )
+                    $col.width(width);
                 }
             })
         }

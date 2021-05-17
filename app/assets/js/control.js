@@ -455,7 +455,7 @@ var control = {
             title: options.compressed && value.length > 30 ? value : ''
         }, [
 
-            !(value.length > 30 && options.compressed) ? [icon, value]
+            !(value.length > 30 && options.compressed) ? [m('div', [icon, value])]
                 : m('table', {
                     class: 'w-100',
                     style: 'table-layout:fixed; border-spacing:0px'
