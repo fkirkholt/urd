@@ -190,7 +190,7 @@ class Record {
 
             $parts = explode("_", $tbl_rel->name);
             $suffix = end($parts);
-            if (count($types) && in_array($suffix, $types)) {
+            if (!empty($types) && in_array($suffix, $types)) {
                 $show_if = ['type_' => $suffix];
             } else {
                 $show_if = null;

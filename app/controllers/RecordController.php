@@ -20,7 +20,7 @@ class RecordController extends BaseController {
         $prim_keys = json_decode($req->primary_key, true);
         $this->rec = new Record($req->base, $req->table, $prim_keys);
         $alias = isset($req->alias) ? $req->alias : null;
-        $types = json_decode($req->types);
+        $types = isset($req->types) ? json_decode($req->types) : null;
         $req->count = filter_var($req->count, FILTER_VALIDATE_BOOLEAN);
         $relations = $this->rec->get_relations($req->count, $alias, $types);
 
