@@ -603,7 +603,7 @@ class Schema {
 
                 $label = isset($terms[$col_name])
                     ? $terms[$col_name]['label']
-                    : $col_name;
+                    : str_replace("_", " ", $col_name);
                 
                 if ($config->norwegian_chars) {
                     $label = str_replace('ae', 'æ', $label);

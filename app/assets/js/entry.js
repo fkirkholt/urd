@@ -247,7 +247,7 @@ var entry = {
         $.each(field.foreign_key.foreign, function(i, ref_field) {
             var fk_field = field.foreign_key.local[i];
             var value = rec.fields[fk_field].value;
-            filters.push(field.foreign_key.table + '.' + ref_field + " = '" + value + "'");
+            filters.push(field.foreign_key.table + '.' + ref_field + " = " + value);
         });
 
         m.request({
