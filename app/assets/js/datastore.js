@@ -20,6 +20,7 @@ var store = {
             var data = result.data;
             store.base = data.base;
             store.user = data.user;
+            store.branch = data.branch;
 
             if (data.config) {
                 $.extend(store.schema.config, data.config);

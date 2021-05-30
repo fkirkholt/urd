@@ -9,7 +9,7 @@ module.exports = {
             icon: "icon-crosshairs",
             text: "URD",
             addr: '',
-            branch: ds.base.branch
+            branch: ds.branch
         })
 
         if (param.base) {
@@ -64,7 +64,7 @@ module.exports = {
                     }), item.text]),
                     !item.branch || item.branch == 'master' ? '' : m('span', {class: 'light-silver'}, [
                         m('i', {class: 'fa fa-code-fork ml2'}),
-                        ds.base.branch,
+                        ds.branch,
                     ]),
                     idx == sti.length - 1 ? '' : m('i', {class: 'fa fa-angle-right f3 fw3 ml2 mr2'})
                 ];

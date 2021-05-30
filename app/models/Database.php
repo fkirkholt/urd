@@ -176,7 +176,7 @@ class Database {
         $info->base->name = $this->name;
         $info->base->schema = $this->schema;
         $info->base->label = $this->label;
-        $info->base->branch = $branch;
+        $info->branch = $branch;
         $info->config = $this->config;
         $info->user = new \StdClass;
         $info->user->name = $_SESSION['user_name'];
