@@ -93,7 +93,7 @@ class Record {
             }
         }
 
-        if (count($visninger)) {
+        if (count($visninger) && !$new) {
 
             $kolonner_visningsdata_sql = implode(', ', $visninger);
 

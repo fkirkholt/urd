@@ -18,6 +18,7 @@ diagram = {
             $('#mermaid').html(diagram.def).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
             $('#mermaid svg g.classGroup').addClass('pointer');
+            $('#mermaid svg').addClass('center');
         });
     },
 
@@ -32,6 +33,7 @@ diagram = {
             mermaid.init(undefined, $("#mermaid"));
 
             $('#mermaid svg g.classGroup').addClass('pointer');
+            $('#mermaid svg').addClass('center');
         }
 
         $('svg g.classGroup text tspan.title').each(function(index) {
@@ -193,7 +195,7 @@ diagram = {
     view: function() {
         return m('div.mermaid', {
             id: "mermaid",
-            class: "flex flex-grow flex-column center overflow-auto"
+            class: "flex flex-grow flex-column overflow-auto w-100"
         }, this.def);
     }
 }
