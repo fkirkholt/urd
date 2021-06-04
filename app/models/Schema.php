@@ -1038,7 +1038,7 @@ class Schema {
                         $columns = array_map(function($col) use ($alias) {
                             return "$alias.$col";
                         }, $index->columns);
-                        $field->view = implode(' || ', $columns);
+                        $field->view = implode(" || ', ' || ", $columns);
                         break;
                     } 
                 }
