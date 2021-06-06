@@ -99,6 +99,20 @@ class Schema {
         return $relation_tables;
     }
 
+    private function get_label($string) {
+        $label = isset($this->terms[$string])
+               ? $this->terms[$string]['label']
+               : str_replace("_", " ", $string);
+
+        if ($this->config->norwegian_chars) {
+            $label = str_replace('ae', 'æ', $label);
+            $label = str_replace('oe', 'ø', $label);
+            $label = str_replace('aa', 'å', $label);
+        }
+
+        return ucfirst($label);
+    }
+
     /*
      * Update json file from actual database structure
      */
@@ -217,7 +231,7 @@ class Schema {
                 $table = (object) [
                     'name' => strtolower($tbl_name),
                     'icon' => null,
-                    'label' => isset($terms[$tbl_name]) ? $terms[$tbl_name]['label'] : null,
+                    'label' => $this->get_label($tbl_name),
                     'primary_key' => $pk_columns,
                     'description' => isset($terms[$tbl_name]) ? $terms[$tbl_name]['description'] : null,
                     'relations' => [],
@@ -364,16 +378,7 @@ class Schema {
 
                     $label = str_replace($key_table_alias . '_', '', $table->name);
                     $label = str_replace('_' . $key_table_alias, '', $label);
-
-                    if ($label == '') $label = $tbl_alias;
-
-                    if ($config->norwegian_chars) {
-                        $label = str_replace('ae', 'æ', $label);
-                        $label = str_replace('oe', 'ø', $label);
-                        $label = str_replace('aa', 'å', $label);
-                    }
-
-                    $label = ucfirst($label);
+                    $label = $this->get_label($label);
 
                     $rel = !empty($this->tables[$key_table_alias]->relations[$key->name])
                         ? $this->tables[$key_table_alias]->relations[$key->name]
@@ -584,17 +589,7 @@ class Schema {
                     $element = 'input[type=text]';
                 }
 
-                $label = isset($terms[$col_name])
-                    ? $terms[$col_name]['label']
-                    : str_replace("_", " ", $col_name);
-                
-                if ($config->norwegian_chars) {
-                    $label = str_replace('ae', 'æ', $label);
-                    $label = str_replace('oe', 'ø', $label);
-                    $label = str_replace('aa', 'å', $label);
-                }
-
-                $label = ucfirst($label);
+                $label = $this->get_label($col_name);
 
                 $urd_col = (object) [
                     'name' => $col_name,
@@ -767,21 +762,14 @@ class Schema {
 
                 foreach ($col_groups as $group_name => $col_names) {
                     if (count($col_names) == 1) {
-                        $label = ucfirst(str_replace('_', ' ', $col_names[0]));
-                        if ($config->norwegian_chars) {
-                            $label = str_replace('ae', 'æ', $label);
-                            $label = str_replace('oe', 'ø', $label);
-                            $label = str_replace('aa', 'å', $label);
-                        }
+                        $label = $this->get_label($col_names[0]);
                         $form['items'][$label] = $col_names[0];
                     } else {
                         $inline = false;
                         foreach ($col_names as $i => $col_name) {
                             // removes group name prefix from column name and use the rest as label
                             $rest = str_replace($group_name . '_', '', $col_name);
-                            $label = isset($terms[$rest])
-                                ? $terms[$rest]['label']
-                                : ucfirst(str_replace('_', ' ', $rest));
+                            $label = $this->get_label($rest);
                             // replace indexed key in array with named key
                             $col_names[$label] = $col_name;
                             unset($col_names[$i]);
@@ -790,9 +778,7 @@ class Schema {
                                 $inline = true;
                             }
                         }
-                        $group_label = isset($terms[$group_name])
-                            ? $terms[$group_name]['label']
-                            : ucfirst($group_name);
+                        $group_label = $this->get_label($group_name);
                         $form['items'][$group_label] = [
                             'inline' => $inline,
                             'items' => $col_names
@@ -1099,9 +1085,7 @@ class Schema {
                 if (!$subordinate) {
                     // Remove group prefix from label
                     $rest = str_replace($group . '_', '', $tbl_alias);
-                    $label = isset($terms[$rest])
-                        ? $terms[$rest]['label']
-                        : ucfirst(str_replace('_', ' ', $rest));
+                    $label = $this->get_label($rest);
 
                     if (!isset($tbl_groups[$group])) $tbl_groups[$group] = [];
                     $tbl_groups[$group][$label] = $tbl_alias;
@@ -1161,15 +1145,7 @@ class Schema {
             if (count($table_names) == 1 && $group_name != 'meta') {
                 // Get first element in array
                 $table_alias = reset($table_names);
-                $label = isset($terms[$table_alias])
-                    ? $terms[$table_alias]['label']
-                    : ucfirst(str_replace('_', ' ', $table_alias));
-
-                if ($config->norwegian_chars) {
-                    $label = str_replace('ae', 'æ', $label);
-                    $label = str_replace('oe', 'ø', $label);
-                    $label = str_replace('aa', 'å', $label);
-                }
+                $label = $this->get_label($table_alias);
 
                 // Loop through modules to find which one the table belongs to
                 $placed = false;
@@ -1198,7 +1174,7 @@ class Schema {
                     $contents['Andre']['count']++;
                 }
             } else {
-                $label = isset($terms[$group_name]) ? $terms[$group_name]['label'] : ucfirst($group_name);
+                $label = $this->get_label($group_name);
                 if ($label === 'Ref') $label = 'Referansetabeller';
 
                 if ($config->urd_structure) {
