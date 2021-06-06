@@ -362,25 +362,8 @@ class Schema {
                         ) $index_exists = true;
                     }
 
-                    $patterns = [];
-                    $patterns[] = '/^(fk_|idx_)/'; // find prefix
-                    $patterns[] = '/(_' . $key->table . ')(_fk|_idx)?$/'; // find referenced table
-                    $key_string = implode('_', $key->local);
-                    $patterns[] = '/^' . $key_string . '$/'; // index name from columns
-                    $patterns[] = '/(_' . $key_string . ')(_fk|_idx)?$/'; // find column names
-                    $patterns[] = '/(_fk|_idx)$/'; // find postfix
-
-                    $replace = $key->table == $key_string ? '' : ' (' . $key_string . ')';
-                    $replacements = ['', '', '', $replace, ''];
-
-                    $label = $config->urd_structure && $key_index
-                    ? str_replace('_', ' ', preg_replace($patterns, $replacements, $key_index->name))
-                    : str_replace('_', ' ', $tbl_alias);
-
-                    // Avoid "Primary" as label
-                    if (isset($table->extends)) {
-                        $label = str_replace($table->extends . '_', '', $table->name);
-                    }
+                    $label = str_replace($key_table_alias . '_', '', $table->name);
+                    $label = str_replace('_' . $key_table_alias, '', $label);
 
                     if ($label == '') $label = $tbl_alias;
 
