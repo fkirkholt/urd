@@ -549,7 +549,7 @@ var entry = {
                             alias: other_field.name,
                             view: other_field.view,
                             column_view: other_field.column_view,
-                            key: other_field.foreign_key.foreign,
+                            key: JSON.stringify(other_field.foreign_key.foreign),
                             condition: control.get_condition(rec, other_field)
                         }
                     }).then(function(data) {
@@ -661,7 +661,7 @@ var entry = {
                                     rel.modus = 'edit';
                                     record.active_relation = rec;
                                 }
-                            }, (rel.records.length) ? '' : m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
+                            }, m('i', {class: 'fa fa-plus light-blue hover-blue pointer ml1'}))
                         ])
                     ]),
                 ])

@@ -46,7 +46,7 @@ contents = {
                     class: [
                         node.expanded ? 'fa fa-angle-down': 'fa fa-angle-right',
                         node.class_label,
-                        'pr1 di',
+                        'w1 tc',
                         'light-silver'
                     ].join(' '),
                     onclick: function(e) {
