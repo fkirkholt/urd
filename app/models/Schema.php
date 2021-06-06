@@ -1219,11 +1219,18 @@ class Schema {
                 if ($label === 'Ref') $label = 'Referansetabeller';
 
                 if ($config->urd_structure) {
-                    $contents[$label] = [
-                        'class_label' => 'b',
-                        'class_content' => 'ml3',
-                        'subitems' => array_map(function($value) { return 'tables.'.$value; }, $table_names)
-                    ];
+                    if (in_array($group_name, $table_names)) {
+                        $key = array_search($group_name, $table_names);
+                        unset($table_names[$key]);
+                        $sub_tables = array_merge($table_names, $sub_tables);
+                        $contents = $this->get_content_items($group_name, $sub_tables, $contents);
+                    } else {
+                        $contents[$label] = [
+                            'class_label' => 'b',
+                            'class_content' => 'ml3',
+                            'subitems' => array_map(function($value) { return 'tables.'.$value; }, $table_names)
+                        ];
+                    }
 
                     continue;
                 }
