@@ -255,6 +255,7 @@ var entry = {
             url: "table",
             data: {
                 base: field.foreign_key.base,
+                schema: field.foreign_key.schema,
                 table: field.foreign_key.table,
                 filter: filters.join(' AND ')
             }
