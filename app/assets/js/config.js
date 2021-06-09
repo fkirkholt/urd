@@ -17,6 +17,7 @@ var config = {
 
     admin: false,
     edit_mode: false,
+    hide_empty: false,
     show_table: true,
 
     save: function() {

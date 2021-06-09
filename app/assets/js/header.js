@@ -13,6 +13,10 @@ var header = {
         config.edit_mode = value;
     },
 
+    set_hidden: function(value) {
+        config.hide_empty = value;
+    },
+
     view: function(vnode) {
 
         if (!ds.user) return;
@@ -120,7 +124,18 @@ var header = {
                     checked: config.edit_mode,
                     onclick: m.withAttr('checked', this.set_view)
                 })
-            ], 'Redigeringsmodus')
+            ], 'Redigeringsmodus'),
+            m('label', {
+                class: 'fr mr3 mt2'
+            }, [
+                m('input', {
+                    class: 'mr1',
+                    type: 'checkbox',
+                    value: 1,
+                    checked: config.hide_empty,
+                    onclick: m.withAttr('checked', this.set_hidden)
+                })
+            ], 'Skjul tomme felt')
         ]
     }
 }

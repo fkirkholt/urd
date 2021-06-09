@@ -656,7 +656,7 @@ var control = {
 
             return [
                 // TODO: sto i utgangspunktet list.betingelse. Finn ut hva jeg skal erstatte med.
-                m('tr', [
+                (!config.edit_mode && config.hide_empty && rec.fields[colname].value === null) ? '' : m('tr', [
                     m('td', {class: 'tc v-top'}, [
                         !field.foreign_key || !field.expandable || rec.fields[colname].value === null ? null : m('i.fa.w1', {
                             class: !field.expanded ? 'fa-angle-right' : field.expandable ? 'fa-angle-down' : '',
