@@ -131,6 +131,7 @@ contents = {
                         'w1 tc',
                         'light-silver'
                     ].join(' '),
+                    style: display == 'none' ? 'display:' + display : '',
                     onclick: function (e) {
                         node.expanded = !node.expanded;
                     }
@@ -239,6 +240,18 @@ contents = {
                 }, 'Sett til referansetabell')
             ]),
             m('.list', {class: "flex flex-column overflow-auto min-w5"}, [
+                ds.base.contents && Object.keys(ds.base.contents).length
+                    ? Object.keys(ds.base.contents).map(function(label) {
+                        var item = ds.base.contents[label];
+                        item.display = Stream('none');
+                        contents.check_display(item);
+                        var retur = contents.draw_node(label, item, 3);
+                        return retur;
+                    })
+                    : Object.keys(ds.base.tables).map(function(name) {
+                        var table = ds.base.tables[name];
+                        return contents.draw_node(table.label, 'tables.'+name, 3);
+                    }),
                 m('div', [
                     !((ds.type == 'contents' || !config.show_table) && config.admin)
                         ? '' : m('ul', { target: '_blank', class: 'f6 list pa1' }, [
@@ -272,18 +285,6 @@ contents = {
                             ])
                          ]),
                 ]),
-                ds.base.contents && Object.keys(ds.base.contents).length
-                    ? Object.keys(ds.base.contents).map(function(label) {
-                        var item = ds.base.contents[label];
-                        item.display = Stream('none');
-                        contents.check_display(item);
-                        var retur = contents.draw_node(label, item, 3);
-                        return retur;
-                    })
-                    : Object.keys(ds.base.tables).map(function(name) {
-                        var table = ds.base.tables[name];
-                        return contents.draw_node(table.label, 'tables.'+name, 3);
-                    }),
             ]),
         ]);
 
