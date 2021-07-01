@@ -51,9 +51,9 @@ var export_dialog = {
         $.download('table', param);
     },
 
-    export_sql: function(dialekt) {
+    export_sql: function(dialect) {
         var param = {};
-        param.dialekt = dialekt;
+        param.dialect = dialect;
         param.base = ds.base.name;
         param.table = ds.table.name;
         $.download('table_sql', param);
@@ -97,8 +97,10 @@ var export_dialog = {
                 ])
             ]),
             this.type !== 'sql' ? '' : m('div[name=valg]', {class: "mt2"}, [
-                m('input[type=radio]', {name: 'dialekt', value: 'mysql'}), ' MySQL', m('br'),
-                m('input[type=radio]', {name: 'dialekt', value: 'oracle'}), ' Oracle', m('br'),
+                m('input[type=radio]', {name: 'dialect', value: 'mysql'}), ' MySQL', m('br'),
+                m('input[type=radio]', {name: 'dialect', value: 'oracle'}), ' Oracle', m('br'),
+                m('input[type=radio]', {name: 'dialect', value: 'postgres'}), ' PostgreSQL', m('br'),
+                m('input[type=radio]', {name: 'dialect', value: 'sqlite'}), ' SQLite', m('br'),
             ]),
             m('div[name=buttons]', {class: "bottom-0 max-w8 mt2"}, [
                 m('input[type=button]', {
@@ -108,8 +110,8 @@ var export_dialog = {
                         if (this.type === 'csv') {
                             this.export_csv();
                         } else {
-                            var dialekt = $('#export-dialog input[name="dialekt"]:checked').val();
-                            export_dialog.export_sql(dialekt);
+                            var dialect = $('#export-dialog input[name="dialect"]:checked').val();
+                            export_dialog.export_sql(dialect);
                         }
                         $('div.curtain').hide();
                         $('#export-dialog').hide();

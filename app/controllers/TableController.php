@@ -169,7 +169,7 @@ class TableController extends BaseController {
     public function export_sql() {
         $req = (object) $this->request->params();
         $tbl = Table::get($req->base, $req->table);
-        $res = $tbl->export_sql($req->dialekt);
+        $res = $tbl->export_sql($req->dialect);
 
         // TODO: Haven't been able to do it with Slim response
         header("Cache-Control: ");
