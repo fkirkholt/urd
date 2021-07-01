@@ -31,6 +31,7 @@ m.route($('#main')[0], '/', {
             }
 
             ds.type = 'contents';
+            delete ds.table;
             ds.load_database(base_name);
 
             return contents;

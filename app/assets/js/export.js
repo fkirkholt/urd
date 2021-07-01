@@ -60,7 +60,7 @@ var export_dialog = {
     },
 
     view: function() {
-        if (!ds.table) return;
+        if (!ds.table || !ds.table.fields) return;
 
         return m('div', [
             m('div', [

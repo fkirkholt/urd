@@ -186,7 +186,7 @@ contents = {
 
         if (!ds && !ds.base.contents) return;
 
-        return m('.contents', {class: "flex"}, [
+        return [m('.contents', {class: "flex"}, [
             m('ul#context-module', {
                 class: 'absolute left-0 bg-white list pa1 shadow-5 dn pointer z-999'
             }, [
@@ -286,7 +286,11 @@ contents = {
                          ]),
                 ]),
             ]),
-        ]);
+        ]), ds.table || !ds.base.description ? '' : m('div', {class: 'pl5'}, [
+            m('b', 'Beskrivelse'),
+            m('br'),
+            m('p', ds.base.description)
+        ])]
 
     }
 }
