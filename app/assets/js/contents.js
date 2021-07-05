@@ -105,8 +105,11 @@ contents = {
                 ? 'Referansetabell'
                 : 'Datatabell'
             var display = object.type && (object.type.indexOf('reference') !== -1) && !config.admin
-                    ? 'none'
-                    : 'inline';
+                ? 'none'
+                : 'inline';
+            var schema = ds.base.system == 'postgres' && ds.base.schma !== 'public'
+                ? ds.base.schema
+                : ''
             return m('div', {
                 class: ds.table && ds.table.name == object.name ? 'bg-light-gray' : '',
                 oncontextmenu: function(event) {
@@ -151,7 +154,7 @@ contents = {
                     ].join(' '),
                     title: object.description ? object.description : '',
                     style: 'display:' + display,
-                    href: '#/' + ds.base.name + '/' + item.replace('.', '/')
+                    href: '#/' + ds.base.name + (schema ? '.' + schema : '') + '/' + item.replace('.', '/')
                 }, label),
                 !object.count_rows || !config.admin ? '' : m('span', {
                     class: 'ml2 light-silver',
@@ -182,7 +185,7 @@ contents = {
     },
 
     view: function() {
-        if ((!ds.base.contents && !ds.base.tables) || ds.base.name !== m.route.param('base')) return;
+        if (!ds.base.contents && !ds.base.tables) return;
 
         if (!ds && !ds.base.contents) return;
 
@@ -240,6 +243,21 @@ contents = {
                 }, 'Sett til referansetabell')
             ]),
             m('.list', {class: "flex flex-column overflow-auto min-w5"}, [
+                !ds.base.schemata || ds.base.schemata.length < 2 ? '' : m('select', {
+                    class: 'mb2',
+                    onchange: function() {
+                        var schema = $(this).val()
+                        m.route.set('/' + ds.base.name + '.' + schema)
+                    }
+                }, [
+                    ds.base.schemata.map(function(schema, idx) {
+                        var selected = (schema == ds.base.schema)
+                        return m('option', {
+                            value: schema,
+                            selected: selected
+                        }, schema);
+                    })
+                ]),
                 ds.base.contents && Object.keys(ds.base.contents).length
                     ? Object.keys(ds.base.contents).map(function(label) {
                         var item = ds.base.contents[label];
