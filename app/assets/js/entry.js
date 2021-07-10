@@ -270,6 +270,7 @@ var entry = {
                 url: "record",
                 data: {
                     base: field.foreign_key.base,
+                    schema: field.foreign_key.schema,
                     table: field.foreign_key.table,
                     // betingelse: betingelse,
                     primary_key: JSON.stringify(pk)

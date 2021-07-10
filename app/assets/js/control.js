@@ -620,7 +620,13 @@ var control = {
                                 'icon-crosshairs light-blue hover-blue pointer mr1',
                             ].join(' '),
                             onclick: function(event) {
-                                var url = '/' + rel.base_name + '/tables/' + rel.name;
+                                var base_path
+                                if (rel.schema_name && rel.schema_name != rel.base_name && rel.schema_name != 'public') {
+                                    base_path = rel.base_name + '.' + rel.schema_name
+                                } else {
+                                    base_path = rel.base_name || rel.schema_name
+                                }
+                                var url = '/' + base_path + '/tables/' + rel.name;
                                 url += '?query=' + rel.conditions.join(' AND ').replace(/=/g, '%3D');
                                 m.route.set(url);
                                 event.stopPropagation();
@@ -709,7 +715,12 @@ var control = {
                         (rec.table.type === "xref" && config.edit_mode) ? '' : m('i', {
                             class: 'icon-crosshairs light-blue hover-blue pointer',
                             onclick: function() {
-                                var url = '/' + field.foreign_key.base + '/tables/' + field.foreign_key.table + '?query=';
+                                if (field.foreign_key.schema && field.foreign_key.schema != field.foreign_key.base) {
+                                    base = field.foreign_key.base + '.' + field.foreign_key.schema
+                                } else {
+                                    base = field.foreign_key.base || field.foreign_key.schema
+                                }
+                                var url = '/' + base + '/tables/' + field.foreign_key.table + '?query=';
                                 $.each(field.foreign_key.foreign, function(i, colname) {
                                     var fk_field = field.foreign_key.local[i];
                                     url += colname + ' %3D ' + rec.fields[fk_field].value;

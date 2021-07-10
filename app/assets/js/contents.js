@@ -154,7 +154,7 @@ contents = {
                     ].join(' '),
                     title: object.description ? object.description : '',
                     style: 'display:' + display,
-                    href: '#/' + ds.base.name + (schema ? '.' + schema : '') + '/' + item.replace('.', '/')
+                    href: '#/' + ds.base.name + '/' + item.replace('.', '/')
                 }, label),
                 !object.count_rows || !config.admin ? '' : m('span', {
                     class: 'ml2 light-silver',
@@ -247,7 +247,8 @@ contents = {
                     class: 'mb2',
                     onchange: function() {
                         var schema = $(this).val()
-                        m.route.set('/' + ds.base.name + '.' + schema)
+                        db_name = ds.base.name.split('.')[0]
+                        m.route.set('/' + db_name + '.' + schema)
                     }
                 }, [
                     ds.base.schemata.map(function(schema, idx) {
