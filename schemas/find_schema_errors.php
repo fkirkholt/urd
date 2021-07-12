@@ -53,12 +53,12 @@ foreach ($schemas as $schema_name => $schema) {
         if (isset($table['foreign_keys'])) {
             foreach ($table['foreign_keys'] as $fk_alias => $fk) {
                 $fk = (object) $fk;
-                foreach ($fk->local as $field_alias) {
+                foreach ($fk->foreign as $field_alias) {
                     if (!isset($schema['tables'][$tbl_alias]['fields'][$field_alias])) {
                         echo "  => Feil lokalt felt `$field_alias` i $tbl_alias.$fk_alias\n";
                     }
                 }
-                foreach ($fk->foreign as $field_alias) {
+                foreach ($fk->primary as $field_alias) {
                     $foreign_schema = isset($fk->schema) && $fk->schema !== $schema_name ? $schemas[$fk->schema] : $schema;
                     if (!isset($foreign_schema['tables'][$fk->table]['fields'][$field_alias])) {
                         echo "  => Feil foreign felt `$field_alias` i $tbl_alias.$fk_alias\n";

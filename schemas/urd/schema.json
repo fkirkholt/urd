@@ -19,12 +19,12 @@
             "foreign_keys": {
                 "organization": {
                     "name": "organization",
-                    "local": [
+                    "foreign": [
                         "organization"
                     ],
                     "schema": "urd",
                     "table": "organization",
-                    "foreign": [
+                    "primary": [
                         "id"
                     ]
                 }
@@ -423,23 +423,23 @@
             "foreign_keys": {
                 "parent": {
                     "name": "parent",
-                    "local": [
+                    "foreign": [
                         "parent"
                     ],
                     "schema": "urd",
                     "table": "organization",
-                    "foreign": [
+                    "primary": [
                         "id"
                     ]
                 },
                 "leader": {
                     "name": "leader",
-                    "local": [
+                    "foreign": [
                         "leader"
                     ],
                     "schema": "urd",
                     "table": "user_",
-                    "foreign": [
+                    "primary": [
                         "id"
                     ]
                 }
@@ -568,13 +568,13 @@
             "foreign_keys": {
                 "role": {
                     "name": "role",
-                    "local": [
+                    "foreign": [
                         "schema_",
                         "role"
                     ],
                     "schema": "urd",
                     "table": "role",
-                    "foreign": [
+                    "primary": [
                         "schema_",
                         "id"
                     ]
@@ -653,24 +653,24 @@
             "foreign_keys": {
                 "user_": {
                     "name": "user_",
-                    "local": [
+                    "foreign": [
                         "user_"
                     ],
                     "schema": "urd",
                     "table": "user_",
-                    "foreign": [
+                    "primary": [
                         "id"
                     ]
                 },
                 "role": {
                     "name": "role",
-                    "local": [
+                    "foreign": [
                         "schema_",
                         "role"
                     ],
                     "schema": "urd",
                     "table": "role",
-                    "foreign": [
+                    "primary": [
                         "schema_",
                         "id"
                     ]

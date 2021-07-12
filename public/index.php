@@ -50,9 +50,11 @@ if (isset($config['session_save_path'])) {
 }
 
 session_start();
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 
-register_shutdown_function('fatal_error_handler');
+// register_shutdown_function('fatal_error_handler');
+
+$config['debug'] = true;
 
 $app = new \Slim\Slim($config);
 
@@ -108,7 +110,6 @@ $app->error(function (\Exception $e) use ($app, $config) {
         echo "Det er skjedd en feil. Feilen er rapportert";
     }
 });
-
 
 
 // Set up dependencies

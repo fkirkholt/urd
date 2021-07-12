@@ -139,8 +139,8 @@ class Table {
 
             // Makes conditions for the ON statement in the join
             $conditions = [];
-            foreach ($fk->local as $n => $fk_column) {
-                $ref_field_name = $fk->foreign[$n];
+            foreach ($fk->foreign as $n => $fk_column) {
+                $ref_field_name = $fk->primary[$n];
 
                 $conditions[] = "$alias.$ref_field_name = $field->table.$fk_column";
             }
@@ -377,7 +377,7 @@ class Table {
 
         // Array of ref fields
         $kodefelter = array();
-        foreach($fk->foreign as $field_name) {
+        foreach($fk->primary as $field_name) {
             $kodefelter[] = "$field->alias.$field_name";
         }
 
@@ -403,10 +403,10 @@ class Table {
         }
 
         // Adds condition if this select depends on other selects
-        if (isset($field->value) && count($fk->local) > 1) {
-            foreach ($fk->local as $i=>$foreign_field) {
+        if (isset($field->value) && count($fk->foreign) > 1) {
+            foreach ($fk->foreign as $i=>$foreign_field) {
                 if ($foreign_field != $field->name && $fields[$foreign_field]->value) {
-                    $conditions[] = $fk->foreign[$i] . " = '" . $fields[$foreign_field]->value . "'";
+                    $conditions[] = $fk->primary[$i] . " = '" . $fields[$foreign_field]->value . "'";
                 }
             }
         }
@@ -927,9 +927,9 @@ class Table {
             $rel_column = $this->fields[$fk->alias];
             $wheres = [];
 
-            foreach ($fk->local as $i => $col_name) {
-                $foreign = $fk->foreign[$i];
-                $wheres[] = "$col_name = $this->name.$foreign";
+            foreach ($fk->foreign as $i => $col_name) {
+                $primary = $fk->primary[$i];
+                $wheres[] = "$col_name = $this->name.$primary";
             }
 
             $selects['count_children'] = "(SELECT count(*)
@@ -1086,8 +1086,8 @@ class Table {
                     foreach ($rel->records as $rel_rec) {
                         $rel_rec->values = (array) $rel_rec->values;
 
-                        foreach ($fk->local as $n => $alias) {
-                            $rel_rec->values[$alias] = !empty($rel_rec->values[$alias]) ? $rel_rec->values[$alias] : $pk->{$fk->foreign[$n]};
+                        foreach ($fk->foreign as $n => $alias) {
+                            $rel_rec->values[$alias] = !empty($rel_rec->values[$alias]) ? $rel_rec->values[$alias] : $pk->{$fk->primary[$n]};
                         }
                     }
                 }
@@ -1114,8 +1114,8 @@ class Table {
                 // Set value of fkey columns to matched colums of record
                 $fkey = $rel_table->foreign_keys[$rel->fkey];
                 foreach ($rel->records as $rel_rec) {
-                    foreach ($fkey->local as $idx => $col) {
-                        $fcol = $fkey->foreign[$idx];
+                    foreach ($fkey->foreign as $idx => $col) {
+                        $fcol = $fkey->primary[$idx];
                         $rel_rec->values->{$col} = $record_vals[$fcol];
 
                         // Primary keys of relation may be updated by 

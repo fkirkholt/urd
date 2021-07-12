@@ -244,8 +244,8 @@ var entry = {
         }
         var filters = [];
 
-        $.each(field.foreign_key.foreign, function(i, ref_field) {
-            var fk_field = field.foreign_key.local[i];
+        $.each(field.foreign_key.primary, function(i, ref_field) {
+            var fk_field = field.foreign_key.foreign[i];
             var value = rec.fields[fk_field].value;
             filters.push(field.foreign_key.table + '.' + ref_field + " = " + value);
         });
@@ -530,9 +530,9 @@ var entry = {
         $.each(rec.table.fields, function(name, other_field) {
             if (name == field.name || !other_field.foreign_key) return;
 
-            if (other_field.element == 'select' && other_field.foreign_key.local.length > 1) {
+            if (other_field.element == 'select' && other_field.foreign_key.foreign.length > 1) {
                 // If the field is part of the dropdowns foreign keys
-                if ($.inArray(field.name, other_field.foreign_key.local) != -1) {
+                if ($.inArray(field.name, other_field.foreign_key.foreign) != -1) {
                     if (rec.fields[name].value !== null) {
                         rec.fields[name].value = null;
                         rec.fields[name].dirty = true;
@@ -551,7 +551,7 @@ var entry = {
                             alias: other_field.name,
                             view: other_field.view,
                             column_view: other_field.column_view,
-                            key: JSON.stringify(other_field.foreign_key.foreign),
+                            key: JSON.stringify(other_field.foreign_key.primary),
                             condition: control.get_condition(rec, other_field)
                         }
                     }).then(function(data) {

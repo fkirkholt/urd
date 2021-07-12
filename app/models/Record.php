@@ -179,8 +179,8 @@ class Record {
             $permission = $tbl_rel->get_user_permission();
             if ($permission->view === 0) continue;
 
-            $rel->fk_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->local;
-            $rel->ref_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->foreign;
+            $rel->fk_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->foreign;
+            $rel->ref_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->primary;
 
             if (array_intersect($rel->fk_columns, $tbl_rel->primary_key) == $tbl_rel->primary_key) {
                 $rel->type = '1:1';
@@ -302,9 +302,9 @@ class Record {
 
         $fk = $this->tbl->foreign_keys[$rel->foreign_key];
 
-        foreach ($fk->local as $i => $col_name) {
-            $foreign = $fk->foreign[$i];
-            $value = $rec['fields'][$foreign]->value;
+        foreach ($fk->foreign as $i => $col_name) {
+            $primary = $fk->primary[$i];
+            $value = $rec['fields'][$primary]->value;
             $this->tbl->add_condition("$rel->table.$col_name = '$value'");
         }
 

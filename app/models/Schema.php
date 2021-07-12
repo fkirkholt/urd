@@ -326,9 +326,9 @@ class Schema {
                     unset($key->onUpdate);
                     $key->schema = $this->name;
                     $key->table = strtolower($key->table);
-                    $key->local = array_map('strtolower', $key->local);
-                    $key->foreign = array_map('strtolower', $key->foreign);
-                    $key_alias = end($key->local);
+                    $key->foreign = array_map('strtolower', $key->local);
+                    $key->primary = array_map('strtolower', $key->foreign);
+                    $key_alias = end($key->primary);
 
                     if (isset($table->foreign_keys[$key_alias])) {
                         $key_alias = $key_alias . '_2';
@@ -356,13 +356,13 @@ class Schema {
                     }
 
                     // Checks if the relation defines this as an extension table
-                    if ($key->local === $pk_columns) {
+                    if ($key->foreign === $pk_columns) {
                         $table->extends = $key->table;
                     }
 
                     // Finds index associated with the foreign key
                     $key_index = array_reduce($table->indexes, function($carry, $index) use ($key) {
-                        if (!$carry && $index->columns === $key->local) {
+                        if (!$carry && $index->columns === $key->foreign) {
                             $carry = $index;
                         }
                         return $carry;
@@ -371,8 +371,8 @@ class Schema {
                     $index_exists = false;
                     foreach ($table->indexes as $index) {
                         if (
-                            count($index->columns) >= count($key->local) &&
-                            array_slice($index->columns, 0, count($key->local)) == $key->local
+                            count($index->columns) >= count($key->foreign) &&
+                            array_slice($index->columns, 0, count($key->foreign)) == $key->foreign
                         ) $index_exists = true;
                     }
 
@@ -503,7 +503,7 @@ class Schema {
                     $rec_comment = '';
                     $sub = [];
                     foreach ($table->foreign_keys as $key) {
-                        if (in_array($col_name, $key->local)) {
+                        if (in_array($col_name, $key->foreign)) {
                             if ($db->platform === 'mysql') {
                                 $sub[] = "drop foreign key $key->name";
                             } else {
@@ -513,8 +513,8 @@ class Schema {
                             if (count($values) && count($values) < 5) {
 
                                 $conditions = [];
-                                foreach ($key->local as $i => $field_name) {
-                                    $conditions[] = 'l.'.$field_name . ' = ' . 'f.' . $key->foreign[$i];
+                                foreach ($key->foreign as $i => $field_name) {
+                                    $conditions[] = 'l.'.$field_name . ' = ' . 'f.' . $key->primary[$i];
                                 }
                                 $on_clause = implode(' AND ', $conditions);
 
@@ -849,7 +849,7 @@ class Schema {
 
                     // Find indexes that can be used to get relation
                     $indexes = array_filter($rel_table->indexes, function($index) use ($fk) {
-                        return array_slice($index->columns, 0, count($fk->local)) === $fk->local;
+                        return array_slice($index->columns, 0, count($fk->foreign)) === $fk->foreign;
                     });
 
                     if (count($indexes) && empty($relation->hidden)) {
@@ -857,7 +857,7 @@ class Schema {
                         $table->form['items'][$label] = 'relations.'.$alias;
                     }
 
-                    $ref_field_name = end($fk->local);
+                    $ref_field_name = end($fk->foreign);
                     $ref_field = $this->tables[$relation->table]->fields[$ref_field_name];
                     $ref_tbl_col = $relation->table . '.' . $ref_field_name;
 
@@ -949,8 +949,8 @@ class Schema {
 
                     $conditions = [];
 
-                    foreach ($fk->local as $i => $col) {
-                        $conditions[] = "$relation->table.$col = $table->name." . $fk->foreign[$i];
+                    foreach ($fk->foreign as $i => $col) {
+                        $conditions[] = "$relation->table.$col = $table->name." . $fk->primary[$i];
                     }
 
                     $exists_conditions[] = "select * from $relation->table\n        " .
@@ -1370,10 +1370,10 @@ class Schema {
                 if ($column->kandidattabell) {
                     $key = [
                         'name' => $column->name,
-                        'local' => array_map('trim', explode(',', $column->kolonne)),
+                        'foreign' => array_map('trim', explode(',', $column->kolonne)),
                         'schema' => $column->kandidatmal ? $column->kandidatmal : $this->name,
                         'table' => $column->kandidattabell,
-                        'foreign' => array_map('trim', explode(',', strtolower($column->kandidatnokkel))),
+                        'primary' => array_map('trim', explode(',', strtolower($column->kandidatnokkel))),
                     ];
                     $schema['tables'][$table->tabell]['foreign_keys'][$column->name] = $key;
                 }
@@ -1466,7 +1466,7 @@ class Schema {
 
                 // get foreign keys columns
                 $fk_columns = [];
-                foreach ($fk->local as $alias) {
+                foreach ($fk->foreign as $alias) {
                     $fk_columns[] = $table->fields[$alias]->name;
                 }
                 $fk_columns_str = implode(', ', $fk_columns);
@@ -1476,7 +1476,7 @@ class Schema {
                 // get reference table and columns
                 $ref_table = $this->tables[$fk->table]->name;
                 $ref_columns = [];
-                foreach ($fk->foreign as $alias) {
+                foreach ($fk->primary as $alias) {
                     $ref_columns[] = $this->tables[$fk->table]->fields[$alias]->name;
                 }
                 $ref_columns_str = implode(', ', $ref_columns);

@@ -63,8 +63,8 @@ var control = {
         Object.keys(rec.table.foreign_keys).map(function(label) {
             key = rec.table.foreign_keys[label];
 
-            if ($.inArray(field.name, key.local) !== -1) {
-                key.local_idx = $.inArray(field.name, key.local);
+            if ($.inArray(field.name, key.foreign) !== -1) {
+                key.foreign_idx = $.inArray(field.name, key.foreign);
                 keys.push(key);
             }
         });
@@ -84,22 +84,22 @@ var control = {
                 kandidatbetingelser.push(filter);
             }
 
-            if (key.local && key.local.length > 1) {
+            if (key.foreign && key.foreign.length > 1) {
                 if (key.name == field.foreign_key.name) {
-                    $.each(key.local, function(i, column) {
+                    $.each(key.foreign, function(i, column) {
                         if (column === field.name) return;
                         // Just fields that is editable on their own participates in the condition
                         if (rec.fields[column].value != null && column in rec.fields) {
-                            var condition = field.name + '.' + key.foreign[i] + ' = ' + "'" + rec.fields[column].value + "'";
+                            var condition = field.name + '.' + key.primary[i] + ' = ' + "'" + rec.fields[column].value + "'";
                             kandidatbetingelser.push(condition);
                         }
                     });
                 } else {
-                    $.each(key.local, function(i, column) {
+                    $.each(key.foreign, function(i, column) {
                         if (column === field.name) return;
                         if (rec.fields[column].value != null && column in rec.fields) {
-                            var col = field.foreign_key.foreign.slice(-1)[0];
-                            var condition = col + ' in (select ' + key.foreign[key.local_idx];
+                            var col = field.foreign_key.primary.slice(-1)[0];
+                            var condition = col + ' in (select ' + key.primary[key.foreign_idx];
                             condition += ' from ' + key.table + ' where ' + key.foreign[i];
                             condition += " = '" + rec.fields[column].value + "')";
                             kandidatbetingelser.push(condition); 
@@ -722,9 +722,9 @@ var control = {
                                 }
                                 var url = '/' + base + '/tables/' + field.foreign_key.table + '?query=';
                                 $.each(field.foreign_key.foreign, function(i, colname) {
-                                    var fk_field = field.foreign_key.local[i];
+                                    var fk_field = field.foreign_key.foreign[i];
                                     url += colname + ' %3D ' + rec.fields[fk_field].value;
-                                    if (i !== field.foreign_key.foreign.length - 1 ) url += ' AND '
+                                    if (i !== field.foreign_key.primary.length - 1 ) url += ' AND '
                                 })
                                 m.route.set(url);
                             }

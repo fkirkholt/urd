@@ -38,10 +38,10 @@ Denne filen definerer opp databasestrukturen til et skjema, samt hvordan dataene
         - `foreign_keys`: Fremmednøkler i tabellen.
 	        - `<alias>`: Alias til nøkkelen. Brukes til referanse andre steder i json-fila.
 		        - `name`: Navnet til fremmednøkkelen brukt i databasen.
-		        - `local`: Array med fremmednøkkelfelter i gjeldende tabell. Henviser til `fields`.
+		        - `foreign`: Array med fremmednøkkelfelter i gjeldende tabell. Henviser til `fields`.
 		        - `schema`: Hvilket skjema referansen går til.
 		        - `table`: Hvilken tabell i skjemaet referansen går til.
-		        - `foreign`: Array med felter i tabellen det refereres til. Henviser til `fields` i tabellen til det aktuelle skjemaet.
+		        - `primary`: Array med felter i tabellen det refereres til. Henviser til `fields` i tabellen til det aktuelle skjemaet.
         - `filter`: Hvis tabellen skal filtreres, settes en sql where-setning her.
         - `description`: Beskrivelse av tabellen
         - `type`: Hva slags type tabell dette er. Kan ha tre verdier: `data`, `reference` og `cross-reference`.
