@@ -724,7 +724,6 @@ var entry = {
                     ]),
                     // draw records
                     rel.records.map(function(rec, rowidx) {
-                        rec.base_name = rel.base_name;
                         rec.table_name = rel.name;
 
                         return [
