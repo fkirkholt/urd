@@ -180,9 +180,9 @@ var control = {
             // Handles self referencing fields
             // TODO: Do we need both checks?
             if (!field.foreign_key) field.text = field.value;
-            if (field.foreign_key && field.foreign_key.table == field.table && field.foreign_key.foreign[0] == field.name) field.text = field.value;
+            if (field.foreign_key && field.foreign_key.table == field.table && field.foreign_key.primary[0] == field.name) field.text = field.value;
 
-            key_json = JSON.stringify(field.foreign_key ? field.foreign_key.foreign : [field.name]);
+            key_json = JSON.stringify(field.foreign_key ? field.foreign_key.primary: [field.name]);
 
             return m(autocomplete, {
                 name: field.name,
@@ -721,7 +721,7 @@ var control = {
                                     base = field.foreign_key.base || field.foreign_key.schema
                                 }
                                 var url = '/' + base + '/tables/' + field.foreign_key.table + '?query=';
-                                $.each(field.foreign_key.foreign, function(i, colname) {
+                                $.each(field.foreign_key.primary, function(i, colname) {
                                     var fk_field = field.foreign_key.foreign[i];
                                     url += colname + ' %3D ' + rec.fields[fk_field].value;
                                     if (i !== field.foreign_key.primary.length - 1 ) url += ' AND '
