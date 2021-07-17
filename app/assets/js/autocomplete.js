@@ -91,7 +91,13 @@ var autocomplete = {
             }
         });
 
-        autocomplete.onupdate(vnode);
+        if (vnode.attrs.item.value === null) {
+            $(vnode.dom).val('')
+        } else if (vnode.attrs.item.text) {
+            $(vnode.dom).val(vnode.attrs.item.text)
+        } else {
+            $(vnode.dom).val(vnode.attrs.item.value)
+        }
 
         // The change method does not fire if we don't change item.text
         $(vnode.dom).on('input', function() {
