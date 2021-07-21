@@ -721,7 +721,7 @@ var control = {
                                     base = field.foreign_key.base || field.foreign_key.schema
                                 }
                                 var url = '/' + base + '/tables/' + field.foreign_key.table + '?query=';
-                                $.each(field.foreign_key.foreign, function(i, colname) {
+                                $.each(field.foreign_key.primary, function(i, colname) {
                                     var fk_field = field.foreign_key.foreign[i];
                                     url += colname + ' %3D ' + rec.fields[fk_field].value;
                                     if (i !== field.foreign_key.primary.length - 1 ) url += ' AND '
