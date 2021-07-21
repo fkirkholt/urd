@@ -177,12 +177,9 @@ var control = {
             });
         } else if (field.element === 'select') {
 
-            // Handles self referencing fields
-            // TODO: Do we need both checks?
-            if (!field.foreign_key) field.text = field.value;
-            if (field.foreign_key && field.foreign_key.table == field.table && field.foreign_key.foreign[0] == field.name) field.text = field.value;
+            if (!field.text) field.text = field.value
 
-            key_json = JSON.stringify(field.foreign_key ? field.foreign_key.foreign : [field.name]);
+            key_json = JSON.stringify(field.foreign_key ? field.foreign_key.primary: [field.name]);
 
             return m(autocomplete, {
                 name: field.name,
