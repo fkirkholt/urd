@@ -230,7 +230,7 @@ var grid = {
         p.limit = list.limit;
         p.offset = list.offset;
         if (!post.delete) {
-            p.prim_key = post.primary_key;
+            p.prim_key = JSON.stringify(post.primary_key);
         } else {
             p.prim_key = null;
         }
