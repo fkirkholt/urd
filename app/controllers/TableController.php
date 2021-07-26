@@ -81,7 +81,7 @@ class TableController extends BaseController {
             }
         }
 
-        $pk = isset($req->prim_key) ? $req->prim_key : null;
+        $pk = isset($req->prim_key) ? json_decode($req->prim_key) : null;
         $data = $tbl->hent_tabell($pk);
 
         if ($data === false) {
