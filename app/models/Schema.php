@@ -326,9 +326,9 @@ class Schema {
                     unset($key->onUpdate);
                     $key->schema = $this->name;
                     $key->table = strtolower($key->table);
-                    $key->foreign = array_map('strtolower', $key->local);
                     $key->primary = array_map('strtolower', $key->foreign);
-                    $key_alias = end($key->primary);
+                    $key->foreign = array_map('strtolower', $key->local);
+                    $key_alias = end($key->foreign);
 
                     if (isset($table->foreign_keys[$key_alias])) {
                         $key_alias = $key_alias . '_2';
