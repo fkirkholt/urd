@@ -258,8 +258,10 @@ var filterpanel = {
             ) {
                 return false;
             } else if (
-                (field.element == 'input[type=text]' || field.element == 'input' && field.attr.type == 'text') &&
-                ['IN'].includes(operator.value)
+                (field.datatype == 'string' &&
+                 (field.element == 'textarea' || field.element == 'input[type=text]' ||
+                  (field.element == 'input' && field.attr.type == 'text'))) &&
+                    ['IN'].includes(operator.value)
             ) {
                 return false;
             } else {
