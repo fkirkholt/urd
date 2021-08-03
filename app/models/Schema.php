@@ -113,6 +113,197 @@ class Schema {
         return ucfirst($label);
     }
 
+    private function get_tables($db) {
+        // Finds all tables in database
+        if ($db->platform == 'oracle') {
+            $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
+            $tables = $reflector->getTables();
+            $db_tables = [];
+            foreach ($tables as $table) {
+                $db_tables[] = $table['name'];
+            }
+        } else {
+            $db_tables = $db->conn->getDatabaseInfo()->getTableNames();
+        }
+
+        return $db_tables;
+    }
+
+    private function get_foreign_keys($db, $table_name)
+    {
+        if (!isset($this->fkeys)) {
+            $this->init_fkeys($db);
+        }
+
+        return $this->fkeys[$table_name];
+    }
+
+    private function init_fkeys($db) {
+        $db_tables = $this->get_tables($db);
+        if ($db->platform == 'oracle') {
+            $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
+        } else {
+            $reflector = $db->conn->getDriver()->getReflector();
+        }
+        $fkeys = [];
+
+        foreach ($db_tables as $tbl_name) {
+            $foreign_keys = $reflector->getForeignKeys($tbl_name);
+
+            $tbl_fkeys = [];
+
+            foreach ($foreign_keys as $key) {
+                $key = (object) $key;
+                $key->schema = $this->name;
+                $key->table = strtolower($key->table);
+                $key->primary = array_map('strtolower', $key->foreign);
+                $key->foreign = array_map('strtolower', $key->local);
+                $key_alias = end($key->foreign);
+
+                if (isset($tbl_fkeys[$key_alias])) {
+                    $key_alias = $key_alias . '_2';
+                }
+                $key->name = "{$tbl_name}_{$key_alias}_fkey";
+                // $key->delete_rule = $key->onDelete;
+
+                // Checks if reference table exists.
+                // This might not be the case if foreign key check is disabled
+                if (!in_array($key->table, $db_tables)) {
+                    $warnings[] = "Fremmednøkkel $key->name er ugyldig";
+                }
+
+                $tbl_fkeys[$key_alias] = $key;
+
+            }
+
+            $fkeys[$tbl_name] = $tbl_fkeys;
+        }
+
+        $this->fkeys = $fkeys;
+    }
+
+
+    private function get_table_alias($table_name) {
+        $tbl_aliases = [];
+        foreach ($this->tables as $table_alias => $table) {
+            $tbl_aliases[$table->name] = $table_alias;
+        }
+        $table_alias = isset($tbl_aliases[$table_name])
+            ? $tbl_aliases[$table_name]
+            : $table_name;
+
+        return $table_alias;
+    }
+
+    private function get_relations($db, $table_name)
+    {
+        if (!isset($this->relations)) {
+            $this->init_relations($db);
+        }
+
+        if (isset($this->relations[$table_name])) {
+            return $this->relations[$table_name];
+        } else {
+            return [];
+        }
+    }
+
+    private function init_relations($db) {
+        $relations = [];
+
+        foreach ($this->fkeys as $tbl_name => $keys) {
+            foreach ($keys as $key_alias => $key) {
+                // Get alias to key referenced by foreign key
+                $key_table_alias = $this->get_table_alias($key->table);
+
+                $index_exists = false;
+                $tbl_indexes = $this->get_indexes($db, $tbl_name);
+                foreach ($tbl_indexes as $index) {
+                    if (
+                        count($index->columns) >= count($key->foreign) &&
+                        array_slice($index->columns, 0, count($key->foreign)) == $key->foreign &&
+                        substr($index->name, 0, 1) != '_'
+                    ) $index_exists = true;
+                }
+
+                $label = str_replace($key_table_alias . '_', '', $tbl_name);
+                $label = str_replace('_' . $key_table_alias, '', $label);
+                $label = $this->get_label($label);
+
+                $rel = !empty($this->tables[$key_table_alias]->relations[$key->name])
+                    ? $this->tables[$key_table_alias]->relations[$key->name]
+                    : (object) [];
+
+                if (!isset($relations[$key_table_alias])) {
+                    $relations[$key_table_alias] = [];
+                }
+
+                $relations[$key_table_alias][$key->name] = [
+                    "table" => $tbl_name,
+                    "foreign_key" => $key_alias,
+                    "label" => $label,
+                    "filter" => isset($rel->filter) ? $rel->filter : null,
+                    "delete_rule" => $key->onDelete,
+                    "hidden" => (!$index_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
+                    ? true
+                    : false
+                ];
+            }
+        }
+
+        $this->relations = $relations;
+    }
+
+    private function get_indexes($db, $table_name)
+    {
+        if (!isset($this->indexes)) {
+            $this->init_indexes($db);
+        }
+
+        return $this->indexes[$table_name];
+    }
+
+    private function init_indexes($db) {
+        $table_names = $this->get_tables($db);
+        $indexes = [];
+
+        if ($db->platform == 'oracle') {
+            $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
+        } else {
+            $reflector = $db->conn->getDriver()->getReflector();
+        }
+
+        foreach ($table_names as $tbl_name) {
+            $refl_indexes = $reflector->getIndexes($tbl_name);
+
+            $tbl_alias = $this->get_table_alias($tbl_name);
+
+            if (!isset($this->tables[$tbl_alias]->indexes)) {
+                $indexes[$tbl_name] = [];
+            }
+
+            $index_names = [];
+            $tbl_indexes = [];
+
+            foreach ($refl_indexes as $index) {
+                $index = (object) $index;
+                unset($index->primary);
+                $index->name = strtolower($index->name);
+                $index->columns = array_map('strtolower', $index->columns);
+                if (strpos($index->name, $tbl_name) !== 0) {
+                    $index->name = $tbl_name . "_" . implode("_", $index->columns);
+                    $index->name = str_replace("__", "_", $index->name);
+                }
+                $index_names[] = $index->name;
+                $tbl_indexes[$index->name] = $index;
+            }
+
+            $indexes[$tbl_name] = $tbl_indexes;
+        }
+
+        $this->indexes = $indexes;
+    }
+
     /*
      * Update json file from actual database structure
      */
@@ -140,8 +331,6 @@ class Schema {
 
         if ($db->platform == 'oracle') {
             $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
-        } else if ($db->platform == 'mysql') {
-            $reflector = new \URD\lib\MySqlReflector($db->conn->getDriver());
         } else {
             $reflector = $db->conn->getDriver()->getReflector();
         }
@@ -153,16 +342,7 @@ class Schema {
             $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
         }
 
-        // Finds all tables in database
-        if ($db->platform == 'oracle') {
-            $tables = $reflector->getTables();
-            $db_tables = [];
-            foreach ($tables as $table) {
-                $db_tables[] = $table['name'];
-            }
-        } else {
-            $db_tables = $db->conn->getDatabaseInfo()->getTableNames();
-        }
+        $db_tables = $this->get_tables($db);
 
         // Build array of table aliases and remove tables that doesn't exist
         $tbl_aliases = [];
@@ -264,31 +444,7 @@ class Schema {
 
             // Updates indexes
             {
-                $indexes = $reflector->getIndexes($tbl_name);
-
-                if (!isset($this->tables[$tbl_alias]->indexes)) {
-                    $table->indexes = [];
-                }
-
-                $index_names = [];
-
-                foreach ($indexes as $index) {
-                    $index = (object) $index;
-                    unset($index->primary);
-                    $index->name = strtolower($index->name);
-                    $index->columns = array_map('strtolower', $index->columns);
-
-                    if ($index->columns == $table->primary_key) {
-                        $index->name = $tbl_name . "_pkey";
-                    }
-                    else if (strpos($index->name, $tbl_name) !== 0) {
-                        $index->name = $tbl_name . "_" . implode("_", $index->columns);
-                        $index->name = str_replace("__", "_", $index->name);
-                    }
-                    $index_names[] = $index->name;
-                    if ($tbl_name == "stykke") error_log($index->name);
-                    $table->indexes[$index->name] = $index;
-                }
+                $table->indexes = $this->get_indexes($db, $tbl_name);
 
                 $grid_idx = isset($table->indexes[$tbl_name . '_grid_idx'])
                     ? $table->indexes[$tbl_name . '_grid_idx']
@@ -304,99 +460,12 @@ class Schema {
                 $summation_cols = isset($table->indexes[$tbl_name . '_summation_idx'])
                     ? $table->indexes[$tbl_name . '_summation_idx']->columns
                     : [];
-
-                // Remove dropped indexes
-                foreach ($table->indexes as $alias => $index) {
-                    if (!in_array($index->name, $index_names)) {
-                        unset($table->indexes[$alias]);
-                    }
-                }
-
             }
 
             // Update foreign keys
-            {
-                $foreign_keys = $reflector->getForeignKeys($tbl_name);
+            $table->foreign_keys = $this->get_foreign_keys($db, $tbl_name);
+            $table->relations = $this->get_relations($db, $tbl_name);
 
-                $table->foreign_keys = [];
-
-                foreach ($foreign_keys as $key) {
-                    $key = (object) $key;
-                    unset($key->onDelete);
-                    unset($key->onUpdate);
-                    $key->schema = $this->name;
-                    $key->table = strtolower($key->table);
-                    $key->primary = array_map('strtolower', $key->foreign);
-                    $key->foreign = array_map('strtolower', $key->local);
-                    $key_alias = end($key->foreign);
-
-                    if (isset($table->foreign_keys[$key_alias])) {
-                        $key_alias = $key_alias . '_2';
-                    }
-                    $key->name = "{$table->name}_{$key_alias}_fkey";
-
-                    // Checks if reference table exists.
-                    // This might not be the case if foreign key check is disabled
-                    if (!in_array($key->table, $db_tables)) {
-                        $warnings[] = "Fremmednøkkel $key->name er ugyldig";
-                    }
-
-                    $table->foreign_keys[$key_alias] = $key;
-
-                    // Add to relations of relation table
-                    $key_table_alias = isset($tbl_aliases[$key->table])
-                    ? $tbl_aliases[$key->table]
-                    : $key->table;
-
-                    if (in_array($key->table, $db_tables) && !isset($this->tables[$key_table_alias])) {
-                        $this->tables[$key_table_alias] = (object) [
-                            "name" => $key->table,
-                            "relations" => [],
-                        ];
-                    }
-
-                    // Checks if the relation defines this as an extension table
-                    if ($key->foreign === $pk_columns) {
-                        $table->extends = $key->table;
-                    }
-
-                    // Finds index associated with the foreign key
-                    $key_index = array_reduce($table->indexes, function($carry, $index) use ($key) {
-                        if (!$carry && $index->columns === $key->foreign) {
-                            $carry = $index;
-                        }
-                        return $carry;
-                    });
-
-                    $index_exists = false;
-                    foreach ($table->indexes as $index) {
-                        if (
-                            count($index->columns) >= count($key->foreign) &&
-                            array_slice($index->columns, 0, count($key->foreign)) == $key->foreign
-                        ) $index_exists = true;
-                    }
-
-                    $label = str_replace($key_table_alias . '_', '', $table->name);
-                    $label = str_replace('_' . $key_table_alias, '', $label);
-                    $label = $this->get_label($label);
-
-                    $rel = !empty($this->tables[$key_table_alias]->relations[$key->name])
-                        ? $this->tables[$key_table_alias]->relations[$key->name]
-                        : (object) [];
-
-                    if (in_array($key->table, $db_tables)) {
-                        $this->tables[$key_table_alias]->relations[$key->name] = [
-                            "table" => $tbl_name,
-                            "foreign_key" => $key_alias,
-                            "label" => $label,
-                            "filter" => isset($rel->filter) ? $rel->filter : null,
-                            "hidden" => (!$index_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
-                            ? true
-                            : false
-                        ];
-                    }
-                }
-            }
 
             // Count table rows
             $count_rows = $db->select('*')->from($tbl_name)->count();
