@@ -48,7 +48,7 @@ var entry = {
             url: "relations",
             data: {
                 base: rec.base_name,
-                table: rec.table.name,
+                table: rec.table_name || rec.table.name,
                 primary_key: JSON.stringify(rec.primary_key),
                 types: JSON.stringify(types),
                 count: true
