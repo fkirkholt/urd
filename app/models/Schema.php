@@ -725,7 +725,11 @@ class Schema {
                         }
                     }
                     $index_cols = array_unique($index_cols);
-                    if (count($table->fields) == count($index_cols)) {
+                    $fieldnames = array_keys($table->fields);
+                    $fieldnames = array_filter($fieldnames, function($fieldname) {
+                        return substr($fieldname, 0, 1) !== '_';
+                    });
+                    if (count($fieldnames) == count($index_cols)) {
                         $table->type = 'reference';
                         break;
                     }
