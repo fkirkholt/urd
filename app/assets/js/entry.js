@@ -71,9 +71,14 @@ var entry = {
                 alias: alias
             }
         }).then(function(result) {
+            if (result.data[alias].relationship == '1:1') {
+                record = result.data[alias].records[0]
+                record.table = result.data[alias]
+                entry.get_relations_count(record)
+            }
             $('.icon-crosshairs').removeClass('fast-spin');
-            _merge(rec.relations, result.data);
-        });
+            Object.assign(rec.relations[alias], result.data[alias])
+        }) ;
     },
 
     create: function(list, relation) {

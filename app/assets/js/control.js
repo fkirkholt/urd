@@ -633,9 +633,14 @@ var control = {
                     ]),
                 ]),
                 rel.expanded && rel.records 
-                    ? rel.relationship == '1:1' 
-                        ? entry.draw_relation_list(rel, rec)
-                        : entry.draw_relation_table(rel, rec) 
+                    ? rel.relationship == '1:M'
+                        ? entry.draw_relation_table(rel, rec)
+                        : m('tr', [
+                            m('td'),
+                            m('td', {colspan: 3}, [
+                                m(entry, {record: rel.records[0]})
+                            ])
+                        ])
                     : null
             ];
         } else if (typeof colname === "string" && colname.indexOf('actions.') > -1) {
