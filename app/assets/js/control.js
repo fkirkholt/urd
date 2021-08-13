@@ -624,7 +624,15 @@ var control = {
                                     base_path = rel.base_name || rel.schema_name
                                 }
                                 var url = '/' + base_path + '/tables/' + rel.name;
-                                url += '?query=' + rel.conditions.join(' AND ').replace(/=/g, '%3D');
+
+                                conditions = []
+                                $.each(rel.conds, function(col, val) {
+                                    conditions.push(col + " = " + val)
+                                })
+
+                                if (conditions.length == 0) conditions = rel.conditions
+
+                                url += '?query=' + conditions.join(' AND ').replace(/=/g, '%3D');
                                 m.route.set(url);
                                 event.stopPropagation();
                             }

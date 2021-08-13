@@ -731,9 +731,16 @@ var entry = {
                     rel.records.map(function(rec, rowidx) {
                         rec.table_name = rel.name;
 
+                        // Make editable only relations attached directly to record
+                        // and not to parent records
+                        rec.readonly = !rec.new && !_isMatch(rec.values, rel.conds)
+
                         return [
                             m('tr', {
-                                class: config.relation_view === 'column' && _isEqual(rec, record.active_relation) ? 'bg-blue white' : '',
+                                class: [
+                                    config.relation_view === 'column' && _isEqual(rec, record.active_relation) ? 'bg-blue white' : '',
+                                    rec.readonly ? 'gray' : 'black'
+                                ].join(' '),
                                 onclick: function() {
                                     if (rec.primary_key == null) return;
                                     record.active_relation = rec;
@@ -924,6 +931,7 @@ var ds = require('./datastore.js');
 var _merge = require('lodash/merge');
 var _isEqual = require('lodash/isEqual');
 var _get = require('lodash/get');
+var _isMatch = require('lodash/isMatch');
 
 var control = require('./control.js');
 var filterpanel = require('./filterpanel.js');
