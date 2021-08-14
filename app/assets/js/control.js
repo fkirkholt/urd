@@ -229,9 +229,7 @@ var control = {
             });
         } else if (field.element == 'textarea' && field.expanded === true) {
             var converter = new showdown.Converter();
-            var text = field.format == 'markdown'
-                ? converter.makeHtml(field.value)
-                : field.value;
+            text = converter.makeHtml(field.value)
 
             return readOnly ? m.trust(text) : m('textarea', {
                 name: field.name,
@@ -371,6 +369,9 @@ var control = {
         } else if (is_integer && field.size > 5) {
             numeral.locale('no');
             value = value === null ? null : numeral(value).format();
+        } else if (field.element == "textarea" && field.expanded) {
+            var converter = new showdown.Converter();
+            value = m.trust(converter.makeHtml(field.value))
         }
 
         return value;
