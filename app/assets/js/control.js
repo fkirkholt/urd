@@ -63,7 +63,7 @@ var control = {
         Object.keys(rec.table.foreign_keys).map(function(label) {
             key = rec.table.foreign_keys[label];
 
-            if ($.inArray(field.name, key.foreign) !== -1) {
+            if (key.foreign[key.foreign.length - 1] == field.name) {
                 key.foreign_idx = $.inArray(field.name, key.foreign);
                 keys.push(key);
             }
@@ -627,7 +627,7 @@ var control = {
 
                                 conditions = []
                                 $.each(rel.conds, function(col, val) {
-                                    conditions.push(col + " = " + val)
+                                    conditions.push(rel.name + "." + col + " = " + val)
                                 })
 
                                 if (conditions.length == 0) conditions = rel.conditions
