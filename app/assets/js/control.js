@@ -624,7 +624,7 @@ var control = {
                                 } else {
                                     base_path = rel.base_name || rel.schema_name
                                 }
-                                var url = '/' + base_path + '/tables/' + rel.name;
+                                var url = '/' + base_path + '/' + rel.name;
 
                                 conditions = []
                                 $.each(rel.conds, function(col, val) {
@@ -727,16 +727,20 @@ var control = {
                         (rec.table.type === "xref" && config.edit_mode) ? '' : m('i', {
                             class: 'icon-crosshairs light-blue hover-blue pointer',
                             onclick: function() {
-                                if (field.foreign_key.schema && field.foreign_key.schema != field.foreign_key.base) {
+                                if (
+                                    field.foreign_key.schema &&
+                                    field.foreign_key.schema != field.foreign_key.base &&
+                                    field.foreign_key.schema != 'public'
+                                ) {
                                     base = field.foreign_key.base + '.' + field.foreign_key.schema
                                 } else {
                                     base = field.foreign_key.base || field.foreign_key.schema
                                 }
-                                var url = '/' + base + '/tables/' + field.foreign_key.table + '?query=';
+                                var url = '/' + base + '/' + field.foreign_key.table + '?'
                                 $.each(field.foreign_key.primary, function(i, colname) {
                                     var fk_field = field.foreign_key.foreign[i];
-                                    url += colname + ' %3D ' + rec.fields[fk_field].value;
-                                    if (i !== field.foreign_key.primary.length - 1 ) url += ' AND '
+                                    url += colname + '=' + rec.fields[fk_field].value;
+                                    if (i !== field.foreign_key.primary.length - 1 ) url += '&'
                                 })
                                 m.route.set(url);
                             }

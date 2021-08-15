@@ -37,7 +37,7 @@ m.route($('#main')[0], '/', {
             return contents;
         }
     },
-    "/:base/tables/:table": {
+    "/:base/:table": {
         onmatch: function(args, requestedPath) {
             if (ds.table && ds.table.dirty && grid.url !== requestedPath) {
                 if (!confirm('Du har ulagrede data. Vil du fortsette?')) {

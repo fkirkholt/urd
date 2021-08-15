@@ -293,11 +293,20 @@ var grid = {
     },
 
     load: function() {
-        var params = m.route.param();
+        var params = Object.assign({}, m.route.param());
         var base_name = params['base'] ? params['base'] : ds.urd_base;
         var table_name = params['table'] ? params['table'] : 'database_';
         var search = params['query'] ? params['query'] : null;
         var condition = params['where'] ? params['where'] : null;
+        if (!('query' in params) && !('where' in params)) {
+            delete params.base
+            delete params.table
+            search_params = []
+            $.each(params, function(key, value) {
+                search_params.push(key + ' = ' + value);
+            })
+            search = search_params.join(' AND ')
+        }
 
         filterpanel.advanced = condition ? true : false;
 

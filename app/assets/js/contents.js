@@ -107,7 +107,7 @@ contents = {
             var display = object.type && (object.type.indexOf('reference') !== -1) && !config.admin
                 ? 'none'
                 : 'inline';
-            var schema = ds.base.system == 'postgres' && ds.base.schma !== 'public'
+            var schema = ds.base.system == 'postgres' && ds.base.schema !== 'public'
                 ? ds.base.schema
                 : ''
             return m('div', {
@@ -154,7 +154,7 @@ contents = {
                     ].join(' '),
                     title: object.description ? object.description : '',
                     style: 'display:' + display,
-                    href: '#/' + ds.base.name + '/' + item.replace('.', '/')
+                    href: '#/' + ds.base.name + '/' + object.name
                 }, label),
                 !object.count_rows || !config.admin ? '' : m('span', {
                     class: 'ml2 light-silver',
