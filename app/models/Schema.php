@@ -730,6 +730,10 @@ class Schema {
                         return substr($fieldname, 0, 1) !== '_';
                     });
                     if (count($fieldnames) == count($index_cols)) {
+                        if (count($pk_columns) == count($fieldnames)) {
+                            $table->type = 'xref';
+                            break;
+                        }
                         $table->type = 'reference';
                         break;
                     }
@@ -1121,13 +1125,6 @@ class Schema {
             {
                 if ($config->urd_structure) {
                     $group = explode('_', $tbl_alias)[0];
-
-                    // Check if this is a crossreference table
-                    $last_pk_col = end($table->primary_key);
-                    if (
-                        isset($table->foreign_keys[$last_pk_col]) &&
-                        empty($table->extends) 
-                    ) $table->type = 'xref';
 
                     // Find if the table is subordinate to other tables
                     // i.e. the primary key also has a foreign key
