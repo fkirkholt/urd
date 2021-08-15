@@ -626,6 +626,11 @@ var entry = {
             m('td', {colspan:3}, [
                 m('table', {class: 'w-100 collapse'}, [
                     rel.records.map(function(rec, rowidx) {
+                        // Make editable only relations attached directly to record
+                        // and not to parent records
+                        rec.readonly = !rec.new && !_isMatch(rec.values, rel.conds)
+                        if (rec.readonly) rec.inherited = true
+
                         if (rec.delete) return;
                         if (rec.fields === undefined) {
                             rec.fields = JSON.parse(JSON.stringify(rel.fields));

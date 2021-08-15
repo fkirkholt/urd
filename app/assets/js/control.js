@@ -718,7 +718,8 @@ var control = {
                         class: [
                             'max-w7 w-100',
                             field.element == 'textarea' && !field.expanded ? 'nowrap truncate' : '',
-                            field.invalid ? 'invalid' : field.dirty ? 'dirty' : ''
+                            field.invalid ? 'invalid' : field.dirty ? 'dirty' : '',
+                            rec.inherited ? 'gray' : '',
                         ].join(' ')
                     }, [
                         rec.table.permission.edit == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
