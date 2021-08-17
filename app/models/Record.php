@@ -147,6 +147,7 @@ class Record {
             'primary_key'  => $this->primary_key,
             'fields'       => $fields,
             'new'          => $new,
+            'loaded'       => true,
             'sql'          => $sql,
         ];
     }
@@ -388,7 +389,6 @@ class Record {
                 $this->primary_key->$fieldname = $result;
             }
         } else {
-            # error_log(json_encode($tbl_inserts));
             $result = $this->db->insert($this->tbl->name, $tbl_inserts)->execute();
         }
 
