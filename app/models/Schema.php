@@ -930,7 +930,18 @@ class Schema {
                     });
 
                     if (count($indexes) && empty($relation->hidden)) {
-                        $label = !empty($relation->label) ? ucfirst($relation->label) : ucfirst(str_replace('_', ' ', $alias));
+                        $label = !empty($relation->label) ? ucfirst($relation->label) : $this->get_label($rel_table->name);
+                        if ($rel_table->type == 'xref') {
+                            # Find pk fields not part for foreign key
+                            $rest = [];
+                            foreach ($rel_table->primary_key as $pk_col) {
+                                if (!in_array($pk_col, $fk->foreign)) {
+                                    $rest[] = $pk_col;
+                                }
+                            }
+                            $pk_field = end($rest);
+                            $label = $this->get_label($pk_field);
+                        }
                         $table->form['items'][$label] = 'relations.'.$alias;
                     }
 

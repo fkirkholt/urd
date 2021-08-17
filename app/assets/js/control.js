@@ -588,8 +588,6 @@ var control = {
                 if(hidden) return ''
             }
 
-            label = relation.label ? relation.label : label;
-
             return [
                 m('tr.heading', {
                     onclick: function() {
