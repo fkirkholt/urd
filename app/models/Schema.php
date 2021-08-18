@@ -899,6 +899,7 @@ class Schema {
             if (isset($table->relations)) {
                 foreach ($table->relations as $alias => $relation) {
                     $relation = (object) $relation;
+                    $relation->order = 10;
 
                     if (!isset($this->tables[$relation->table])) {
                         unset($table->relations[$alias]);
@@ -930,19 +931,23 @@ class Schema {
                     });
 
                     if (count($indexes) && empty($relation->hidden)) {
-                        $label = !empty($relation->label) ? ucfirst($relation->label) : $this->get_label($rel_table->name);
-                        if ($rel_table->type == 'xref') {
-                            # Find pk fields not part for foreign key
-                            $rest = [];
-                            foreach ($rel_table->primary_key as $pk_col) {
-                                if (!in_array($pk_col, $fk->foreign)) {
-                                    $rest[] = $pk_col;
+                        $relation->label = !empty($relation->label) ? ucfirst($relation->label) : $this->get_label($rel_table->name);
+                        if (!array_diff($fk->foreign, $rel_table->primary_key)) {
+                            $idx = array_search(end($fk->foreign), $rel_table->primary_key);
+                            $relation->order = count($rel_table->primary_key) - $idx;
+                            if ($rel_table->type == 'xref') {
+                                $relation->order = 5 + $relation->order;
+                                # Find pk fields not part for foreign key
+                                $rest = [];
+                                foreach ($rel_table->primary_key as $pk_col) {
+                                    if (!in_array($pk_col, $fk->foreign)) {
+                                        $rest[] = $pk_col;
+                                    }
                                 }
+                                $pk_field = end($rest);
+                                $relation->label = $this->get_label($pk_field);
                             }
-                            $pk_field = end($rest);
-                            $label = $this->get_label($pk_field);
                         }
-                        $table->form['items'][$label] = 'relations.'.$alias;
                     }
 
                     $ref_field_name = end($fk->foreign);
@@ -952,7 +957,7 @@ class Schema {
                     // Don't show relations coming from hidden fields
                     if (empty($config->urd_structure) && !empty($ref_field->hidden)) {
                         $relation->hidden = true;
-                        if (!empty($label)) unset($table->form['items'][$label]);
+                        if (!empty($relation->label)) unset($table->form['items'][$relation->label]);
                     }
 
                     // Don't show fields referring to hidden table
@@ -967,6 +972,13 @@ class Schema {
 
                     $table->relations[$alias] = $relation;
 
+                }
+
+                $rels = array_column($table->relations, 'order');
+                array_multisort($rels, $table->relations);
+
+                foreach ($table->relations as $alias => $relation) {
+                    $table->form['items'][$relation->label] = 'relations.'.$alias;
                 }
             }
 
