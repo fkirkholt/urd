@@ -843,6 +843,7 @@ class Schema {
                         $form['items'][$label] = $col_names[0];
                     } else {
                         $inline = false;
+                        $sum_size = 0;
                         foreach ($col_names as $i => $col_name) {
                             // removes group name prefix from column name and use the rest as label
                             $rest = str_replace($group_name . '_', '', $col_name);
@@ -851,10 +852,22 @@ class Schema {
                             $col_names[$label] = $col_name;
                             unset($col_names[$i]);
 
+                            $field = $table->fields[$col_name];
+                            if (isset($field->size)) {
+                                $sum_size += $field->size;
+                            } elseif (in_array($field->datatype, ["date", "integer"])) {
+                                $sum_size += 10;
+                            }
+
                             if (isset($table->fields[$col_name]->separator)) {
                                 $inline = true;
                             }
                         }
+
+                        if ($sum_size < 50) {
+                            $inline = true;
+                        }
+
                         $group_label = $this->get_label($group_name);
                         $form['items'][$group_label] = [
                             'inline' => $inline,
