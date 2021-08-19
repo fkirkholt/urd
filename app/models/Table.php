@@ -1114,6 +1114,7 @@ class Table {
                 // Set value of fkey columns to matched colums of record
                 $fkey = $rel_table->foreign_keys[$rel->fkey];
                 foreach ($rel->records as $rel_rec) {
+                    if (!isset($rel_rec->values)) continue;
                     foreach ($fkey->foreign as $idx => $col) {
                         $fcol = $fkey->primary[$idx];
                         $rel_rec->values->{$col} = $record_vals[$fcol];
