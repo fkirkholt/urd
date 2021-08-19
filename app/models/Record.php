@@ -200,13 +200,19 @@ class Record {
             $pk = [];
 
             // Add condition to fetch only rows that link to record
+            $conds = [];
             foreach ($rel->fk_columns as $i => $fk_field_alias) {
                 $fk_field = $tbl_rel->fields[$fk_field_alias];
                 $ref_field_alias = $rel->ref_columns[$i];
                 $ref_field = $this->tbl->fields[$ref_field_alias];
 
                 $value = reset($this->primary_key) ? $rec['fields'][$ref_field_alias]->value : null;
-                $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
+                if ($tbl_rel->fields[$fk_field_alias]->nullable) {
+                    $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
+                } else {
+                    $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
+                }
+                $conds[$fk_field_alias] = $value;
                 $pk[$fk_field_alias] = $value;
             }
 
@@ -235,6 +241,7 @@ class Record {
                     'time' => $end - $start,
                     'name' => $rel->table,
                     'conditions' => $conditions,
+                    'conds' => $conds,
                     'base_name' => $rel->db_name,
                     'relationship' => $rel->type
                 ];
