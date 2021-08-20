@@ -705,6 +705,36 @@ class Schema {
                 }
             }
 
+            // Find expansion column
+            $self_relation = false;
+            foreach ($table->relations as $relation) {
+                if ($relation['table'] == $table->name) {
+                    $self_relation = true;
+                    break;
+                }
+            }
+            if ($self_relation) {
+                $ident_cols = null;
+                foreach ($table->indexes as $idx) {
+                    if ($idx->columns != $table->primary_key && $idx->unique) {
+                        $ident_cols = $idx->columns;
+                        if (substr($idx->name, -strlen("_sort_idx")) == "_sort_idx") {
+                            break;
+                        }
+                    }
+                }
+                if ($ident_cols) {
+                    $maxlength = 0;
+
+                    foreach ($ident_cols as $colname) {
+                        $field = $table->fields[$colname];
+                        if ($field->datatype == 'string' && $field->size > $maxlength) {
+                            $table->expansion_column = $colname;
+                        }
+                    }
+                }
+            }
+
             // Try to decide if the table is a reference table
             if ($config->urd_structure) {
                 do {
