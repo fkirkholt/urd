@@ -146,7 +146,7 @@ var search = {
         var table = vnode.attrs.table ? vnode.attrs.table : ds.table;
 
         return [
-            m('div',[
+            m('div', {class: 'ml3'}, [vnode.attrs.table ? '' : m('div',[
             m('input[type=button]', {
                 value: 'Utfør søk',
                 onclick: function () {
@@ -192,7 +192,7 @@ var search = {
                         ds.table.filters = filterpanel.parse_query(ds.table.query);
                     }
                 }
-            }), ' Vis aktive søkekriterier',
+            }), ' Vis aktive søkekriterier']),
             m('form[name="search"]', {
                 class: 'flex flex-column',
                 style: 'flex: 0 0 550px;'
