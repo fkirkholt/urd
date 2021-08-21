@@ -738,7 +738,11 @@ var entry = {
 
                         // Make editable only relations attached directly to record
                         // and not to parent records
-                        rec.readonly = !rec.new && !_isMatch(rec.values, rel.conds)
+                        rec.readonly = !rec.new && !_isMatch(rec.values, rel.conds) &&
+                            // all keys of rel.conds should be in rec.values
+                            Object.keys(rel.conds).every(function(val) {
+                                return Object.keys(rec.values).indexOf(val) >= 0;
+                            })
 
                         return [
                             m('tr', {
