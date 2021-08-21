@@ -84,7 +84,7 @@ var search = {
             var operators = filterpanel.get_operators(field);
 
             if (table.alias === undefined) table.alias = table.name;
-            var filtername = (table.alias || table.name) + '.' + field.name;
+            var filtername = table.alias == ds.table.name ? field.name : (table.alias || table.name) + '.' + field.name;
 
             if (!ds.table.filters[filtername]) {
                 ds.table.filters[filtername] = {

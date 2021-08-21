@@ -66,18 +66,36 @@ class TableController extends BaseController {
             foreach ($sok_arr as $cond) {
                 $parts = preg_split("/\s*([=<>]|!=| IN| LIKE|NOT LIKE|IS NULL|IS NOT NULL)\s*/", $cond, 2,
                     PREG_SPLIT_DELIM_CAPTURE);
-                $field = $parts[0];
-                if (strpos($field, '.') === false) {
-                    $field = "$tbl->name.$field";
+                if (count($parts) == 1) {
+                    $value = $parts[0];
+                    $case_sensitive = strtolower($value) != $value;
+
+                    $conds = [];
+                    foreach ($tbl->fields as $field) {
+                        if ($field->datatype == "string") {
+                            if ($case_sensitive) {
+                                $conds[] = "$tbl->name.$field->name LIKE '%$value%'";
+                            } else {
+                                $conds[] = "lower($tbl->name.$field->name) LIKE '%$value%'";
+                            }
+                        }
+                    }
+                    $expr = "(" . implode(" OR ", $conds) . ")";
+                    $tbl->add_condition($expr);
+                } else {
+                    $field = $parts[0];
+                    if (strpos($field, '.') === false) {
+                        $field = "$tbl->name.$field";
+                    }
+                    $operator = trim($parts[1]);
+                    $value = str_replace('*', '%', $parts[2]);
+                    if ($operator === 'IN') {
+                        $value = "('" . implode("','", explode(',', trim($value))) . "')";
+                    } elseif ($value !== '') {
+                        $value = "'" . trim($value, " '") . "'";
+                    }
+                    $tbl->add_condition("$field $operator $value");
                 }
-                $operator = trim($parts[1]);
-                $value = str_replace('*', '%', $parts[2]);
-                if ($operator === 'IN') {
-                    $value = "('" . implode("','", explode(',', trim($value))) . "')";
-                } elseif ($value !== '') {
-                    $value = "'" . trim($value, " '") . "'";
-                }
-                $tbl->add_condition("$field $operator $value");
             }
         }
 

@@ -232,8 +232,19 @@ var toolbar = {
                     ds.table.search = !ds.table.search;
                 }
             }),
+            !config.show_table || ds.table.hide ? '' : m('input[type=text]', {
+                placeholder: "Søk i alle tekstfelter",
+                value: param.query ? param.query : '',
+                onfocus: function(event) {
+                    event.target.select()
+                },
+                onchange: function(event) {
+                    m.route.set('/' + ds.base.name + '/' + ds.table.name + '?query=' + event.target.value.replace('=', '%3D'));
+
+                }
+            }),
             !config.show_table || ds.table.hide ? '' : m('select', {
-                class: 'ml1 mr2',
+                class: 'ml1 mr2 dn',
                 name: 'btn_saved_searches',
                 title: 'Lagrede søk',
 
