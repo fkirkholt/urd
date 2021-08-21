@@ -27,7 +27,7 @@ var filterpanel = {
 
         // url += '?' + query.key + '=' + query.value;
 
-        m.route.set('/' + ds.base.name + '/tables/' + ds.table.name + '?' + query.key + '=' + query.value);
+        m.route.set('/' + ds.base.name + '/' + ds.table.name + '?' + query.key + '=' + query.value);
 
         /*
         history.pushState({}, "Filter", url);
