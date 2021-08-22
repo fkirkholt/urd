@@ -617,7 +617,10 @@ var control = {
                             ].join(' '),
                             onclick: function(event) {
                                 var base_path
-                                if (rel.schema_name && rel.schema_name != rel.base_name && rel.schema_name != 'public') {
+                                if (ds.base.system == 'postgres' &&
+                                    rel.schema_name &&
+                                    rel.schema_name != rel.base_name && rel.schema_name != 'public')
+                                {
                                     base_path = rel.base_name + '.' + rel.schema_name
                                 } else {
                                     base_path = rel.base_name || rel.schema_name
@@ -726,6 +729,7 @@ var control = {
                             class: 'icon-crosshairs light-blue hover-blue pointer',
                             onclick: function() {
                                 if (
+                                    ds.base.system == 'postgres' &&
                                     field.foreign_key.schema &&
                                     field.foreign_key.schema != field.foreign_key.base &&
                                     field.foreign_key.schema != 'public'
