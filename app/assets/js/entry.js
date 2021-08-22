@@ -900,7 +900,7 @@ var entry = {
             class: 'flex flex-column',
             style: 'flex: 0 0 550px;'
         }, [
-            !ds.table.edit && !ds.table.hide 
+            !ds.table.edit && !ds.table.hide
                 ? '' 
                 : m('div', [m(toolbar)]),
             m('table[name=view]', {

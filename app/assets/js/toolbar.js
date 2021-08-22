@@ -149,6 +149,15 @@ var toolbar = {
         if (!ds.table || !ds.table.records || ds.type === 'dblist') return;
 
         var param = m.route.param();
+        var search = param['query'] ? param['query'] : null;
+        if (!('query' in param) && !('where' in param)) {
+            search_params = []
+            $.each(param, function(key, value) {
+                if (['base', 'table'].indexOf(key) >= 0) return;
+                search_params.push(key + ' = ' + value);
+            })
+            search = search_params.join(' AND ')
+        }
 
         if (ds.table.edit) {
             return [
@@ -234,12 +243,12 @@ var toolbar = {
             }),
             !config.show_table || ds.table.hide ? '' : m('input[type=text]', {
                 placeholder: "Søk i alle tekstfelter",
-                value: param.query ? param.query : '',
+                value: search,
                 onfocus: function(event) {
                     event.target.select()
                 },
                 onchange: function(event) {
-                    m.route.set('/' + ds.base.name + '/' + ds.table.name + '?query=' + event.target.value.replace('=', '%3D'));
+                    m.route.set('/' + ds.base.name + '/' + ds.table.name + '?query=' + event.target.value.replace(/=/g, '%3D'));
 
                 }
             }),

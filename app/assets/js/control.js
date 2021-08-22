@@ -626,7 +626,7 @@ var control = {
 
                                 conditions = []
                                 $.each(rel.conds, function(col, val) {
-                                    conditions.push(rel.name + "." + col + " = " + val)
+                                    conditions.push(col + " = " + val)
                                 })
 
                                 if (conditions.length == 0) conditions = rel.conditions
