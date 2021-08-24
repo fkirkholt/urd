@@ -718,7 +718,7 @@ var control = {
                     m('td', {
                         class: [
                             'max-w7 w-100',
-                            field.element == 'textarea' && !field.expanded ? 'nowrap truncate' : '',
+                            field.element == 'textarea' && !field.expanded && !config.edit_mode ? 'nowrap truncate' : '',
                             field.invalid ? 'invalid' : field.dirty ? 'dirty' : '',
                             rec.inherited ? 'gray' : '',
                         ].join(' ')

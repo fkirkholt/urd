@@ -889,7 +889,6 @@ var entry = {
         if (!rec || !rec.table) {
             return m('form[name="record"]', {
                 class: 'flex flex-column',
-                style: 'flex: 0 0 550px;'
             });
         }
 
@@ -898,7 +897,6 @@ var entry = {
         rec.dirty = rec.dirty == undefined ? false : rec.dirty;
         return [m('form[name="record"]', {
             class: 'flex flex-column',
-            style: 'flex: 0 0 550px;'
         }, [
             !ds.table.edit && !ds.table.hide
                 ? '' 
