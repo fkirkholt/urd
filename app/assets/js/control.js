@@ -63,7 +63,7 @@ var control = {
         Object.keys(rec.table.foreign_keys).map(function(label) {
             key = rec.table.foreign_keys[label];
 
-            if (key.foreign[key.foreign.length - 1] == field.name) {
+            if (key.foreign.indexOf(field.name) > 0) {
                 key.foreign_idx = $.inArray(field.name, key.foreign);
                 keys.push(key);
             }
@@ -85,27 +85,16 @@ var control = {
             }
 
             if (key.foreign && key.foreign.length > 1) {
-                if (key.name == field.foreign_key.name) {
-                    $.each(key.foreign, function(i, column) {
-                        if (column === field.name) return;
-                        // Just fields that is editable on their own participates in the condition
-                        if (rec.fields[column].value != null && column in rec.fields) {
-                            var condition = field.name + '.' + key.primary[i] + ' = ' + "'" + rec.fields[column].value + "'";
-                            kandidatbetingelser.push(condition);
-                        }
-                    });
-                } else {
-                    $.each(key.foreign, function(i, column) {
-                        if (column === field.name) return;
-                        if (rec.fields[column].value != null && column in rec.fields) {
-                            var col = field.foreign_key.primary.slice(-1)[0];
-                            var condition = col + ' in (select ' + key.primary[key.foreign_idx];
-                            condition += ' from ' + key.table + ' where ' + key.foreign[i];
-                            condition += " = '" + rec.fields[column].value + "')";
-                            kandidatbetingelser.push(condition); 
-                        }
-                    });
-                }
+                $.each(key.foreign, function(i, column) {
+                    if (column === field.name) return;
+                    if (rec.fields[column].value != null && column in rec.fields) {
+                        var col = field.foreign_key.primary.slice(-1)[0];
+                        var condition = col + ' in (select ' + key.primary[key.foreign_idx];
+                        condition += ' from ' + key.table + ' where ' + key.foreign[i];
+                        condition += " = '" + rec.fields[column].value + "')";
+                        kandidatbetingelser.push(condition);
+                    }
+                });
             }
         });
 
