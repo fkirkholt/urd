@@ -450,16 +450,6 @@ class Record {
 
     public function delete()
     {
-        $relations = $this->get_relations();
-
-        foreach ($relations as $rel) {
-            foreach ($rel['records'] as $rec) {
-                error_log(json_encode($rel));
-                $record = new Record($rel['db_name'], $rel['name'], (object) $rec['primary_key']);
-                $record->delete();
-            }
-        }
-
         $result = $this->db->delete($this->tbl->name)
             ->where((array) $this->primary_key)->execute();
 
