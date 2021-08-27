@@ -274,8 +274,8 @@ class Record {
                 }
 
                 if ($rel->type == "1:1") {
-                    $rec = new Record($this->db->name, $rel->table, $pk);
-                    $relation['records'] = [$rec->get()];
+                    $record = new Record($this->db->name, $rel->table, $pk);
+                    $relation['records'] = [$record->get()];
                     $relation['relationship'] = "1:1";
                 } else {
                     $relation['relationship'] = "1:M";

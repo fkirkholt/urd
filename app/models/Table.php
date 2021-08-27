@@ -1119,7 +1119,7 @@ class Table {
                         $fcol = $fkey->primary[$idx];
                         $rel_rec->values->{$col} = $record_vals[$fcol];
 
-                        // Primary keys of relation may be updated by 
+                        // Primary keys of relation may be updated by
                         // cascade if primary keys of record is updated
                         if (isset($rel_rec->prim_key->{$col})) {
                             $rel_rec->prim_key->{$col} = $record_vals[$fcol];
