@@ -1076,9 +1076,7 @@ class Table {
                         ? (new Schema($rel->schema))->get_db_name()
                         : $this->db->name;
 
-                    $rel->table = !empty($rel->table) ? $rel->table : $alias;
-
-                    $tbl_rel = Table::get($rel->db_name, $rel->table);
+                    $tbl_rel = Table::get($rel->db_name, $rel->table_name);
 
                     $fk_alias = $this->relations[$alias]->foreign_key;
                     $fk = $tbl_rel->foreign_keys[$fk_alias];
@@ -1115,6 +1113,7 @@ class Table {
                 $fkey = $rel_table->foreign_keys[$rel->fkey];
                 foreach ($rel->records as $rel_rec) {
                     if (!isset($rel_rec->values)) continue;
+                    $rel_rec->values = (object) $rel_rec->values;
                     foreach ($fkey->foreign as $idx => $col) {
                         $fcol = $fkey->primary[$idx];
                         $rel_rec->values->{$col} = $record_vals[$fcol];

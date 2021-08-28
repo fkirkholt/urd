@@ -400,6 +400,9 @@ class Record {
             }
         } else {
             $result = $this->db->insert($this->tbl->name, $tbl_inserts)->execute();
+            foreach ($this->tbl->primary_key as $fieldname) {
+                $this->primary_key->$fieldname = $tbl_inserts[$fieldname];
+            }
         }
 
         unset($tbl_inserts[$this->tbl->name]);
