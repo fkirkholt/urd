@@ -123,7 +123,15 @@ var toolbar = {
     },
 
     delete_record: function() {
-        if (ds.table.permission.delete != true) return;
+        var idx = ds.table.selection
+        var rec = ds.table.records[idx]
+        var deletable = true
+        $.each(rec.relations, function(idx, rel) {
+            if (rel.count_records && rel.delete_rule != "cascade") {
+                deletable = false
+            }
+        })
+        if (ds.table.permission.delete != true || !deletable) return;
 
         var r = true;
         if (config.autosave || !config.edit_mode) {
@@ -131,11 +139,10 @@ var toolbar = {
         }
 
         if (r === true) {
-            idx = ds.table.selection;
-            if (ds.table.records[idx].new) {
+            if (rec.new) {
                 ds.table.records.splice(idx, 1);
             } else {
-                entry.delete(ds.table.records[idx]);
+                entry.delete(rec);
             }
 
             if (!config.edit_mode) {
@@ -158,6 +165,15 @@ var toolbar = {
             })
             search = search_params.join(' AND ')
         }
+        var idx = ds.table.selection
+        var rec = ds.table.records[idx]
+        var deletable = rec.relations ? true : false
+
+        $.each(rec.relations, function(idx, rel) {
+            if (rel.count_records && rel.delete_rule != "cascade") {
+                deletable = false
+            }
+        })
 
         if (ds.table.edit) {
             return [
@@ -487,20 +503,20 @@ var toolbar = {
                 config.button_view != 'text' ? [
                     m('i', {
                         class: [
-                            'fa fa-trash-o ml2 mr1 pointer dim',
-                            ds.table.permission.delete == true ? 'dim pointer' : 'moon-gray'
+                            'fa fa-trash-o ml2 mr1',
+                            (ds.table.permission.delete == true && deletable) ? 'dim pointer' : 'moon-gray'
                         ].join(' '),
                         title: 'Slett post',
                         onclick: toolbar.delete_record
                     }),
                     config.button_view == 'both' ? m('span', {
-                        class: ds.table.permission.delete == true ? 'dim pointer' : 'moon-gray',
+                        class: (ds.table.permission.delete == true && deletable) ? 'dim pointer' : 'moon-gray',
                         onclick: toolbar.delete_record
                     }, 'Slett') : ''
                 ]
                 : (config.button_view == 'text') ? m('input[type=button]', {
                     value: 'Slett',
-                    disabled: ds.table.permission.delete == false,
+                    disabled: ds.table.permission.delete == false || !deletable,
                     onclick: toolbar.delete_record
                 }) : ''
             ]),

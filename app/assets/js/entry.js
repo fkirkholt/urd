@@ -224,6 +224,7 @@ var entry = {
     },
 
     delete: function(rec) {
+        if (!rec.deletable) return
         rec.delete = rec.delete ? false : true;
         rec.dirty = true;
         ds.table.dirty = true;
@@ -744,6 +745,14 @@ var entry = {
                                 return Object.keys(rec.values).indexOf(val) >= 0;
                             })
 
+                        rec.deletable = rec.relations ? true : false
+
+                        $.each(rec.relations, function(idx, rel) {
+                            if (rel.count_records && rel.delete_rule != "cascade") {
+                                rec.deletable = false
+                            }
+                        })
+
                         return [
                             m('tr', {
                                 class: [
@@ -796,8 +805,9 @@ var entry = {
                                 m('td', {class: 'bb b--light-gray'}, [
                                     !rec.open || record.readonly ? '' : m('i', {
                                         class: [
-                                            rel.permission.delete && config.edit_mode ? 'fa fa-trash-o light-blue pl1' : '',
-                                            config.relation_view === 'column' ? 'hover-white' : 'hover-blue',
+                                            rel.permission.delete && config.edit_mode ? 'fa fa-trash-o pl1' : '',
+                                            rec.deletable ? 'light-blue' : 'moon-gray',
+                                            rec.deletable ? (config.relation_view === 'column' ? 'hover-white' : 'hover-blue') : '',
                                         ].join(' '),
                                         style: 'cursor: pointer',
                                         onclick: entry.delete.bind(this, rec),

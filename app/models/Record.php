@@ -204,6 +204,7 @@ class Record {
 
             // Add condition to fetch only rows that link to record
             $conds = [];
+            $inherited_conds = [];
             foreach ($rel->fk_columns as $i => $fk_field_alias) {
                 $fk_field = $tbl_rel->fields[$fk_field_alias];
                 $ref_field_alias = $rel->ref_columns[$i];
@@ -211,10 +212,11 @@ class Record {
 
                 $value = reset($this->primary_key) ? $rec['fields'][$ref_field_alias]->value : null;
                 if ($tbl_rel->fields[$fk_field_alias]->nullable && $fk_field_alias != $rel->fk_columns[0]) {
-                    $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
-                } else {
-                    $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
+                    # $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
+                    $inherited_conds[] = "$rel->table.$fk_field_alias is null";
                 }
+                $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
+
                 $conds[$fk_field_alias] = $value;
                 $pk[$fk_field_alias] = $value;
             }
@@ -237,16 +239,20 @@ class Record {
 
                 $conditions = $tbl_rel->get_conditions();
                 $condition = count($conditions) ? 'WHERE '.implode(' AND ', $conditions) : '';
+                $inherited_cond = count($inherited_conds) ? 'WHERE ' . implode(' AND ', $inherited_conds) : '';
                 $count_records = $tbl_rel->get_record_count($condition);
+                $count_inherited = count($inherited_conds) ? $tbl_rel->get_record_count($inherited_cond) : 0;
                 $end = microtime(true);
                 $relation = [
                     'count_records' => $count_records,
+                    'count_inherited' => $count_inherited,
                     'time' => $end - $start,
                     'name' => $rel->table,
                     'conditions' => $conditions,
                     'conds' => $conds,
                     'base_name' => $rel->db_name,
-                    'relationship' => $rel->type
+                    'relationship' => $rel->type,
+                    'delete_rule' => $rel->delete_rule
                 ];
                 if($show_if) $relation['show_if'] = $show_if;
             } else { // get all relations

@@ -164,7 +164,11 @@ class Schema {
                     $key_alias = $key_alias . '_2';
                 }
                 $key->name = "{$tbl_name}_{$key_alias}_fkey";
-                // $key->delete_rule = $key->onDelete;
+                $key->delete_rule = strtolower($key->onDelete);
+                $key->update_rule = strtolower($key->onUpdate);
+
+                unset($key->onDelete);
+                unset($key->onUpdate);
 
                 // Checks if reference table exists.
                 // This might not be the case if foreign key check is disabled
@@ -243,7 +247,7 @@ class Schema {
                     "foreign_key" => $key_alias,
                     "label" => $label,
                     "filter" => isset($rel->filter) ? $rel->filter : null,
-                    "delete_rule" => $key->onDelete,
+                    "delete_rule" => $key->delete_rule,
                     "hidden" => (!$index_exists && !empty($config->urd_structure)) || !empty($table->hidden) || !empty($rel->hidden)
                     ? true
                     : false
