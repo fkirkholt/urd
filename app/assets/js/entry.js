@@ -224,7 +224,7 @@ var entry = {
     },
 
     delete: function(rec) {
-        if (!rec.deletable) return
+        if (rec.deletable === false) return
         rec.delete = rec.delete ? false : true;
         rec.dirty = true;
         ds.table.dirty = true;
