@@ -40,7 +40,9 @@ var entry = {
         types = []
         if (rec.fields.type_) {
             $.each(rec.fields.type_.options, function(idx, option) {
-                types.push(option.value)
+                if (typeof option.value === "string") {
+                    types.push(option.value)
+                }
             })
         }
         m.request({
