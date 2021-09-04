@@ -68,13 +68,13 @@ class Record {
         if (!$row) $new = true;
 
         // Build array over fields, with value and other properties
-        $this->tbl->permission = $this->tbl->get_user_permission($this->tbl->name);
+        $this->tbl->privilege = $this->tbl->get_user_privilege($this->tbl->name);
         $fields = [];
         foreach ($this->tbl->fields as $alias=>$field) {
             // TODO: Denne genererer feil for view-kolonner
             $field->value = $row[$alias];
             // trigger_error(json_encode($field));
-            $field->editable = isset($field->editable) ? $field->editable : $this->tbl->permission->edit;
+            $field->editable = isset($field->editable) ? $field->editable : $this->tbl->privilege->update;
             $field->datatype = isset($field->datatype) ? $field->datatype : null;
 
             $fields[$alias] = $field;
@@ -177,8 +177,8 @@ class Record {
 
             $tbl_rel = Table::get($rel->db_name, $rel->table);
 
-            $permission = $tbl_rel->get_user_permission();
-            if ($permission->view === 0) continue;
+            $privilege = $tbl_rel->get_user_privilege();
+            if ($privilege->select === 0) continue;
 
             $rel->fk_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->foreign;
             $rel->ref_columns = $tbl_rel->foreign_keys[$rel->foreign_key]->primary;

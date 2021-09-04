@@ -131,7 +131,7 @@ var toolbar = {
                 deletable = false
             }
         })
-        if (ds.table.permission.delete != true || !deletable) return;
+        if (ds.table.privilege.delete != true || !deletable) return;
 
         var r = true;
         if (config.autosave || !config.edit_mode) {
@@ -355,11 +355,11 @@ var toolbar = {
                     m('i', {
                         class: [
                             'fa fa-file-o ml3 mr1',
-                            ds.table.permission.add == true ? 'dim pointer' : 'moon-gray'
+                            ds.table.privilege.insert == true ? 'dim pointer' : 'moon-gray'
                         ].join(' '),
                         title: 'Ny post',
                         onclick: function() {
-                            if (ds.table.permission.add != true) return;
+                            if (ds.table.privilege.insert != true) return;
                             entry.create(ds.table);
                             if (!config.edit_mode) {
                                 ds.table.edit = true;
@@ -368,9 +368,9 @@ var toolbar = {
                         }
                     }),
                     config.button_view == 'both' ? m('span', {
-                        class: ds.table.permission.add == true ? 'dim pointer' : 'moon-gray',
+                        class: ds.table.privilege.insert == true ? 'dim pointer' : 'moon-gray',
                         onclick: function() {
-                            if (ds.table.permission.add != true) return;
+                            if (ds.table.privilege.insert != true) return;
                             entry.create(ds.table);
                             if (!config.edit_mode) {
                                 ds.table.edit = true;
@@ -381,9 +381,9 @@ var toolbar = {
                 ]
                 : (config.button_view == 'text') ? m('input[type=button]', {
                     value: 'Ny',
-                    disabled: ds.table.permission.add == false,
+                    disabled: ds.table.privilege.insert == false,
                     onclick: function() {
-                        if (ds.table.permission.add != true) return;
+                        if (ds.table.privilege.insert != true) return;
                         entry.create(ds.table);
                         if (!config.edit_mode) {
                             ds.table.edit = true;
@@ -398,11 +398,11 @@ var toolbar = {
                     m('i', {
                         class: [
                             'fa fa-copy ml2 mr1 pointer f6 dim',
-                            ds.table.permission.add == true ? 'dim pointer' : 'moon-gray'
+                            ds.table.privilege.insert == true ? 'dim pointer' : 'moon-gray'
                         ].join(' '),
                         title: 'Kopier post',
                         onclick: function() {
-                            if (ds.table.permission.add != true) return;
+                            if (ds.table.privilege.insert != true) return;
                             entry.copy();
                             if (!config.edit_mode) {
                                 ds.table.edit = true;
@@ -411,9 +411,9 @@ var toolbar = {
                         }
                     }),
                     config.button_view == 'both' ? m('span', {
-                        class: ds.table.permission.add == true ? 'dim pointer' : 'moon-gray',
+                        class: ds.table.privilege.insert == true ? 'dim pointer' : 'moon-gray',
                         onclick: function() {
-                            if (ds.table.permission.add != true) return;
+                            if (ds.table.privilege.insert != true) return;
                             entry.copy();
                             if (!config.edit_mode) {
                                 ds.table.edit = true;
@@ -425,9 +425,9 @@ var toolbar = {
                 ]
                 : (config.button_view == 'text') ? m('input[type=button]', {
                     value: 'Kopier',
-                    disabled: ds.table.permission.add == false,
+                    disabled: ds.table.privilege.insert == false,
                     onclick: function() {
-                        if (ds.table.permission.add != true) return;
+                        if (ds.table.privilege.insert != true) return;
                         entry.copy();
                         if (!config.edit_mode) {
                             ds.table.edit = true;
@@ -442,7 +442,7 @@ var toolbar = {
                     m('i', {
                         class: [
                             'fa fa-edit ml2 mr1 pointer f6',
-                            ds.table.permission.edit == true ? 'dim pointer' : 'moon-gray'
+                            ds.table.privilege.update == true ? 'dim pointer' : 'moon-gray'
                         ].join(' '),
                         title: 'Rediger post',
                         onclick: function() {
@@ -451,7 +451,7 @@ var toolbar = {
                         }
                     }),
                     config.button_view == 'both' ? m('span', {
-                        class: ds.table.permission.edit == true ? 'dim pointer' : 'moon-gray',
+                        class: ds.table.privilege.update == true ? 'dim pointer' : 'moon-gray',
                         onclick: function() {
                             ds.table.edit = true;
                             config.edit_mode = true;
@@ -460,7 +460,7 @@ var toolbar = {
                 ]
                 : (config.button_view == 'text') ? m('input[type=button]', {
                     value: 'Rediger',
-                    disabled: ds.table.permission.edit == false,
+                    disabled: ds.table.privilege.update == false,
                     onclick: function() {
                         ds.table.edit = true;
                         config.edit_mode = true;
@@ -504,19 +504,19 @@ var toolbar = {
                     m('i', {
                         class: [
                             'fa fa-trash-o ml2 mr1',
-                            (ds.table.permission.delete == true && deletable) ? 'dim pointer' : 'moon-gray'
+                            (ds.table.privilege.delete == true && deletable) ? 'dim pointer' : 'moon-gray'
                         ].join(' '),
                         title: 'Slett post',
                         onclick: toolbar.delete_record
                     }),
                     config.button_view == 'both' ? m('span', {
-                        class: (ds.table.permission.delete == true && deletable) ? 'dim pointer' : 'moon-gray',
+                        class: (ds.table.privilege.delete == true && deletable) ? 'dim pointer' : 'moon-gray',
                         onclick: toolbar.delete_record
                     }, 'Slett') : ''
                 ]
                 : (config.button_view == 'text') ? m('input[type=button]', {
                     value: 'Slett',
-                    disabled: ds.table.permission.delete == false || !deletable,
+                    disabled: ds.table.privilege.delete == false || !deletable,
                     onclick: toolbar.delete_record
                 }) : ''
             ]),

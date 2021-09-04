@@ -712,7 +712,7 @@ var control = {
                             rec.inherited ? 'gray' : '',
                         ].join(' ')
                     }, [
-                        rec.table.permission.edit == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
+                        rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
                         !field.expandable || field.value === null || 
                         (rec.table.type === "xref" && config.edit_mode) ? '' : m('i', {
                             class: 'icon-crosshairs light-blue hover-blue pointer',

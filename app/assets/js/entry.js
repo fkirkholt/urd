@@ -149,7 +149,7 @@ var entry = {
                 }
             }
 
-            field.editable = field.editable === false ? field.editable : list.permission.edit;
+            field.editable = field.editable === false ? field.editable : list.privilege.update;
             rec.fields[name] = field;
 
             // if (field.value) entry.update_field(field.value, field.name, rec);
@@ -646,7 +646,7 @@ var entry = {
                                     ? rec.values[key]
                                     : null;
                                 field.text = rec.columns[key];
-                                field.editable = rel.permission.edit;
+                                field.editable = rel.privilege.update;
                             }
                         });
 
@@ -665,7 +665,7 @@ var entry = {
                         m('td'),
                         config.relation_view !== 'expansion' ? '' : m('td'),
                         m('td', [
-                            !rel.permission.add ? '' : m('a', {
+                            !rel.privilege.insert ? '' : m('a', {
                                 onclick: function(e) {
                                     e.stopPropagation();
                                     var rec = entry.create(rel, true);
@@ -805,7 +805,7 @@ var entry = {
                                 m('td', {class: 'bb b--light-gray'}, [
                                     !rec.open || record.readonly ? '' : m('i', {
                                         class: [
-                                            rel.permission.delete && config.edit_mode ? 'fa fa-trash-o pl1' : '',
+                                            rel.privilege.delete && config.edit_mode ? 'fa fa-trash-o pl1' : '',
                                             rec.deletable ? 'light-blue' : 'moon-gray',
                                             rec.deletable ? (config.relation_view === 'column' ? 'hover-white' : 'hover-blue') : '',
                                         ].join(' '),
@@ -836,7 +836,7 @@ var entry = {
                         m('td'),
                         config.relation_view !== 'expansion' ? '' : m('td'),
                         m('td', [
-                            !rel.permission.add ? '' : m('a', {
+                            !rel.privilege.insert ? '' : m('a', {
                                 onclick: function(e) {
                                     e.stopPropagation();
                                     var rec = entry.create(rel, true);
@@ -874,7 +874,7 @@ var entry = {
                         }
 
                         // determine if field should be displayd or edited
-                        var display = rec.table.permission.edit == 0 || rec.readonly || !config.edit_mode;
+                        var display = rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode;
 
                         return m('span', {class: display ? '' : 'mr2'}, display ? [separator, control.display_value(field)].join('') : control.edit_field(rec, fieldname, field.label));
                     case 'action':

@@ -131,9 +131,9 @@ class Table {
             $table = Table::get($ref_base, $fk->table);
             $view = $table->get_view();
 
-            // Check if user has permission to view table
-            $permission = $table->get_user_permission();
-            if ($permission->view == 0) {
+            // Check if user has privilege to select from table
+            $privilege = $table->get_user_privilege();
+            if ($privilege->select == 0) {
                 $field->expandable = false;
             }
 
@@ -182,7 +182,7 @@ class Table {
                 if (!isset($field->editable)) {
                     if ($field->extra || isset($field->source)) $field->editable = false;
                 } else {
-                    $field->editable = $permission->edit;
+                    $field->editable = $privilege->update;
                 }
             }
 
@@ -771,7 +771,7 @@ class Table {
     }
 
 
-    function get_user_permission($tbl_name = null)
+    function get_user_privilege($tbl_name = null)
     {
         $tbl_name = $tbl_name ? $tbl_name : $this->name;
 
@@ -792,9 +792,9 @@ class Table {
 
         if ($permission->view === null) {
             $permission = (object) [
-                'view' => $this->db->schema === 'urd' && $tbl_name === 'database_' ? 1 : 0,
-                'add' => 0,
-                'edit' => 0,
+                'select' => $this->db->schema === 'urd' && $tbl_name === 'database_' ? 1 : 0,
+                'insert' => 0,
+                'update' => 0,
                 'delete' => 0,
             ];
         }
@@ -812,16 +812,16 @@ class Table {
                 }
 
                 if (in_array($this->name, ['filter', 'format', 'role', 'role_permission', 'user_', 'user_role'])) {
-                    $permission->view = 1;
-                    $permission->add = 1;
-                    $permission->edit = 1;
+                    $permission->select = 1;
+                    $permission->insert = 1;
+                    $permission->update = 1;
                     $permission->delete = 1;
                 }
             }
         }
 
         if ($this->type === 'reference' && empty($permission->admin)) {
-            $permission->view = 0;
+            $permission->select = 0;
         }
 
         return $permission;
@@ -832,8 +832,8 @@ class Table {
         if (!isset($this->relations)) return [];
 
         return array_filter((array) $this->relations, function($relation) {
-            $permission = $this->get_user_permission($relation->table);
-            return $permission->view;
+            $privilege = $this->get_user_privilege($relation->table);
+            return $privilege->select;
         });
     }
 
@@ -871,9 +871,9 @@ class Table {
 
     function hent_tabell($prim_key = []) {
 
-        $permission = $this->get_user_permission($this->name);
+        $privilege = $this->get_user_privilege($this->name);
 
-        if ($permission->view == 0) {
+        if ($privilege->view == 0) {
             return false;
         }
 
@@ -1025,7 +1025,7 @@ class Table {
         $data['grid']['sort_columns'] = $this->grid->sort_columns;
         $data['form'] = array();
         $data['form']['items'] = isset($this->form->items) ? $this->form->items : null;
-        $data['permission'] = $permission;
+        $data['privilege'] = $privilege;
         // TODO: Is this needed anymore?
         $data['type'] = $this->type;
         $data['primary_key'] = $this->primary_key;
