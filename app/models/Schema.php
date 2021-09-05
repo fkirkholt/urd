@@ -547,7 +547,7 @@ class Schema {
                 $values = [];
                 do {
                     if ($count_rows < 2) break;
-                    if (!in_array($type, ['integer', 'float', 'boolean', 'string'])) break;
+                    if (!in_array($type, ['integer', 'decimal', 'float', 'boolean', 'string'])) break;
                     if ($type == 'string' && ($col->size > 12 && $count/$count_rows > $threshold)) break;
                     if (in_array($col_name, $report[$tbl_name]['empty_columns'])) break;
                     if (in_array($col_name, $pk_columns)) break;
@@ -1582,6 +1582,9 @@ class Schema {
 
             foreach ($table->fields as $field) {
                 $size = isset($field->size) ? $field->size : null;
+                if (isset($field->scale)) {
+                    $size = $size . ',' . $field->scale;
+                }
                 $notnull = $field->nullable ? '' : ' not null';
                 if (isset($field->extra) && $field->extra == 'auto_increment') $autoinc_column = $field;
                 $columns[$field->name] = $field->name . ' ' . $db->expr($field->datatype)->to_native_type($size) . $notnull;

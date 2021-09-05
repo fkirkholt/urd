@@ -3,7 +3,8 @@ var control = {
 
     align: function(list, colname) {
         var col = list.fields[colname];
-        if (((col.datatype == 'integer' || col.datatype == 'float') && !col.foreign_key) && col.element !== 'input[type=checkbox]') {
+        if (($.inArray(col.datatype, ['integer', 'float', 'decimal']) &&
+             !col.foreign_key) && col.element !== 'input[type=checkbox]') {
                 return 'right';
             } else {
                 return 'left';
@@ -278,7 +279,7 @@ var control = {
                 }
             });
         } else {
-            var size = field.datatype == 'float'
+            var size = field.datatype == 'float' || field.datatype == 'decimal'
                 ? field.size + 1
                 : field.size
             var width = Math.round(size * 0.6) + 'em';

@@ -89,7 +89,10 @@ var search = {
             if (!ds.table.filters[filtername]) {
                 ds.table.filters[filtername] = {
                     field: filtername,
-                    operator: field.element == 'textarea' || (field.element == 'input[type=text]' &&['integer', 'float'].indexOf(field.datatype) == -1) ? 'LIKE' : '='
+                    operator: field.element == 'textarea' || (
+                        field.element == 'input[type=text]' &&
+                            ['integer', 'decimal', 'float'].indexOf(field.datatype) == -1
+                    ) ? 'LIKE' : '='
                 }
             }
 

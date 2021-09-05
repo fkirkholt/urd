@@ -58,6 +58,8 @@ class Expression {
                 return ($size) ? "varchar($size)" : "longtext";
             case 'integer':
                 return "int($size)";
+            case 'decimal':
+                return "decimal($size)";
             case 'float':
                 return "float($size)";
             case 'date':
@@ -77,6 +79,8 @@ class Expression {
             case "integer":
             case "boolean":
                 return "integer";
+            case "decimal":
+                return "decimal";
             case "float":
                 return "real";
             case "binary":
@@ -95,6 +99,8 @@ class Expression {
                 return "string";
             } else if (preg_match("/int/", $nativetype)) {
                 return "integer";
+            } else if (preg_match("/double|decimal/", $nativetype)) {
+                return "decimal";
             } else if (preg_match("/float|double|decimal/", $nativetype)) {
                 return "float";
             } else if (preg_match("/date|time/", $nativetype)) {
@@ -126,6 +132,8 @@ class Expression {
             case 'int4':
                 return 'integer';
             case 'numeric':
+            case 'decimal':
+                return 'decimal';
             case 'float8':
                 return 'float';
             case 'blob':
