@@ -778,7 +778,7 @@ class Table {
         $roles = $this->db->get_user_roles();
 
         $permission = DB::get()->conn->query(
-            "SELECT max(rp.view_) as `view`, max(rp.add_) as `add`, max(rp.edit) as `edit`, max(rp.delete_) as `delete`, max(rp.admin) as admin
+            "SELECT max(rp.view_) as `select`, max(rp.add_) as `insert`, max(rp.edit) as `update`, max(rp.delete_) as `delete`, max(rp.admin) as admin
             FROM role_permission rp inner join
             (
                 select max(schema_) schema_, max(role) role, max(table_) table_
@@ -790,7 +790,7 @@ class Table {
             ) rp2 on rp.role = rp2.role and rp.schema_ = rp2.schema_ and rp.table_ = rp2.table_")
             ->fetch();
 
-        if ($permission->view === null) {
+        if ($permission->select === null) {
             $permission = (object) [
                 'select' => $this->db->schema === 'urd' && $tbl_name === 'database_' ? 1 : 0,
                 'insert' => 0,
@@ -873,7 +873,7 @@ class Table {
 
         $privilege = $this->get_user_privilege($this->name);
 
-        if ($privilege->view == 0) {
+        if ($privilege->select == 0) {
             return false;
         }
 
