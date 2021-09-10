@@ -188,15 +188,7 @@ var grid = {
             // Show first record
             entry.select(ds.table, ds.table.selection, true);
             $('#urdgrid tr.focus').focus();
-
-        }).catch(function(e) {
-            // xhr errors have name 'Error', js errors don't
-            if (e.name == 'Error') {
-                alert(e.message);
-            } else {
-                console.error(e);
-            }
-        });
+        })
     },
 
     /**
