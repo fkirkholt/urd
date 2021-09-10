@@ -211,11 +211,16 @@ class Record {
                 $ref_field = $this->tbl->fields[$ref_field_alias];
 
                 $value = reset($this->primary_key) ? $rec['fields'][$ref_field_alias]->value : null;
-                if ($tbl_rel->fields[$fk_field_alias]->nullable && $fk_field_alias != $rel->fk_columns[0]) {
-                    # $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
+                if ($tbl_rel->fields[$fk_field_alias]->nullable &&
+                    $fk_field_alias != $rel->fk_columns[0] &&
+                    $rel->ref_columns == array_keys($this->primary_key) &&
+                    $tbl_rel->primary_key[0] != array_keys($this->primary_key)[0]
+                ) {
+                    $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
                     $inherited_conds[] = "$rel->table.$fk_field_alias is null";
+                } else {
+                    $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
                 }
-                $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
 
                 $conds[$fk_field_alias] = $value;
                 $pk[$fk_field_alias] = $value;

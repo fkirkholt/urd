@@ -598,7 +598,7 @@ var control = {
                         colspan: 3
                     }, [
                         label,
-                        rel.count_records !== undefined ? m('span', {class: 'ml1 pr1 normal moon-gray f7'}, rel.count_records + rel.count_inherited) : '',
+                        rel.count_records !== undefined ? m('span', {class: 'ml1 pr1 normal moon-gray f7'}, rel.count_records) : '',
                         // show target icon for relations
                         !rel.name ? '' :
                         m('i', {

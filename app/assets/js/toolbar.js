@@ -127,7 +127,8 @@ var toolbar = {
         var rec = ds.table.records[idx]
         var deletable = true
         $.each(rec.relations, function(idx, rel) {
-            if (rel.count_records && rel.delete_rule != "cascade") {
+            var count_local = rel.count_records - rel.count_inherited
+            if (count_local && rel.delete_rule != "cascade") {
                 deletable = false
             }
         })
@@ -167,13 +168,16 @@ var toolbar = {
         }
         var idx = ds.table.selection
         var rec = ds.table.records[idx]
-        var deletable = rec.relations ? true : false
+        var deletable = rec && rec.relations ? true : false
 
-        $.each(rec.relations, function(idx, rel) {
-            if (rel.count_records && rel.delete_rule != "cascade") {
-                deletable = false
-            }
-        })
+        if (rec) {
+            $.each(rec.relations, function(idx, rel) {
+                var count_local = rel.count_records - rel.count_inherited
+                if (count_local && rel.delete_rule != "cascade") {
+                    deletable = false
+                }
+            })
+        }
 
         if (ds.table.edit) {
             return [
