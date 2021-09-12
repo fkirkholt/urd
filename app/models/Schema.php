@@ -1156,15 +1156,20 @@ class Schema {
                     $ref_tbl = $ref_schema->tables[$fk->table];
                 } else {
                     $ref_tbl = $this->tables[$fk->table];
-                } 
+                }
 
                 foreach ($ref_tbl->indexes as $index) {
                     if ($index->columns !== $ref_tbl->primary_key && $index->unique) {
                         $columns = array_map(function($col) use ($alias) {
                             return "$alias.$col";
-                        }, $index->columns);
+                        }, array_filter($index->columns, function($col) use ($ref_tbl) {
+                            $arr = array_slice($ref_tbl->primary_key, 0, -1);
+                            return !in_array($col, array_slice($ref_tbl->primary_key, 0, -1));
+                        }));
                         $field->view = implode(" || ', ' || ", $columns);
-                        break;
+                        if (substr($index->name, -strlen("_sort_idx")) == "_sort_idx") {
+                            break;
+                        }
                     } 
                 }
             }
