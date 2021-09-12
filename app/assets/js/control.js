@@ -371,7 +371,7 @@ var control = {
         var rec = list.records[rowidx];
         var field = list.fields[col];
         if (field.hidden) return;
-        var value = rec.columns[col] != null ? rec.columns[col] : '';
+        var value = rec.columns[col] != null ? (options.compressed ? rec.values[col] : rec.columns[col]) : '';
         value = control.display_value(field, value);
         var expansion = col === list.expansion_column && options.grid;
         var is_checkbox = field.element == 'input[type=checkbox]';
