@@ -944,6 +944,10 @@ class Schema {
 
             // Add relations to form
             if (isset($table->relations)) {
+                $rel_tbl_names = [];
+                foreach ($table->relations as $rel) {
+                    $rel_tbl_names[] = $rel['table'];
+                }
                 foreach ($table->relations as $alias => $relation) {
                     $relation = (object) $relation;
                     $relation->order = 10;
@@ -1025,6 +1029,11 @@ class Schema {
                 array_multisort($rels, $table->relations);
 
                 foreach ($table->relations as $alias => $relation) {
+                    $name_parts = explode("_", $relation->table);
+
+                    if (count($name_parts) > 1 && in_array($name_parts[0], $rel_tbl_names)) {
+                        continue;
+                    }
                     $table->form['items'][$relation->label] = 'relations.'.$alias;
                 }
             }
@@ -1191,6 +1200,8 @@ class Schema {
         $tbl_groups = [];
         $sub_tables = [];
         foreach ($this->tables as $tbl_alias => $table) {
+            $name_parts = explode("_", $tbl_alias);
+            $prefix = $name_parts[0];
             // Add table to table group
             {
                 if ($config->urd_structure) {
@@ -1205,6 +1216,13 @@ class Schema {
                         if (isset($table->foreign_keys[$colname])) {
                             $subordinate = true;
                             $key = $table->foreign_keys[$colname];
+
+                            if (
+                                count($name_parts) > 1 && isset($this->tables[$prefix]) &&
+                                $prefix != $key->table
+                            ) {
+                                continue;
+                            }
                             
                             if ($table->type == 'xref') break;
 
