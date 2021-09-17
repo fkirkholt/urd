@@ -750,7 +750,8 @@ var entry = {
                         rec.deletable = rec.relations ? true : false
 
                         $.each(rec.relations, function(idx, rel) {
-                            if (rel.count_records && rel.delete_rule != "cascade") {
+                            var count_local = rel.count_records - rel.count_inherited
+                            if (count_local && rel.delete_rule != "cascade") {
                                 rec.deletable = false
                             }
                         })
