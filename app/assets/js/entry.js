@@ -116,6 +116,8 @@ var entry = {
         var rec = {
             base_name: ds.base.name,
             table_name: list.name,
+            table: list,
+            columns: list.records[idx].columns,
             fields: $.extend(true, {}, list.fields),
             primary_key: {},
             groups: [] // TODO: This should be removed
@@ -154,16 +156,14 @@ var entry = {
             field.editable = field.editable === false ? field.editable : list.privilege.update;
             rec.fields[name] = field;
 
-            // if (field.value) entry.update_field(field.value, field.name, rec);
+            if (field.value) entry.update_field(field.value, field.name, rec);
         });
 
         rec.new = true;
         rec.dirty = true;
         rec.loaded = true;
 
-        rec.columns = list.records[idx].columns;
         rec = $.extend(list.records[idx], rec);
-        rec.table = list;
 
         if (!relation) {
             rec.root = true;
