@@ -92,10 +92,12 @@ var entry = {
 
         relation = relation ? relation : null;
 
-        // all columns defaults to null
-        var columns = {};
+        // all columns and values defaults to null
+        var columns = {}
+        var values = {}
         $.each(list.grid.columns, function(i, col) {
-            columns[col] = null;
+            columns[col] = null
+            values[col] = null
         });
 
         // Adds record to end of table
@@ -106,6 +108,7 @@ var entry = {
         list.records.splice(idx, 0, {
             primary_key: {},
             columns: columns,
+            values: values,
             new: true
         })
 
@@ -118,6 +121,7 @@ var entry = {
             table_name: list.name,
             table: list,
             columns: list.records[idx].columns,
+            values: list.records[idx].values,
             fields: $.extend(true, {}, list.fields),
             primary_key: {},
             groups: [] // TODO: This should be removed
@@ -529,6 +533,7 @@ var entry = {
                 field.coltext ? field.coltext :
                 field.text    ? field.text    :
                 typeof value == "string" ? value.substring(0, 256) : value;
+            rec.values[field.name] = value
         }
 
         rec.fields[field.name].value = value;
