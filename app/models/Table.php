@@ -425,8 +425,16 @@ class Table {
             return false;
         };
 
+        if (!isset($field->view)) {
+            $label = $value_field;
+            $coltext = $value_field;
+        } else {
+            $label = $field->view;
+            $coltext = $field->column_view;
+        }
 
-        $sql_kombo = "SELECT $value_field as value, ($field->view) as label, ($field->column_view) as coltext
+
+        $sql_kombo = "SELECT $value_field as value, $label as label, $coltext as coltext
                       FROM   $view $field->alias
                       $betingelse
                       $order_kombo";
@@ -901,7 +909,7 @@ class Table {
                 $field->column_view = $field->view;
             }
 
-            if (!empty($this->foreign_keys[$field_alias]) && !empty($field->view)) {
+            if (!empty($this->foreign_keys[$field_alias])) {
                 $field->options = $this->get_options($field);
             }
 
@@ -1120,6 +1128,7 @@ class Table {
 
                         // Primary keys of relation may be updated by
                         // cascade if primary keys of record is updated
+                        // TODO Behøves dette
                         if (isset($rel_rec->prim_key->{$col})) {
                             $rel_rec->prim_key->{$col} = $record_vals[$fcol];
                         }
