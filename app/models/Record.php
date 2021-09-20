@@ -204,7 +204,8 @@ class Record {
 
             // Add condition to fetch only rows that link to record
             $conds = [];
-            $inherited_conds = [];
+            $inherited_nulls = [];
+            $inherited_values = [];
             foreach ($rel->fk_columns as $i => $fk_field_alias) {
                 $fk_field = $tbl_rel->fields[$fk_field_alias];
                 $ref_field_alias = $rel->ref_columns[$i];
@@ -217,9 +218,10 @@ class Record {
                     $tbl_rel->primary_key[0] != array_keys($this->primary_key)[0]
                 ) {
                     $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
-                    $inherited_conds[] = "$rel->table.$fk_field_alias is null";
+                    $inherited_nulls[] = "$rel->table.$fk_field_alias is null";
                 } else {
                     $tbl_rel->add_condition("$rel->table.$fk_field_alias = '$value'");
+                    $inherited_values[] = "$rel->table.$fk_field_alias = '$value'";
                 }
 
                 $conds[$fk_field_alias] = $value;
@@ -244,9 +246,10 @@ class Record {
 
                 $conditions = $tbl_rel->get_conditions();
                 $condition = count($conditions) ? 'WHERE '.implode(' AND ', $conditions) : '';
-                $inherited_cond = count($inherited_conds) ? 'WHERE ' . implode(' AND ', $inherited_conds) : '';
+                $inherited_conds = array_merge($inherited_nulls, $inherited_values);
+                $inherited_cond = count($inherited_nulls) ? 'WHERE ' . implode(' AND ', $inherited_conds) : '';
                 $count_records = $tbl_rel->get_record_count($condition);
-                $count_inherited = count($inherited_conds) ? $tbl_rel->get_record_count($inherited_cond) : 0;
+                $count_inherited = count($inherited_nulls) ? $tbl_rel->get_record_count($inherited_cond) : 0;
                 $end = microtime(true);
                 $relation = [
                     'count_records' => $count_records,
@@ -254,6 +257,7 @@ class Record {
                     'time' => $end - $start,
                     'name' => $rel->table,
                     'conditions' => $conditions,
+                    'inherited_conds' => $inherited_conds,
                     'conds' => $conds,
                     'base_name' => $rel->db_name,
                     'relationship' => $rel->type,
