@@ -1166,11 +1166,15 @@ class Schema {
                             $arr = array_slice($ref_tbl->primary_key, 0, -1);
                             return !in_array($col, array_slice($ref_tbl->primary_key, 0, -1));
                         }));
-                        $field->view = implode(" || ', ' || ", $columns);
+                        $field->view = implode(" || ' - ' || ", $columns);
                         if (substr($index->name, -strlen("_sort_idx")) == "_sort_idx") {
                             break;
                         }
                     } 
+                }
+
+                if (!isset($field->view)) {
+                    $field->view = $alias . "." . end($fk->primary);
                 }
             }
 
