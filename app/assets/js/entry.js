@@ -160,7 +160,9 @@ var entry = {
             field.editable = field.editable === false ? field.editable : list.privilege.update;
             rec.fields[name] = field;
 
-            if (field.value) entry.update_field(field.value, field.name, rec);
+            if (field.value) {
+                entry.update_field(field.value, field.name, rec);
+            }
         });
 
         rec.new = true;
@@ -542,6 +544,7 @@ var entry = {
         // value to empty and load new options
         $.each(rec.table.fields, function(name, other_field) {
             if (name == field.name || !other_field.foreign_key) return;
+            if (other_field.defines_relation) return;
 
             if (other_field.element == 'select' && other_field.foreign_key.foreign.length > 1) {
                 // If the field is part of the dropdowns foreign keys
