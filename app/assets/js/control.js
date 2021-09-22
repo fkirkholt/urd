@@ -65,6 +65,10 @@ var control = {
             key = rec.table.foreign_keys[label];
 
             if (key.foreign.indexOf(field.name) > 0) {
+                last_fk_col = key.foreign.slice(-1)
+                if (last_fk_col != field.name && rec.fields[last_fk_col].nullable == true) {
+                    return
+                }
                 key.foreign_idx = $.inArray(field.name, key.foreign);
                 keys.push(key);
             }
