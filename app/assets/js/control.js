@@ -92,11 +92,17 @@ var control = {
             if (key.foreign && key.foreign.length > 1) {
                 $.each(key.foreign, function(i, column) {
                     if (column === field.name) return;
+                    var condition
                     if (rec.fields[column].value != null && column in rec.fields) {
                         var col = field.foreign_key.primary.slice(-1)[0];
-                        var condition = col + ' in (select ' + key.primary[key.foreign_idx];
-                        condition += ' from ' + key.table + ' where ' + key.foreign[i];
-                        condition += " = '" + rec.fields[column].value + "')";
+
+                        if (key.table == field.foreign_key.table) {
+                            condition = column + " = '" + rec.fields[column].value + "'"
+                        } else {
+                            condition = col + ' in (select ' + key.primary[key.foreign_idx];
+                            condition += ' from ' + key.table + ' where ' + key.foreign[i];
+                            condition += " = '" + rec.fields[column].value + "')";
+                        }
                         kandidatbetingelser.push(condition);
                     }
                 });
