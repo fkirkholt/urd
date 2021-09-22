@@ -675,7 +675,7 @@ class Table {
         if (!empty($this->grid->summation_columns)) {
             $sql_sumfelter = array();
             foreach ($this->grid->summation_columns as $col) {
-                $sql_sumfelter[] = "SUM($col) AS $col";
+                $sql_sumfelter[] = "SUM($this->name.$col) AS $col";
             }
             $sql_sumfelter_string = implode(', ', $sql_sumfelter);
 
