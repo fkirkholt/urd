@@ -202,6 +202,16 @@ class Record {
 
             $pk = [];
 
+            // Find index used
+            foreach ($tbl_rel->indexes as $index) {
+                if (array_slice($index->columns, 0, count($rel->fk_columns)) === $rel->fk_columns) {
+                    $rel->index = $index;
+                    if ($index->unique) {
+                        break;
+                    }
+                }
+            }
+
             // Add condition to fetch only rows that link to record
             $conds = [];
             $inherited_nulls = [];
@@ -215,7 +225,7 @@ class Record {
                 if ($tbl_rel->fields[$fk_field_alias]->nullable &&
                     $fk_field_alias != $rel->fk_columns[0] &&
                     $rel->ref_columns == array_keys($this->primary_key) &&
-                    $tbl_rel->primary_key[0] != array_keys($this->primary_key)[0]
+                    $index->uniqe
                 ) {
                     $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
                     $inherited_nulls[] = "$rel->table.$fk_field_alias is null";
