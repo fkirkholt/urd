@@ -11,7 +11,7 @@ var home = {
         m.request({
             method: 'get',
             url: 'table',
-            data: {
+            params: {
                 base: ds.urd_base,
                 table: 'database_'
             }

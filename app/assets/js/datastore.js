@@ -15,7 +15,7 @@ var store = {
         return m.request({
             method: "GET",
             url: "database",
-            data: {base: base_name}
+            params: {base: base_name}
         }).then(function(result) {
             var data = result.data;
             store.base = data.base;
@@ -30,7 +30,7 @@ var store = {
                 callback(data);
             }
         }).catch(function(e) {
-            if (e.message === 'login') {
+            if (e.code === 401) {
                 $('div.curtain').show();
                 $('#login').show();
                 $('#brukernavn').focus();

@@ -53,8 +53,7 @@ module.exports = {
                 return [
                     m('a', {
                         href: "#/" + item.addr,
-                        class: 'fw3 white no-underline underline-hover f4',
-                        key: idx
+                        class: 'fw3 white no-underline underline-hover f4'
                     }, [m('i', {
                         class: [
                             'relative fa ' + item.icon,

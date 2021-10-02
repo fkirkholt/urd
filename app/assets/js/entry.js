@@ -19,7 +19,7 @@ var entry = {
         m.request({
             method: "GET",
             url: 'record',
-            data: {
+            params: {
                 base: m.route.param('base'),
                 table: table.name,
                 primary_key: pk
@@ -48,7 +48,7 @@ var entry = {
         m.request({
             method: "get",
             url: "relations",
-            data: {
+            params: {
                 base: rec.base_name,
                 table: rec.table_name || rec.table.name,
                 primary_key: JSON.stringify(rec.primary_key),
@@ -65,7 +65,7 @@ var entry = {
         m.request({
             method: "GET",
             url: "relations",
-            data: {
+            params: {
                 base: rec.base_name,
                 table: rec.table.name,
                 primary_key: JSON.stringify(rec.primary_key),
@@ -267,7 +267,7 @@ var entry = {
         m.request({
             method: "GET",
             url: "table",
-            data: {
+            params: {
                 base: field.foreign_key.base,
                 schema: field.foreign_key.schema,
                 table: field.foreign_key.table,
@@ -282,7 +282,7 @@ var entry = {
             m.request({
                 method: "GET",
                 url: "record",
-                data: {
+                params: {
                     base: field.foreign_key.base,
                     schema: field.foreign_key.schema,
                     table: field.foreign_key.table,
@@ -322,7 +322,7 @@ var entry = {
         m.request({
             method: "GET",
             url: "record",
-            data: {
+            params: {
                 base: rec.base_name ? rec.base_name : ds.base.name,
                 table: tbl.name,
                 primary_key: JSON.stringify(rec.primary_key)
@@ -351,7 +351,7 @@ var entry = {
 
         m.request({
             method: changes.method,
-            data: data,
+            params: data,
             url: 'record'
         }).then(function(data) {
             $.each(changes.values, function(fieldname, value) {
@@ -558,7 +558,7 @@ var entry = {
                     m.request({
                         method: 'GET',
                         url: 'select',
-                        data: {
+                        params: {
                             q: '',
                             limit: 1000,
                             schema: other_field.foreign_key.schema,

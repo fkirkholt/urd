@@ -13,7 +13,7 @@ var search = {
         m.request({
             method: "GET",
             url: "table",
-            data: {
+            params: {
                 base: field.foreign_key.base,
                 table: field.foreign_key.table,
                 limit: 0

@@ -42,7 +42,7 @@ var filterpanel = {
         m.request({
             method: "get",
             url: "table",
-            data: data
+            params: data
         }).then(function(result) {
             ds.table.records = result.data.records
             ds.table.count_records = result.data.count_records;
@@ -149,7 +149,7 @@ var filterpanel = {
 
         m.request({
             method: 'DELETE',
-            data: {id: id},
+            params: {id: id},
             url: 'filter',
         }).then(function() {
             ds.table.saved_filters = ds.table.saved_filters.filter(function(search) {
@@ -330,7 +330,7 @@ var filterpanel = {
                         m.request({
                             method: 'get',
                             url: 'table',
-                            data: {
+                            params: {
                                 base: ref_field.foreign_key.base,
                                 table: ref_field.foreign_key.table,
                                 limit: 0
@@ -376,7 +376,7 @@ var filterpanel = {
                                         m.request({
                                             method: 'get',
                                             url: 'table',
-                                            data: {
+                                            params: {
                                                 base: field.foreign_key.base,
                                                 table: field.foreign_key.table,
                                                 limit: 0

@@ -34,7 +34,7 @@ var pagination = {
         m.request({
             method: "get",
             url: "table",
-            data: data
+            params: data
         }).then(function(result) {
             ds.table.records = result.data.records;
             ds.table.offset = result.data.offset;

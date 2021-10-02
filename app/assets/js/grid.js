@@ -145,7 +145,7 @@ var grid = {
         m.request({
             method: "get",
             url: "table",
-            data: data
+            params: data
         }).then(function(result) {
             ds.table = result.data;
             ds.table.dirty = false;
@@ -254,7 +254,7 @@ var grid = {
         m.request({
             method: 'put',
             url: 'table',
-            data: data
+            params: data
         }).then(function(result) {
             $('#message').show().html('Lagring vellykket').delay(2000).fadeOut('slow');
 

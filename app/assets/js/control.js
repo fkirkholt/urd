@@ -401,7 +401,7 @@ var control = {
                         m.request({
                             method: 'get',
                             url: 'children',
-                            data: {
+                            params: {
                                 base: ds.base.name,
                                 table: ds.table.name,
                                 primary_key: JSON.stringify(rec.primary_key)

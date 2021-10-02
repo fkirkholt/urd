@@ -17,8 +17,7 @@ var grid = require('./grid.js');
 
 var adresse_tilbakestilling = false;
 
-
-m.route.prefix("#");
+m.route.prefix = "#";
 m.route($('#main')[0], '/', {
     "/": home,
     "/:base": {

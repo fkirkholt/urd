@@ -110,7 +110,9 @@ var header = {
                     type: "checkbox",
                     value: 1,
                     checked: config.admin,
-                    onclick: m.withAttr("checked", this.set_admin)
+                    onclick: function(ev) {
+                        header.set_admin(ev.target.checked)
+                    }
                 }),
                 m('label', 'Admingrensesnitt')
             ]),
@@ -122,7 +124,9 @@ var header = {
                     type: 'checkbox',
                     value: 1,
                     checked: config.edit_mode,
-                    onclick: m.withAttr('checked', this.set_view)
+                    onclick: function(ev) {
+                        header.set_view(ev.target.checked)
+                    }
                 })
             ], 'Redigeringsmodus'),
             m('label', {
@@ -133,7 +137,9 @@ var header = {
                     type: 'checkbox',
                     value: 1,
                     checked: config.hide_empty,
-                    onclick: m.withAttr('checked', this.set_hidden)
+                    onclick: function(ev) {
+                        header.set_hidden(ev.target.checked)
+                    }
                 })
             ], 'Skjul tomme felt')
         ]
