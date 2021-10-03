@@ -34,13 +34,27 @@ contents = {
         }
     },
 
+    display_header: function(node, display) {
+        display = display || 'none'
+        Object.keys(node.subitems).map(function(label) {
+            var subitem = node.subitems[label]
+            var object = _get(ds.base, subitem, ds.base.tables[subitem])
+            if (object.type == 'data' || config.admin) {
+                display = 'block'
+            }
+        })
+
+        return display
+    },
+
 
     draw_node: function(label, node, level) {
         if (typeof node == 'object' && !node.item) {
             var display = node.expanded ? 'block' : 'none';
+            var display_header = contents.display_header(node)
             return m('.module', {
                 class: node.class_module,
-                style: 'display:' + node.display
+                style: 'display:' + display_header
             }, [
                 m('i', {
                     class: [
