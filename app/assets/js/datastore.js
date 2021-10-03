@@ -34,8 +34,6 @@ var store = {
                 $('div.curtain').show();
                 $('#login').show();
                 $('#brukernavn').focus();
-            } else {
-                alert(e.message);
             }
         });
     }

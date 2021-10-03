@@ -31,6 +31,12 @@ var entry = {
 
             rec.columns = table.records[idx].columns;
             entry.get_relations_count(rec);
+        }).catch(function(e) {
+            if (e.code === 401) {
+                $('div.curtain').show();
+                $('#login').show();
+                $('#brukernavn').focus();
+            }
         });
     },
 

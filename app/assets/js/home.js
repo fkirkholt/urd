@@ -22,7 +22,7 @@ var home = {
             // TODO Burde være unødvendig
             ds.table.sort_fields = {};
         }).catch(function(e) {
-            if (e.message !== 'login') {
+            if (e.code !== 401) {
                 alert(e.message);
             }
         });
