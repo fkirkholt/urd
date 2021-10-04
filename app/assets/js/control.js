@@ -378,6 +378,12 @@ var control = {
     },
 
     draw_cell: function(list, rowidx, col, options) {
+        var max_len = 0
+        $.each(list.grid.columns, function(idx, colname) {
+            if (list.fields[colname].size > max_len) {
+                max_len = list.fields[colname].size
+            }
+        })
         var rec = list.records[rowidx];
         var field = list.fields[col];
         if (field.hidden) return;
@@ -443,7 +449,7 @@ var control = {
 
         return m('td', {
             class: [
-                field.datatype == 'string' && field.size > 20 ? 'w-100' : '',
+                field.datatype == 'string' && field.size == max_len ? 'w-100' : '',
                 control.align(list, col) === 'right' ? 'tr' : 'tl',
                 options.compressed || (field.datatype !== 'string' && field.datatype !== 'binary' && field.element != 'select') || (value.length < 30) ? 'nowrap' : '',
                 options.compressed && value.length > 30 ? 'pt0 pb0' : '',
