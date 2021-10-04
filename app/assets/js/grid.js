@@ -254,7 +254,7 @@ var grid = {
         m.request({
             method: 'put',
             url: 'table',
-            params: data
+            body: data
         }).then(function(result) {
             $('#message').show().html('Lagring vellykket').delay(2000).fadeOut('slow');
 
