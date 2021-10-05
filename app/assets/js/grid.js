@@ -188,6 +188,12 @@ var grid = {
             // Show first record
             entry.select(ds.table, ds.table.selection, true);
             $('#urdgrid tr.focus').focus();
+        }).catch(function(e) {
+            if (e.code === 401) {
+                $('div.curtain').show();
+                $('#login').show();
+                $('#brukernavn').focus();
+            }
         })
     },
 
