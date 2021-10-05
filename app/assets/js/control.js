@@ -674,7 +674,8 @@ var control = {
         } else {
             var field = rec.fields[colname];
 
-            if (field.hidden) return;
+            // Show hidden fields only in edit mode
+            if (rec.table.fields[colname].hidden && !config.edit_mode) return
 
             // TODO: Hva gjør jeg med rights her?
             var mandatory = !field.nullable && !field.extra && field.editable && !field.source == true;

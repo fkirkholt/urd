@@ -856,7 +856,7 @@ class Schema {
                             (isset($table->grid) && !in_array($field->name, $table->grid->columns))
                             || !isset($table->grid)
                         )
-                    ) continue;
+                    ) $field->hidden = true;
 
                     // Group by prefix
                     $parts = explode('_', $field->name);
@@ -865,7 +865,6 @@ class Schema {
                     // Don't add fields that start with _
                     // They are treated as hidden fields
                     if ($group == '') $field->hidden = true;
-                    if (!empty($field->hidden)) continue;
 
                     if (!isset($col_groups[$group])) $col_groups[$group] = [];
                     $col_groups[$group][] = $field->name;
