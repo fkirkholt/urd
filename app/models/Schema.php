@@ -135,11 +135,11 @@ class Schema {
             $this->init_fkeys($db);
         }
 
-        return $this->fkeys[$table_name];
+        return isset($this->fkeys[$table_name]) ? $this->fkeys[$table_name] : [];
     }
 
     private function init_fkeys($db) {
-        $db_tables = $this->get_tables($db);
+        $db_tables = $db->conn->getDatabaseInfo()->getTables();
         if ($db->platform == 'oracle') {
             $reflector = new \URD\lib\OracleReflector($db->conn->getDriver());
         } else {
@@ -147,8 +147,10 @@ class Schema {
         }
         $fkeys = [];
 
-        foreach ($db_tables as $tbl_name) {
-            $foreign_keys = $reflector->getForeignKeys($tbl_name);
+        foreach ($db_tables as $tbl) {
+            if ($tbl->view) continue;
+
+            $foreign_keys = $reflector->getForeignKeys($tbl->name);
 
             $tbl_fkeys = [];
 
@@ -163,7 +165,7 @@ class Schema {
                 if (isset($tbl_fkeys[$key_alias])) {
                     $key_alias = $key_alias . '_2';
                 }
-                $key->name = "{$tbl_name}_{$key_alias}_fkey";
+                $key->name = "{$tbl->name}_{$key_alias}_fkey";
                 $key->delete_rule = strtolower($key->onDelete);
                 $key->update_rule = strtolower($key->onUpdate);
 
@@ -180,7 +182,7 @@ class Schema {
 
             }
 
-            $fkeys[$tbl_name] = $tbl_fkeys;
+            $fkeys[$tbl->name] = $tbl_fkeys;
         }
 
         $this->fkeys = $fkeys;
