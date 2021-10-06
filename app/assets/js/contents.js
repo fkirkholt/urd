@@ -109,6 +109,11 @@ contents = {
                 item = node;
             }
             var object = _get(ds.base, item, ds.base.tables[item]);
+            var grid_idx_name = object.name + '_grid_idx'
+            var grid_defined = false
+            if (object.indexes && object.indexes[grid_idx_name]) {
+                grid_defined = true
+            }
             if (item.indexOf('.') == -1) item = 'tables.' + item;
             if (object.hidden && !config.admin) return;
             var icon = object.type && (object.type.indexOf('reference') !== -1)
@@ -118,7 +123,8 @@ contents = {
             var title = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'Referansetabell'
                 : 'Datatabell'
-            var display = object.type && (object.type.indexOf('reference') !== -1) && !config.admin
+            var display = object.type && (object.type.indexOf('reference') !== -1) &&
+                !config.admin && !grid_defined
                 ? 'none'
                 : 'inline';
             var schema = ds.base.system == 'postgres' && ds.base.schema !== 'public'
