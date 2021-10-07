@@ -1429,6 +1429,8 @@ class Schema {
         $drop_file   = __DIR__ . '/../../schemas/' . $db->schema . '/drop.sql';
 
         try {
+            touch($schema_file);
+            chmod($schema_file, 0766);
             $fh_schema = fopen($schema_file, 'w');
             $fh_drop   = fopen($drop_file, 'w');
         } catch (\Exception $e) {
