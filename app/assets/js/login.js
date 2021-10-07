@@ -6,6 +6,7 @@ var login = {
     view: function() {
         return m('div', [
             m('div', {class: 'f4 mb2'}, 'Logg inn'),
+            !login.error ? '' : m('div', {class: 'red'}, 'Feil brukernavn/passord'),
             m('input[type=text]', {
                 id: 'brukernavn',
                 name: 'brukernavn',
@@ -31,13 +32,19 @@ var login = {
                     var param = {};
                     param.brukernavn = $('#brukernavn').val();
                     param.passord = $('#passord').val();
-                    $.post('login', param, function(data) {
-                        if (data.success) {
-                            window.location.reload();
-                        } else {
-                            alert('Feil brukernavn/passord. Forsøk igjen');
+
+                    m.request({
+                        method: 'post',
+                        url: 'login',
+                        params: param
+                    }).then(function(result) {
+                        window.location.reload()
+                    }).catch(function(e) {
+                        if (e.code == 401) {
+                            login.error = true
+                            $('#brukernavn').focus().select()
                         }
-                    },'json');
+                    })
                 }
             })
         ])

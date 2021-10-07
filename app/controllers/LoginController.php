@@ -62,6 +62,10 @@ class LoginController extends BaseController {
             $success = true;
         }
 
+        if (!$success) {
+            $this->response->status(401);
+        }
+
         return $this->response->body(json_encode(['success' => $success]));
     }
 
