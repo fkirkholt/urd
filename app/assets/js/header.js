@@ -104,7 +104,7 @@ var header = {
                 ])
             ]),
             m('div#user', {class: 'fr mr1 mt2'}, ds.user.name),
-            (!ds.user.admin) ? null : m('div#admin', {class: 'fr mr3 mt2'}, [
+            (!ds.user.admin) ? null : m('label', {class: 'fr mr3 mt2'}, [
                 m('input#admin_checkbox', {
                     class: 'mr1',
                     type: "checkbox",
@@ -114,8 +114,7 @@ var header = {
                         header.set_admin(ev.target.checked)
                     }
                 }),
-                m('label', 'Admingrensesnitt')
-            ]),
+            ], 'Adminmodus'),
             m('label', {
                 class: 'fr mr3 mt2'
             }, [
