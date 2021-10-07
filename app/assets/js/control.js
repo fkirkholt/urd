@@ -596,6 +596,26 @@ var control = {
                 if(hidden) return ''
             }
 
+            var base_path
+            if (ds.base.system == 'postgres' &&
+                rel.schema_name &&
+                rel.schema_name != rel.base_name && rel.schema_name != 'public')
+            {
+                base_path = rel.base_name + '.' + rel.schema_name
+            } else {
+                base_path = rel.base_name || rel.schema_name
+            }
+            var url = '#/' + base_path + '/' + rel.name + '?';
+
+            conditions = []
+            $.each(rel.conds, function(col, val) {
+                conditions.push(col + "=" + val)
+            })
+
+            if (conditions.length == 0) conditions = rel.conditions
+
+            url += conditions.join('&')
+
             return [
                 m('tr.heading', {
                     onclick: function() {
@@ -619,33 +639,11 @@ var control = {
                         rel.count_records !== undefined ? m('span', {class: 'ml1 pr1 normal moon-gray f7'}, rel.count_records) : '',
                         // show target icon for relations
                         !rel.name ? '' :
-                        m('i', {
+                        m('a', {
                             class: [
-                                'icon-crosshairs light-blue hover-blue pointer mr1',
+                                'icon-crosshairs light-blue hover-blue pointer mr1 link',
                             ].join(' '),
-                            onclick: function(event) {
-                                var base_path
-                                if (ds.base.system == 'postgres' &&
-                                    rel.schema_name &&
-                                    rel.schema_name != rel.base_name && rel.schema_name != 'public')
-                                {
-                                    base_path = rel.base_name + '.' + rel.schema_name
-                                } else {
-                                    base_path = rel.base_name || rel.schema_name
-                                }
-                                var url = '/' + base_path + '/' + rel.name + '?';
-
-                                conditions = []
-                                $.each(rel.conds, function(col, val) {
-                                    conditions.push(col + "=" + val)
-                                })
-
-                                if (conditions.length == 0) conditions = rel.conditions
-
-                                url += conditions.join('&')
-                                m.route.set(url);
-                                event.stopPropagation();
-                            }
+                            href: url
                         }),
                         rel.dirty ? m('i', {class: 'fa fa-pencil ml1 light-gray'}) : '',
                     ]),
@@ -680,6 +678,25 @@ var control = {
             // TODO: Hva gjør jeg med rights her?
             var mandatory = !field.nullable && !field.extra && field.editable && !field.source == true;
             label = isNaN(parseInt(label)) ? label: field.label;
+
+            if (field.foreign_key) {
+                if (
+                    ds.base.system == 'postgres' &&
+                    field.foreign_key.schema &&
+                    field.foreign_key.schema != field.foreign_key.base &&
+                    field.foreign_key.schema != 'public'
+                ) {
+                    base = field.foreign_key.base + '.' + field.foreign_key.schema
+                } else {
+                    base = field.foreign_key.base || field.foreign_key.schema
+                }
+                var url = '#/' + base + '/' + field.foreign_key.table + '?'
+                $.each(field.foreign_key.primary, function(i, colname) {
+                    var fk_field = field.foreign_key.foreign[i];
+                    url += colname + '=' + rec.fields[fk_field].value;
+                    if (i !== field.foreign_key.primary.length - 1 ) url += '&'
+                })
+            }
 
             return [
                 // TODO: sto i utgangspunktet list.betingelse. Finn ut hva jeg skal erstatte med.
@@ -734,27 +751,9 @@ var control = {
                     }, [
                         rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
                         !field.expandable || field.value === null || 
-                        (rec.table.type === "xref" && config.edit_mode) ? '' : m('i', {
-                            class: 'icon-crosshairs light-blue hover-blue pointer',
-                            onclick: function() {
-                                if (
-                                    ds.base.system == 'postgres' &&
-                                    field.foreign_key.schema &&
-                                    field.foreign_key.schema != field.foreign_key.base &&
-                                    field.foreign_key.schema != 'public'
-                                ) {
-                                    base = field.foreign_key.base + '.' + field.foreign_key.schema
-                                } else {
-                                    base = field.foreign_key.base || field.foreign_key.schema
-                                }
-                                var url = '/' + base + '/' + field.foreign_key.table + '?'
-                                $.each(field.foreign_key.primary, function(i, colname) {
-                                    var fk_field = field.foreign_key.foreign[i];
-                                    url += colname + '=' + rec.fields[fk_field].value;
-                                    if (i !== field.foreign_key.primary.length - 1 ) url += '&'
-                                })
-                                m.route.set(url);
-                            }
+                        (rec.table.type === "xref" && config.edit_mode) ? '' : m('a', {
+                            class: 'icon-crosshairs light-blue hover-blue pointer link',
+                            href: url
                         }),
 
                         // Show trash bin for field from cross reference table
