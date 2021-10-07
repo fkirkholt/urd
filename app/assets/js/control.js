@@ -633,16 +633,16 @@ var control = {
                                 } else {
                                     base_path = rel.base_name || rel.schema_name
                                 }
-                                var url = '/' + base_path + '/' + rel.name;
+                                var url = '/' + base_path + '/' + rel.name + '?';
 
                                 conditions = []
                                 $.each(rel.conds, function(col, val) {
-                                    conditions.push(col + " = " + val)
+                                    conditions.push(col + "=" + val)
                                 })
 
                                 if (conditions.length == 0) conditions = rel.conditions
 
-                                url += '?query=' + conditions.join(' AND ').replace(/=/g, '%3D');
+                                url += conditions.join('&')
                                 m.route.set(url);
                                 event.stopPropagation();
                             }
