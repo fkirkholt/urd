@@ -225,7 +225,7 @@ class Record {
                 if ($tbl_rel->fields[$fk_field_alias]->nullable &&
                     $fk_field_alias != $rel->fk_columns[0] &&
                     $rel->ref_columns == array_keys($this->primary_key) &&
-                    $index->uniqe
+                    $rel->index->unique
                 ) {
                     $tbl_rel->add_condition("($rel->table.$fk_field_alias = '$value' or $rel->table.$fk_field_alias is null)");
                     $inherited_nulls[] = "$rel->table.$fk_field_alias is null";
