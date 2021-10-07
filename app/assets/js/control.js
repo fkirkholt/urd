@@ -614,7 +614,9 @@ var control = {
 
             if (conditions.length == 0) conditions = rel.conditions
 
-            url += conditions.join('&')
+            if (conditions) {
+                url += conditions.join('&')
+            }
 
             return [
                 m('tr.heading', {
