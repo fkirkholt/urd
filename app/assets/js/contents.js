@@ -38,9 +38,13 @@ contents = {
         display = display || 'none'
         Object.keys(node.subitems).map(function(label) {
             var subitem = node.subitems[label]
-            var object = _get(ds.base, subitem, ds.base.tables[subitem])
-            if (object.type == 'data' || config.admin) {
-                display = 'block'
+            if (typeof(subitem) == 'object') {
+                display = contents.display_header(subitem, display)
+            } else {
+                var object = _get(ds.base, subitem, ds.base.tables[subitem])
+                if (object.type == 'data' || config.admin) {
+                    display = 'block'
+                }
             }
         })
 
@@ -104,6 +108,7 @@ contents = {
             if (typeof node == 'object') {
                 subitems = node.subitems;
                 item = node.item;
+                var display_chevron = contents.display_header(node)
             } else {
                 subitems = false;
                 item = node;
@@ -124,7 +129,7 @@ contents = {
                 ? 'Referansetabell'
                 : 'Datatabell'
             var display = object.type && (object.type.indexOf('reference') !== -1) &&
-                !config.admin && !grid_defined
+                          !config.admin && !grid_defined
                 ? 'none'
                 : 'inline';
             var schema = ds.base.system == 'postgres' && ds.base.schema !== 'public'
@@ -154,7 +159,7 @@ contents = {
                         'w1 tc',
                         'light-silver'
                     ].join(' '),
-                    style: display == 'none' ? 'display:' + display : '',
+                    style: (display == 'none' || display_chevron == 'none') ? 'display: none' : '',
                     onclick: function (e) {
                         node.expanded = !node.expanded;
                     }
@@ -162,7 +167,7 @@ contents = {
                 m('i', {
                     class: [
                         icon_color + ' mr1 fa ' + icon,
-                        typeof node == 'object' ? '' : 'ml3'
+                        (typeof node == 'object' && display_chevron == 'block') ? '' : 'ml3'
                     ].join(' '),
                     style: 'display:' + display,
                     title: title
