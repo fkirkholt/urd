@@ -745,31 +745,11 @@ class Schema {
             if ($config->urd_structure) {
                 do {
                     if (
+                        substr($tbl_name, 0, 1) === '_' ||
                         substr($tbl_name, 0, 4) === 'ref_' ||
                         substr($tbl_name, -4) === '_ref' ||
                         substr($tbl_name, 0, 5) === 'meta_'
                     ) {
-                        $table->type = 'reference';
-                        break;
-                    }
-
-                    // Checks if unique indexes cover all columns
-                    $index_cols = [];
-                    foreach ($table->indexes as $index) {
-                        if ($index->unique) {
-                            $index_cols = array_merge($index_cols, $index->columns);
-                        }
-                    }
-                    $index_cols = array_unique($index_cols);
-                    $fieldnames = array_keys($table->fields);
-                    $fieldnames = array_filter($fieldnames, function($fieldname) {
-                        return substr($fieldname, 0, 1) !== '_';
-                    });
-                    if (count($fieldnames) == count($index_cols)) {
-                        if (count($pk_columns) == count($fieldnames)) {
-                            $table->type = 'xref';
-                            break;
-                        }
                         $table->type = 'reference';
                         break;
                     }
@@ -1210,12 +1190,17 @@ class Schema {
         $tbl_groups = [];
         $sub_tables = [];
         foreach ($this->tables as $tbl_alias => $table) {
-            $name_parts = explode("_", $tbl_alias);
+            if (substr($tbl_alias, 0, 1) == "_") {
+                $name = substr($tbl_alias, 1);
+            } else {
+                $name = $tbl_alias;
+            }
+            $name_parts = explode("_", $name);
             $prefix = $name_parts[0];
             // Add table to table group
             {
                 if ($config->urd_structure) {
-                    $group = explode('_', $tbl_alias)[0];
+                    $group = explode('_', $name)[0];
 
                     // Find if the table is subordinate to other tables
                     // i.e. the primary key also has a foreign key
