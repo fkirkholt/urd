@@ -747,6 +747,7 @@ var control = {
                         class: [
                             'max-w7 w-100',
                             field.element == 'textarea' && !field.expanded && !config.edit_mode ? 'nowrap truncate' : '',
+                            config.edit_mode ? 'nowrap' : '',
                             field.invalid ? 'invalid' : field.dirty ? 'dirty' : '',
                             rec.inherited ? 'gray' : '',
                         ].join(' ')
