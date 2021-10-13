@@ -967,16 +967,20 @@ class Schema {
                         if (!array_diff($fk->foreign, $rel_table->primary_key)) {
                             $idx = array_search(end($fk->foreign), $rel_table->primary_key);
                             $relation->order = count($rel_table->primary_key) - $idx;
-                            if ($rel_table->type == 'xref') {
-                                $relation->order = 5 + $relation->order;
-                                # Find pk fields not part for foreign key
-                                $rest = [];
-                                foreach ($rel_table->primary_key as $pk_col) {
-                                    if (!in_array($pk_col, $fk->foreign)) {
-                                        $rest[] = $pk_col;
-                                    }
+                            # Find pk fields not part for foreign key
+                            $rest = [];
+                            foreach ($rel_table->primary_key as $pk_col) {
+                                if (!in_array($pk_col, $fk->foreign)) {
+                                    $rest[] = $pk_col;
                                 }
-                                $pk_field = end($rest);
+                            }
+                            $pk_field = end($rest);
+                            if (
+                                in_array($pk_field, array_keys($rel_table->foreign_keys)) &&
+                                $rel_table->foreign_keys[$pk_field]->foreign != $rel_table->primary_key
+                            ) {
+                                # Place xref tables last
+                                $relation->order = 5 + $relation->order;
                                 $relation->label = $this->get_label($pk_field);
                             }
                         }
@@ -1218,8 +1222,6 @@ class Schema {
                             ) {
                                 continue;
                             }
-                            
-                            if ($table->type == 'xref') break;
 
                             if (!isset($sub_tables[$key->table])) {
                                 $sub_tables[$key->table] = [];

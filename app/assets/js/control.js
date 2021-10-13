@@ -752,14 +752,13 @@ var control = {
                         ].join(' ')
                     }, [
                         rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
-                        !field.expandable || field.value === null || 
-                        (rec.table.type === "xref" && config.edit_mode) ? '' : m('a', {
+                        !field.expandable || field.value === null ? '' : m('a', {
                             class: 'icon-crosshairs light-blue hover-blue pointer link',
                             href: url
                         }),
 
                         // Show trash bin for field from cross reference table
-                        rec.table.type != 'xref' || !config.edit_mode ? '' : m('i', {
+                        rec.table.relationship != 'M:M' || !config.edit_mode ? '' : m('i', {
                             class: 'fa fa-trash-o light-blue pl1 hover-blue pointer',
                             onclick: entry.delete.bind(this, rec)
                         }),

@@ -712,6 +712,7 @@ var entry = {
 
         // Make list instead of table of relations if only one column shown
         if (count_columns == 1 && Object.keys(rel.relations).length == 0) {
+            rel.relationship = 'M:M'
             return entry.draw_relation_list(rel, record);
         }
 
