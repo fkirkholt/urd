@@ -651,7 +651,7 @@ var control = {
                     ]),
                 ]),
                 rel.expanded && rel.records 
-                    ? rel.relationship == '1:M'
+                    ? ['1:M', 'M:M'].includes(rel.relationship)
                         ? entry.draw_relation_table(rel, rec)
                         : m('tr', [
                             m('td'),
