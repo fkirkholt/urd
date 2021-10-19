@@ -846,16 +846,16 @@ class Table {
     }
 
     function get_format($join, $betingelse, $order) {
-        $formats = DB::get()->conn
-                 ->select('class, filter')
+        $formats  = DB::get()->conn
+                 ->select('id, class, filter')
                  ->from('format f')
                  ->where('f.schema_ = ?', $this->db->schema)
                  ->where('f.table_ = ?', $this->name)
-                 ->fetchAll();
+                 ->fetchAssoc('id');
 
         $selects = array();
         foreach ($formats as $format) {
-            $selects[] = '(' . $format->filter .') AS ' . $format->class;
+            $selects[] = '(' . $format->filter .') AS f' . $format->id;
         }
         if (!count($selects)) {
             return array();
@@ -874,7 +874,10 @@ class Table {
 
         $rader = $this->db->conn->query($sql, $this->limit, $this->offset)->fetchAll();
 
-        return $rader;
+        return (object) [
+            'formats' => $formats,
+            'rows' => $rader
+        ];
     }
 
     function hent_tabell($prim_key = []) {
@@ -995,10 +998,11 @@ class Table {
         $this->get_grid_values($selects, $join, $condition, $order_by);
         $this->get_values($selects, $join, $condition, $order_by);
         $row_formats = $this->get_format($join, $condition, $order_by);
-        foreach ($row_formats as $i=>$rad) {
+        foreach ($row_formats->rows as $i=>$rad) {
             $classes = array();
             foreach ($rad as $key=>$value) {
-                if ($value) $classes[] = $key;
+                $id = substr($key, 1);
+                if ($value) $classes[] = $row_formats->formats[$id]->class;
             }
             $class = implode(' ', $classes);
             $this->records[$i]['class'] = $class;

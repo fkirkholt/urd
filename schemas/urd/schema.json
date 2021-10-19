@@ -310,7 +310,7 @@
                 },
                 "filter": {
                     "label": null,
-                    "element": "input[type=text]",
+                    "element": "textarea",
                     "description": null,
                     "table": "format"
                 }
@@ -326,10 +326,10 @@
             },
             "form": {
                 "items": [
-                    "filter",
-                    "class",
                     "schema_",
-                    "table_"
+                    "table_",
+                    "class",
+                    "filter"
                 ]
             },
             "relations": []
