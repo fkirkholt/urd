@@ -28,6 +28,7 @@ var entry = {
             rec = $.extend(table.records[idx], result.data);
             rec.table = table;
             rec.root = root;
+            rec.fields = $.extend({}, table.fields, rec.fields)
 
             rec.columns = table.records[idx].columns;
             entry.get_relations_count(rec);

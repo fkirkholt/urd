@@ -672,7 +672,11 @@ var control = {
                 ])
             ]);
         } else {
-            var field = rec.fields[colname];
+            var field = $.extend({}, rec.fields[colname]);
+
+            if (field.virtual) {
+                field.text = rec.columns[colname]
+            }
 
             // Show hidden fields only in edit mode
             if (rec.table.fields[colname].hidden && !config.edit_mode) return
