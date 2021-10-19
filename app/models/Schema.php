@@ -981,7 +981,7 @@ class Schema {
                             ) {
                                 # Place xref tables last
                                 $relation->order = 5 + $relation->order;
-                                $relation->label = $this->get_label($pk_field);
+                                # $relation->label = $this->get_label($pk_field);
                             }
                         }
                     }
