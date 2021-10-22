@@ -285,7 +285,7 @@ contents = {
                     })
                 ]),
                 ds.base.contents && Object.keys(ds.base.contents).length
-                    ? Object.keys(ds.base.contents).map(function(label) {
+                    ? Object.keys(ds.base.contents).sort().map(function(label) {
                         var item = ds.base.contents[label];
                         item.display = Stream('none');
                         contents.check_display(item);
