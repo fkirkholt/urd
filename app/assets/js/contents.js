@@ -136,7 +136,7 @@ contents = {
                 ? ds.base.schema
                 : ''
             return m('div', {
-                class: ds.table && ds.table.name == object.name ? 'bg-light-gray' : '',
+                class: ds.table && ds.table.name == object.name ? 'bg-light-gray nowrap' : 'nowrap',
                 oncontextmenu: function(event) {
                     if (!config.admin) return false;
                     contents.context_table = object;
