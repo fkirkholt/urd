@@ -227,6 +227,17 @@ var control = {
                 }
 
             });
+        } else if (field.datatype == 'json') {
+            return m(jsoned, {
+                name: field.name,
+                field: field,
+                rec: rec,
+                style: "width: 350px; height: 400px;",
+                value: JSON.parse(field.value),
+                onchange: function(value) {
+                    entry.update_field(value, field.name, rec);
+                }
+            })
         } else if (field.element == 'textarea' && field.expanded === true) {
             var converter = new showdown.Converter();
             text = converter.makeHtml(field.value)
@@ -796,6 +807,7 @@ var $ = require('jquery');
 var select = require('./select.js');
 var datepicker = require('./datepicker.js');
 var autocomplete = require('./autocomplete.js');
+var jsoned = require('./jsoned.js');
 var ds = require('./datastore.js');
 var showdown = require('showdown');
 var moment = require('moment');
