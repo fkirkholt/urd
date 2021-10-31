@@ -355,7 +355,7 @@ var control = {
         var is_checkbox = field.element == 'input[type=checkbox]';
         var date_items;
 
-        if (field.text) {
+        if (field.text && value === undefined) {
             value = field.text;
         } else if (field.element == 'select' && field.options && field.value) {
             var option = _find(field.options, value);
@@ -683,7 +683,7 @@ var control = {
                 ])
             ]);
         } else {
-            var field = $.extend({}, rec.fields[colname]);
+            var field = rec.fields[colname]
 
             if (field.virtual) {
                 field.text = rec.columns[colname]

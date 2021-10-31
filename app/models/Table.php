@@ -858,7 +858,10 @@ class Table {
             $selects[] = '(' . $format->filter .') AS f' . $format->id;
         }
         if (!count($selects)) {
-            return array();
+            return (object) [
+                'formats' => [],
+                'rows' => []
+            ];
         }
         $select = implode(', ', $selects);
 
