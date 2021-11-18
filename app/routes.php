@@ -29,6 +29,15 @@ $app->get('/urd/dialog_schema', function() use ($app) {
     return $app->response->body($contents);
 });
 
+$app->get('/dblist', function() use ($app) {
+    $controller = new URD\controllers\TableController();
+    $req = (object) [
+        'base' => dibi::getConnection()->getConfig('name'),
+        'table' => 'database_'
+    ];
+    return $controller->get_table($req);
+});
+
 $app->get('/track_progress', function() use ($app) {
 
 	$progress = isset($_SESSION['progress']) ? $_SESSION['progress'] : 0;

@@ -10,11 +10,7 @@ var home = {
 
         m.request({
             method: 'get',
-            url: 'table',
-            params: {
-                base: ds.urd_base,
-                table: 'database_'
-            }
+            url: 'dblist'
         }).then(function(result) {
             ds.table = result.data;
             // TODO Burde være unødvendig
@@ -22,7 +18,11 @@ var home = {
             // TODO Burde være unødvendig
             ds.table.sort_fields = {};
         }).catch(function(e) {
-            if (e.code !== 401) {
+            if (e.code === 401) {
+                $('div.curtain').show();
+                $('#login').show();
+                $('#brukernavn').focus();
+            } else {
                 alert(e.message);
             }
         });
@@ -31,7 +31,6 @@ var home = {
     oninit: function() {
         ds.type = 'dblist';
         ds.table = null;
-        ds.load_database(ds.urd_base);
 
         if (!ds.table) {
             home.load_databases();

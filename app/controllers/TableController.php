@@ -9,8 +9,8 @@ use dibi;
 
 class TableController extends BaseController {
 
-    public function get_table() {
-        $req = (object) $this->request->params();
+    public function get_table($req = null) {
+        $req = $req ? $req : (object) $this->request->params();
 
         $tbl = Table::get($req->base, $req->table);
 
