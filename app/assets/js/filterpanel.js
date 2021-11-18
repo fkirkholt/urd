@@ -578,11 +578,12 @@ var filterpanel = {
             });
         } else if (field.element === 'select' && ['', 'LIKE', 'start', 'slutt', '>', '<'].includes(filter.operator) == false) {
 
-            var key_json = JSON.stringify(field.foreign_key ? field.foreign_key.foreign : [field.name]);
+            var key_json = JSON.stringify(field.foreign_key ? field.foreign_key.primary : [field.name]);
 
             return m(autocomplete, {
                 name: filter.field,
                 item: filter,
+                placeholder: 'Velg',
                 multiple: filter.operator === 'IN' ? true : false,
                 options: field.options ? field.options : null,
                 value: filter.text,
