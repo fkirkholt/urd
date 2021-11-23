@@ -97,7 +97,7 @@ var control = {
                         var col = field.foreign_key.primary.slice(-1)[0];
 
                         if (key.table == field.foreign_key.table) {
-                            condition = column + " = '" + rec.fields[column].value + "'"
+                            condition = key.primary[i] + " = '" + rec.fields[column].value + "'"
                         } else {
                             condition = col + ' in (select ' + key.primary[key.foreign_idx];
                             condition += ' from ' + key.table + ' where ' + key.foreign[i];
@@ -355,7 +355,7 @@ var control = {
         var is_checkbox = field.element == 'input[type=checkbox]';
         var date_items;
 
-        if (field.text && value === undefined) {
+        if (field.text) {
             value = field.text;
         } else if (field.element == 'select' && field.options && field.value) {
             var option = _find(field.options, value);
