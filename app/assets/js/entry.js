@@ -915,6 +915,14 @@ var entry = {
     view: function(vnode) {
         var rec = vnode.attrs.record;
 
+        // Clone record so the registration can be cancelled easily
+        if (ds.table.edit && !ds.rec) {
+            rec = _cloneDeep(rec)
+            ds.rec = rec
+        } else if (ds.table.edit) {
+            rec = ds.rec
+        }
+
         if (!rec || !rec.table) {
             return m('form[name="record"]', {
                 class: 'flex flex-column',
@@ -929,7 +937,36 @@ var entry = {
         }, [
             !ds.table.edit && !ds.table.hide
                 ? '' 
-                : m('div', [m(toolbar)]),
+                : m('div', [
+                    m('input[type=button]', {
+                        value: 'Lagre og lukk',
+                        onclick: function() {
+                            var saved = true;
+                            if (ds.table.dirty) {
+                                vnode.attrs.record = _merge(vnode.attrs.record, rec)
+                                delete ds.rec
+                                saved = grid.save();
+                            }
+                            if (saved) {
+                                config.edit_mode = false;
+                            }
+                        }
+                    }),
+                    m('input[type=button]', {
+                        value: 'Avbryt',
+                        onclick: function() {
+                            ds.table.edit = false;
+                            config.edit_mode = false;
+                            delete ds.rec
+                            if (rec.new) {
+                                var idx = ds.table.selection
+                                ds.table.records.splice(idx, 1);
+                                entry.select(ds.table, 0, true);
+                            }
+                            m.redraw();
+                        }
+                    })
+                ]),
             m('table[name=view]', {
                 class: [
                     'pt1 pl1 pr2 flex flex-column',
@@ -968,7 +1005,8 @@ var _merge = require('lodash/merge');
 var _isEqual = require('lodash/isEqual');
 var _get = require('lodash/get');
 var _isMatch = require('lodash/isMatch');
-
+var _cloneDeep = require('lodash/cloneDeep')
+var grid = require('./grid.js');
 var control = require('./control.js');
 var filterpanel = require('./filterpanel.js');
 var toolbar = require('./toolbar.js');

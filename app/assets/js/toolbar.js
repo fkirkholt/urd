@@ -179,34 +179,6 @@ var toolbar = {
             })
         }
 
-        if (ds.table.edit) {
-            return [
-                m('input[type=button]', {
-                    value: 'Lagre og lukk',
-                    onclick: function() {
-                        var saved = true;
-                        if (ds.table.dirty) {
-                            saved = grid.save();
-                        }
-                        if (saved) {
-                            config.edit_mode = false;
-                        }
-                    }
-                }),
-                m('input[type=button]', {
-                    value: 'Avbryt',
-                    onclick: function() {
-                        if (ds.table.dirty) {
-                            grid.update(ds.table, {});
-                        }
-                        ds.table.edit = false;
-                        config.edit_mode = false;
-                        m.redraw();
-                    }
-                }),
-            ]
-        }
-
         return m('ul', {target: '_blank', class: 'f6 list pl1 mt1 mb1'}, [
             m('li', [
                 m('form#action', [
