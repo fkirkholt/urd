@@ -197,6 +197,23 @@ var grid = {
         })
     },
 
+    get_filter: function() {
+        var param = Object.assign({}, m.route.param())
+        var filter = ''
+
+        if (!('query' in param) && !('where' in param)) {
+            delete param.base
+            delete param.table
+            var search_params = []
+            $.each(param, function(key, value) {
+                search_params.push(key + ' = ' + value);
+            })
+            filter = search_params.join(' AND ')
+        }
+
+        return filter
+    },
+
     /**
      * Reloads table after save
      *
@@ -217,6 +234,9 @@ var grid = {
         p.table = list.name;
         p.filter = m.route.param('query') ? decodeURI(m.route.param('query')) : null;
         p.condition = m.route.param('where') ? decodeURI(m.route.param('where')) : null;
+        if (!p.filter) {
+            p.filter = grid.get_filter()
+        }
         p.sort = JSON.stringify(list.grid.sort_columns);
         p.limit = list.limit;
         p.offset = list.offset;
@@ -289,14 +309,8 @@ var grid = {
         var table_name = params['table'] ? params['table'] : 'database_';
         var search = params['query'] ? params['query'] : null;
         var condition = params['where'] ? params['where'] : null;
-        if (!('query' in params) && !('where' in params)) {
-            delete params.base
-            delete params.table
-            search_params = []
-            $.each(params, function(key, value) {
-                search_params.push(key + ' = ' + value);
-            })
-            search = search_params.join(' AND ')
+        if (!search) {
+            search = grid.get_filter()
         }
 
         filterpanel.advanced = condition ? true : false;
