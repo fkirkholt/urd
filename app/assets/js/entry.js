@@ -147,8 +147,15 @@ var entry = {
                 if (!relation) {
                     $.each(list.filters, function(idx, filter) {
                         var parts = filter.field.split('.');
-                        var table_name = parts[0];
-                        var field_name = parts[1];
+                        var table_name
+                        var field_name
+                        if (parts.length == 2) {
+                            table_name = parts[0];
+                            field_name = parts[1];
+                        } else {
+                            table_name = rec.table_name
+                            field_name = parts[0]
+                        }
 
                         if (table_name === rec.table_name && field_name === field.name && filter.operator === '=') {
                             conditions.push(filter);
