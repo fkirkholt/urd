@@ -963,7 +963,6 @@ var entry = {
                                 ds.table.records.splice(idx, 1);
                                 entry.select(ds.table, 0, true);
                             }
-                            m.redraw();
                         }
                     })
                 ]),

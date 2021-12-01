@@ -78,6 +78,7 @@ var grid = {
     },
 
     oncreate: function() {
+        grid.align_thead()
         // Adjust the width of thead cells when window resizes
         $(window).resize(grid.align_thead);
     },
