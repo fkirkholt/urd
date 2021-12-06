@@ -124,10 +124,10 @@ contents = {
             var icon = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'fa-list'
                 : 'fa-table';
-            var icon_color = object.hidden ? 'light-gray' : 'light-silver';
+            var icon_color = object.hidden ? 'moon-gray' : 'silver';
             var title = object.type && (object.type.indexOf('reference') !== -1)
                 ? 'Referansetabell'
-                : 'Datatabell'
+                : null
             var display = object.type && (object.type.indexOf('reference') !== -1) &&
                           !config.admin && !grid_defined
                 ? 'none'
@@ -144,10 +144,12 @@ contents = {
                     var hidden_txt = object.hidden ? 'Vis tabell' : 'Skjul tabell';
                     $('ul#context-table li.hide').html(hidden_txt);
 
+                    /*
                     var type_txt = object.type == 'reference'
                         ? 'Sett til datatabell'
-                        : 'Sett til referansetabell';
+                        : 'Sett til referansetabell!!!';
                     $('ul#context-table li.type').html(type_txt);
+                    */
 
                     $('ul#context-table').css({top: event.clientY, left: event.clientX}).toggle();
                     return false;
@@ -254,9 +256,11 @@ contents = {
                         contents.set_dirty_attr(tbl, 'hidden', tbl.hidden);
                     }
                 }, 'Skjul tabell'),
+                /*
                 m('li.type', {
                     class: 'hover-blue',
                     onclick: function() {
+                        console.log('valgte contextmenyitem')
                         var tbl = contents.context_table;
                         tbl.type = tbl.type == 'data'
                             ? 'reference'
@@ -265,7 +269,8 @@ contents = {
 
                         contents.set_dirty_attr(tbl, 'type', tbl.type)
                     }
-                }, 'Sett til referansetabell')
+                }, 'Sett til referansetabell???')
+                */
             ]),
             m('.list', {class: "flex flex-column overflow-auto min-w5"}, [
                 !ds.base.schemata || ds.base.schemata.length < 2 ? '' : m('select', {
