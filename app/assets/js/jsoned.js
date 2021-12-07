@@ -8,7 +8,8 @@ var jsoned = {
     oncreate: function(vnode) {
         console.log('vnode', vnode)
         var options = {
-            // "mode": "view"
+            "mode": vnode.attrs.mode || "tree",
+            "mainMenuBar": false,
             onChange: function() {
                 var value = JSON.stringify(vnode.state.jsoned.get())
                 vnode.attrs.onchange(value)

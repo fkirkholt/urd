@@ -97,3 +97,5 @@ tr.bg-light-blue:focus {
 }
 
 .dot {text-decoration-style: dotted}
+
+.jsoneditor {border: thin solid lightgray}

@@ -380,6 +380,16 @@ var control = {
         } else if (is_integer && field.size > 5) {
             numeral.locale('no');
             value = value === null ? null : numeral(value).format();
+        } else if (field.datatype == 'json' && field.value) {
+            console.log('field.value', field.value)
+            value = m(jsoned, {
+                name: field.name,
+                mode: 'view',
+                field: field,
+                rec: rec,
+                style: "width: 350px; height: 400px;",
+                value: JSON.parse(field.value)
+            })
         } else if (field.element == "textarea" && field.expanded) {
             var converter = new showdown.Converter();
             value = m.trust(converter.makeHtml(field.value))
