@@ -693,7 +693,7 @@ var control = {
                 ])
             ]);
         } else {
-            var field = rec.fields[colname]
+            var field = $.extend({}, rec.fields[colname])
 
             if (field.virtual) {
                 field.text = rec.columns[colname]

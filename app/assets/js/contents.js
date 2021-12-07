@@ -42,7 +42,7 @@ contents = {
                 display = contents.display_header(subitem, display)
             } else {
                 var object = _get(ds.base, subitem, ds.base.tables[subitem])
-                if (object.type == 'data' || config.admin) {
+                if (object.hidden != true || config.admin) {
                     display = 'block'
                 }
             }
