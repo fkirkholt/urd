@@ -640,7 +640,7 @@ var entry = {
             field.name in ds.table.betingelse ? null : m('tr', [
                 m('td'),
                 m('td.label', field.label),
-                m('td', control.edit_field(rec, colname))
+                m('td', control.input(rec, colname))
             ])
         ]
     },
@@ -681,7 +681,7 @@ var entry = {
                                 if (typeof item !== 'object' && item.indexOf('.') === -1 && rel.fields[item].defines_relation) {
                                     return;
                                 }
-                                return control.draw_field(rec, item, label);
+                                return control.draw(rec, item, label);
                             })
                         ];
                     }),
@@ -819,14 +819,14 @@ var entry = {
                                         var action = rel.actions[action_name];
                                         action.alias = action_name;
 
-                                        return control.draw_action_button(rec, action);
+                                        return grid.cell.button(rec, action);
                                     }
 
                                     var field = rel.fields[field_name];
 
                                     return field.defines_relation
                                         ? ''
-                                        : control.draw_cell(rel, rowidx, field_name, {compressed: true});
+                                        : grid.cell.draw(rel, rowidx, field_name, {compressed: true});
                                 }),
                                 m('td', {class: 'bb b--light-gray'}, [
                                     !rec.open || record.readonly ? '' : m('i', {
@@ -902,7 +902,7 @@ var entry = {
                         // determine if field should be displayd or edited
                         var display = rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode;
 
-                        return m('span', {class: display ? '' : 'mr2'}, display ? [separator, control.display_value(field)].join('') : control.edit_field(rec, fieldname, field.label));
+                        return m('span', {class: display ? '' : 'mr2'}, display ? [separator, control.display_value(field)].join('') : control.input(rec, fieldname, field.label));
                     case 'action':
                         var action = _get(ds.table, fieldname);
                         return m('span', {class: 'mr2'}, [
@@ -988,7 +988,7 @@ var entry = {
                         if (typeof item !== 'object' && item.indexOf('.') === -1 && rec.table.fields[item].defines_relation) {
                             return;
                         }
-                        return control.draw_field(rec, item, label);
+                        return control.draw(rec, item, label);
                     })
                 ])
             ])

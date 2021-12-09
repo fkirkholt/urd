@@ -1,16 +1,6 @@
 
 var control = {
 
-    align: function(list, colname) {
-        var col = list.fields[colname];
-        if (($.inArray(col.datatype, ['integer', 'float', 'decimal']) != -1 &&
-             !col.foreign_key) && col.element !== 'input[type=checkbox]') {
-                return 'right';
-            } else {
-                return 'left';
-            }
-    },
-
     validate: function(value, field) {
         field.invalid = false;
         field.errormsg = '';
@@ -112,7 +102,7 @@ var control = {
         return kandidatbetingelser.join(' AND ');
     },
 
-    edit_field: function(rec, fieldname, placeholder) {
+    input: function(rec, fieldname, placeholder) {
         var field = rec.fields[fieldname];
         var value;
         var readOnly = !field.editable;
@@ -398,132 +388,7 @@ var control = {
         return value;
     },
 
-    draw_cell: function(list, rowidx, col, options) {
-        var max_len = 0
-        $.each(list.grid.columns, function(idx, colname) {
-            if (list.fields[colname].size > max_len) {
-                max_len = list.fields[colname].size
-            }
-        })
-        var rec = list.records[rowidx];
-        var field = list.fields[col];
-        if (field.hidden) return;
-        var value = rec.columns[col] != null
-            ? (options.compressed && options.grid ? rec.values[col] : rec.columns[col])
-            : '';
-        value = control.display_value(field, value);
-        var expansion = col === list.expansion_column && options.grid;
-        var is_checkbox = field.element == 'input[type=checkbox]';
-
-        var icon = m('i', {
-                class: [
-                    expansion ? 'fa fa-fw' : '',
-                    expansion && rec.expanded ? 'fa-angle-down' : expansion ? 'fa-angle-right' : '',
-                    expansion && rec.count_children ? 'black' : 'moon-gray',
-                ].join(' '),
-                style: col === list.expansion_column ? 'margin-left: ' + (rec.indent * 15) + 'px;' : '',
-                onclick: function(e) {
-                    if (!rec.count_children) return;
-                    if (rec.expanded === undefined) {
-                        m.request({
-                            method: 'get',
-                            url: 'children',
-                            params: {
-                                base: ds.base.name,
-                                table: ds.table.name,
-                                primary_key: JSON.stringify(rec.primary_key)
-                            }
-                        }).then(function(result) {
-                            var indent = rec.indent ? rec.indent + 1 : 1;
-                            records = result.data.map(function(record, idx) {
-                                record.indent = indent;
-                                record.path = rec.path ? rec.path + '.' + idx : rowidx + '.' + idx;
-                                record.parent = rec.primary_key;
-                                return record;
-                            })
-                            list.records.splice.apply(list.records, [rowidx+1, 0].concat(records));
-                        });
-                    } else if (rec.expanded === false) {
-                        list.records = list.records.map(function(record) {
-                            if (_isEqual(record.parent, rec.primary_key)) record.hidden = false;
-
-                            return record;
-                        });
-                    } else {
-                        var path = rec.path ? rec.path : rowidx;
-
-                        list.records = list.records.map(function(record) {
-
-                            // Check if record.path starts with path
-                            if(record.path && record.path.lastIndexOf(path, 0) === 0 && record.path !== path) {
-                                record.hidden = true;
-                                if (record.expanded) record.expanded = false;
-                            }
-
-                            return record;
-                        });
-                    }
-
-                    rec.expanded = !rec.expanded;
-                }
-            });
-
-        return m('td', {
-            class: [
-                field.datatype == 'string' && field.size == max_len ? 'w-100' : '',
-                control.align(list, col) === 'right' ? 'tr' : 'tl',
-                options.compressed || (field.datatype !== 'string' && field.datatype !== 'binary' && field.element != 'select') || (value.length < 30) ? 'nowrap' : '',
-                options.compressed && value.length > 30 ? 'pt0 pb0' : '',
-                options.border ? 'bl b--light-gray' : '',
-                ds.table.sort_fields[col] ? 'min-w3' : 'min-w2',
-                'f6 pl1 pr1',
-                rowidx < ds.table.records.length - 1 ? 'bb b--light-gray' : '',
-            ].join(' '),
-            title: options.compressed && value.length > 30 ? value : ''
-        }, [
-
-            !(value.length > 30 && options.compressed) ? [m('div', [icon, value])]
-                : m('table', {
-                    class: 'w-100',
-                    style: 'table-layout:fixed; border-spacing:0px'
-                }, [
-                    m('tr', m('td.pa0', {class: options.compressed ? 'truncate': 'overflow-wrap'}, [icon, value]))
-                ]),
-        ]);
-    },
-
-    draw_action_button: function(rec, action) {
-
-        // If disabled status for the action is based on an expression
-        // then we get the status from a column with same name as alias of action
-        if (action.alias && rec.columns[action.alias] !== undefined) {
-            action.disabled = rec.columns[action.alias];
-        }
-
-        return action.disabled ? '' : m('td', [
-            m('i', {
-                class: 'fa fa-' + action.icon,
-                onclick: function(e) {
-                    var data = {};
-                    if (action.communication === 'download') {
-                        // Don't break schema 'budsjett'
-                        if (ds.base.schema === 'budsjett') {
-                            data = rec.primary_key;
-                        } else {
-                            data.base = rec.base_name;
-                            data.table = rec.table_name;
-                            data.primary_key = JSON.stringify(rec.primary_key);
-                        }
-                        var address = (action.url[0] === '/') ? action.url.substr(1) : ds.base.schema + '/' + action.url;
-                        $.download(address, data, '_blank');
-                    }
-                    e.stopPropagation();
-                }
-            })
-        ]);
-    },
-
-    draw_field: function(rec, colname, label) {
+    draw: function(rec, colname, label) {
 
         if (typeof colname === 'object') {
             label = colname.label ? colname.label : label;
@@ -589,7 +454,7 @@ var control = {
                         m('table', [
                             Object.keys(colname.items).map(function(label, idx) {
                                 var col = colname.items[label];
-                                return control.draw_field(rec, col, label);
+                                return control.draw(rec, col, label);
                             })
                         ])
                     ])
@@ -777,7 +642,7 @@ var control = {
                             rec.inherited ? 'gray' : '',
                         ].join(' ')
                     }, [
-                        rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.edit_field(rec, colname),
+                        rec.table.privilege.update == 0 || rec.readonly || !config.edit_mode ? control.display_value(field) : control.input(rec, colname),
                         !field.expandable || field.value === null ? '' : m('a', {
                             class: 'icon-crosshairs light-blue hover-blue pointer link',
                             href: url
