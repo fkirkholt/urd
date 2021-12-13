@@ -132,9 +132,7 @@ contents = {
                           !config.admin && !grid_defined
                 ? 'none'
                 : 'inline';
-            var schema = ds.base.system == 'postgres' && ds.base.schema !== 'public'
-                ? ds.base.schema
-                : ''
+
             return m('div', {
                 class: ds.table && ds.table.name == object.name ? 'bg-light-gray nowrap' : 'nowrap',
                 oncontextmenu: function(event) {
