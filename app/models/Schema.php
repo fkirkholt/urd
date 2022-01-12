@@ -477,9 +477,9 @@ class Schema {
             $count_rows = $db->select('*')->from($tbl_name)->count();
             $report[$tbl_name]['rows'] = $count_rows;
             if ($config->count_rows) {
-                $table->count_rows = $count_rows;
+                $table->rowcount = $count_rows;
             } else {
-                unset($table->count_rows);
+                unset($table->rowcount);
             }
 
 

@@ -11,6 +11,7 @@ var store = {
         }
     },
     urd_base: $('#urd-base-name').data('value'),
+
     load_database: function(base_name, callback) {
         return m.request({
             method: "GET",
@@ -36,6 +37,18 @@ var store = {
                 $('#brukernavn').focus();
             }
         });
+    },
+
+    set_cfg_value: function(tbl, attr, value) {
+        if (ds.schema.config.tables === undefined) {
+            ds.schema.config.tables = {};
+        }
+
+        if (ds.schema.config.tables[tbl.name] === undefined) {
+            ds.schema.config.tables[tbl.name] = {};
+        }
+
+        ds.schema.config.tables[tbl.name][attr] = value;
     }
 }
 

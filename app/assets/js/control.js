@@ -394,7 +394,7 @@ var control = {
             label = colname.label ? colname.label : label;
             if (!colname.inline && colname.expanded === undefined && config.expand_headings) colname.expanded = true;
 
-            // Finds number of registered fields under the heading
+            // Find number of registered fields under the heading
             var count_fields = 0;
             var count_field_values = 0;
             var count_empty_relations = 0;

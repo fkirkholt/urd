@@ -50,8 +50,8 @@ diagram = {
 
         diagram.main_table = table.name;
 
-        if (table.count_rows) {
-            def.push(table.name + ' : ' + 'count(' + table.count_rows + ')');
+        if (table.rowcount) {
+            def.push(table.name + ' : ' + 'count(' + table.rowcount+ ')');
         }
 
         Object.keys(table.fields).map(function(alias) {
@@ -73,8 +73,8 @@ diagram = {
             if (fk_table === undefined) return;
             def.push('class ' + fk.table);
             def.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
-            if (fk_table.count_rows && fk.table != table.name) {
-                def.push(fk.table + ' : count(' + fk_table.count_rows + ')');
+            if (fk_table.rowcount && fk.table != table.name) {
+                def.push(fk.table + ' : count(' + fk_table.rowcount + ')');
             }
         });
 
@@ -88,8 +88,8 @@ diagram = {
             var rel_table = ds.base.tables[rel.table];
             if ($.inArray('class ' + rel.table, def) !== -1) return;
             def.push('class ' + rel.table);
-            if (rel_table.count_rows) {
-                def.push(rel.table + ' : count(' + rel_table.count_rows + ')');
+            if (rel_table.rowcount) {
+                def.push(rel.table + ' : count(' + rel_table.rowcount + ')');
             }
         });
 

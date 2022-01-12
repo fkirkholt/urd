@@ -17,13 +17,6 @@ var toolbar = {
         mousetrap(document.body).bind('esc', function(e) {
             $('#urdgrid tr.focus').focus();
         });
-
-        $('#progress [value="OK"]').on('click', function() {
-            $(this).hide();
-            $('#progress [name="message"]').text('');
-            $('#progress').hide();
-            $('.curtain').hide();
-        });
     },
 
     onremove: function() {

@@ -26,13 +26,6 @@ var schema_dialog = {
                     }
                 }), ' Selv-dokumenterende database',
                 m('br'),
-                m('input[type=checkbox]', {
-                    checked: ds.schema.config.replace,
-                    onchange: function(event) {
-                        ds.schema.config.replace = $(event.target).prop('checked');
-                    }.bind(this)
-                }), ' Slett eksisterende skjema',
-                m('br'),
                 m('label', 'Terskel '),
                 m('input[type=number]', {
                     name: "threshold",
@@ -50,13 +43,6 @@ var schema_dialog = {
                         ds.schema.config.count_rows = $(event.target).prop('checked');
                     }
                 }), ' Tell antall poster i tabellene',
-                m('br'),
-                m('input[type=checkbox]', {
-                    checked: ds.schema.config.add_ref_records,
-                    onchange: function(event) {
-                        ds.schema.config.add_ref_records = $(event.target).prop('checked');
-                    }
-                }), ' Legg inn poster fra referansetabellene',
                 m('br'),
                 m('input[type=checkbox]', {
                     checked: ds.schema.config.norwegian_chars,

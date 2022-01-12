@@ -11,6 +11,13 @@ contents = {
 
     oninit: function(vnode) {
         $('#right_content').hide();
+
+        $('#progress [value="OK"]').on('click', function() {
+            $(this).hide();
+            $('#progress [name="message"]').text('');
+            $('#progress').hide();
+            $('.curtain').hide();
+        });
     },
 
     check_display: function(item) {
@@ -181,10 +188,10 @@ contents = {
                     style: 'display:' + display,
                     href: '#/' + ds.base.name + '/' + object.name
                 }, label),
-                !object.count_rows || !config.admin ? '' : m('span', {
+                !object.rowcount || !config.admin ? '' : m('span', {
                     class: 'ml2 light-silver',
                     style: 'display:' + display
-                }, '(' + object.count_rows + ')'),
+                }, '(' + object.rowcount + ')'),
                 !subitems || !node.expanded ? '' : m('.content', {
                     style: 'margin-left:' + 18 + 'px',
                 }, [
@@ -251,7 +258,7 @@ contents = {
                         tbl.hidden = !tbl.hidden;
                         $('ul#context-table').hide();
 
-                        contents.set_dirty_attr(tbl, 'hidden', tbl.hidden);
+                        ds.set_cfg_value(tbl, 'hidden', tbl.hidden);
                     }
                 }, 'Skjul tabell'),
                 /*
@@ -265,7 +272,7 @@ contents = {
                             : 'data';
                         $('ul#context-table').hide();
 
-                        contents.set_dirty_attr(tbl, 'type', tbl.type)
+                        contents.set_cfg_value(tbl, 'type', tbl.type)
                     }
                 }, 'Sett til referansetabell???')
                 */
