@@ -216,6 +216,20 @@ contents = {
         ds.schema.config.dirty[tbl.name][attr] = value;
     },
 
+    draw_foreign_keys: function(node, def) {
+        var item = node.item ? node.item : node
+        var object = _get(ds.base, item, ds.base.tables[item])
+        diagram.draw_foreign_keys(object, def, ds.base.contents[module])
+
+        if (!node.subitems) {
+            return
+        }
+
+        Object.values(node.subitems).map(function(subnode) {
+            contents.draw_foreign_keys(subnode, def)
+        })
+    },
+
     view: function() {
         if (!ds.base.contents && !ds.base.tables) return;
 
@@ -231,9 +245,8 @@ contents = {
                         var module = contents.context_module;
                         var def = ['classDiagram'];
 
-                        Object.values(ds.base.contents[module].subitems).map(function(item) {
-                            var object = _get(ds.base, item, ds.base.tables[item]);
-                            diagram.draw_foreign_keys(object, def, ds.base.contents[module]);
+                        Object.values(ds.base.contents[module].subitems).map(function(node) {
+                            contents.draw_foreign_keys(node, def)
                         });
 
                         diagram.def = def.join("\n");

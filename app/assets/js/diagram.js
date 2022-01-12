@@ -97,11 +97,15 @@ diagram = {
     },
 
     draw_foreign_keys: function(table, def, module) {
+        if (table.hidden) return
         Object.keys(table.foreign_keys).map(function(alias) {
             var fk = table.foreign_keys[alias];
-            var field = table.fields[alias];
+            var field_name = fk.foreign.slice(-1)[0]
+            var field = table.fields[field_name];
             if (field.hidden) return;
-            if (Object.values(module.items).indexOf('tables.' + fk.table) == -1) return;
+            var fk_table = ds.base.tables[fk.table]
+            if (fk_table.hidden) return;
+            // if (Object.values(module.subitems).indexOf('tables.' + fk.table) == -1) return;
             def.push(fk.table + ' <-- ' + table.name);
         });
     },
