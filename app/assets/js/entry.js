@@ -955,6 +955,7 @@ var entry = {
                                 saved = grid.save();
                             }
                             if (saved) {
+                                ds.table.edit = false
                                 config.edit_mode = false;
                             }
                         }
