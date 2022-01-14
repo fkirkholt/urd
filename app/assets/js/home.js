@@ -49,11 +49,12 @@ var home = {
             m('ul', [
                 ds.table.records.map(function(post, i) {
                     return m('li', [
-                        m('h3', [
+                        m('h4.mt1.mb1', [
                             m('a', {
                                 href: '#/' + (post.columns.alias ? post.columns.alias : post.columns.name)
                             }, post.columns.label),
                         ]),
+                        m('p.mt1.mb1', post.columns.description)
                     ]);
                 })
             ])
