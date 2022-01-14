@@ -204,18 +204,6 @@ contents = {
         }
     },
 
-    set_dirty_attr: function(tbl, attr, value) {
-        if (ds.schema.config.dirty === undefined) {
-            ds.schema.config.dirty = {};
-        }
-
-        if (ds.schema.config.dirty[tbl.name] === undefined) {
-            ds.schema.config.dirty[tbl.name] = {};
-        }
-
-        ds.schema.config.dirty[tbl.name][attr] = value;
-    },
-
     draw_foreign_keys: function(node, def) {
         var item = node.item ? node.item : node
         var object = _get(ds.base, item, ds.base.tables[item])

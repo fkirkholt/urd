@@ -466,10 +466,7 @@ var control = {
 
         if (typeof colname === "string" && colname.indexOf('relations') > -1) {
             var key = colname.replace('relations.', '');
-            var relation = rec.table.relations[key];
             var rel = rec.relations && rec.relations[key] ? rec.relations[key] : {};
-
-            if (relation === undefined) return '';
 
             if (rel.show_if) {
                 hidden = false
