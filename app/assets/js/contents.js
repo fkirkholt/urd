@@ -127,9 +127,13 @@ contents = {
                 grid_defined = true
             }
             if (item.indexOf('.') == -1) item = 'tables.' + item;
-            if (object.hidden && !config.admin) return;
-            var icon = object.type && (object.type.indexOf('reference') !== -1)
-                ? 'fa-list'
+            if (
+                ((object.hidden || object.type == 'list') &&
+                 !config.admin) || object.type == 'xref'
+            ) {
+                return
+            };
+            var icon = object.type && (object.type == 'list') ? 'fa-list'
                 : 'fa-table';
             var icon_color = object.hidden ? 'moon-gray' : 'silver';
             var title = object.type && (object.type.indexOf('reference') !== -1)
@@ -182,7 +186,8 @@ contents = {
                 m('a', {
                     class: [
                         'black underline-hover nowrap',
-                        object.description ? 'dot' : 'link'
+                        object.description ? 'dot' : 'link',
+                        object.type == 'view' ? 'i' : ''
                     ].join(' '),
                     title: object.description ? object.description : '',
                     style: 'display:' + display,

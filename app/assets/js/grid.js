@@ -321,7 +321,9 @@ var grid = {
             m.redraw();
 
             // Show first record
-            entry.select(ds.table, ds.table.selection, true);
+            if (ds.table.type != 'view') {
+                entry.select(ds.table, ds.table.selection, true);
+            }
             $('#urdgrid tr.focus').focus();
         }).catch(function(e) {
             if (e.code === 401) {
@@ -474,7 +476,9 @@ var grid = {
             tabindex: 0,
             onclick: function(e) {
                 e.redraw = false;
-                entry.select(ds.table, idx);
+                if (ds.table.type != 'view') {
+                    entry.select(ds.table, idx);
+                }
             },
             onkeydown: function(e) {
                 e.redraw = false;
@@ -498,7 +502,7 @@ var grid = {
                 }
             },
             class: [
-                (ds.table.selection == idx) ? 'bg-light-blue focus' : '',
+                (ds.table.selection == idx && ds.table.type != 'view') ? 'bg-light-blue focus' : '',
                 'bb b--light-gray lh-copy cursor-default',
                 record.class ? record.class : '',
             ].join(' ')
