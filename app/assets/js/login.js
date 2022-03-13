@@ -30,8 +30,8 @@ var login = {
                 class: 'db w-100',
                 onclick: function() {
                     var param = {};
-                    param.brukernavn = $('#brukernavn').val();
-                    param.passord = $('#passord').val();
+                    param.username = $('#brukernavn').val();
+                    param.password = $('#passord').val();
 
                     m.request({
                         method: 'post',
