@@ -23,7 +23,7 @@
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.21",
     "mithril": "^1.1.7",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "mousetrap": "^1.6.5",
     "npm": "^6.14.11",
     "numeral": "^2.0.6",
