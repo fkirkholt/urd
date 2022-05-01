@@ -573,12 +573,13 @@ var grid = {
                         var col = ds.table.grid.columns[label];
 
                         var field = ds.table.fields[col];
-                        if (field.hidden) return;
 
                         // If this is for instance an action
                         if (field === undefined) {
                             return m('th', '');
                         }
+
+                        if (field.hidden) return;
 
                         var label = isNaN(parseInt(label)) ? label
                             : ds.table.fields[col].label ? ds.table.fields[col].label
