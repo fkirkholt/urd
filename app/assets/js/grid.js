@@ -152,12 +152,32 @@ var grid = {
 
 
         draw: function(list, rowidx, col, options) {
-            var max_len = 0
+            var max_len = -1
+            var n = 0
             $.each(list.grid.columns, function(idx, colname) {
-                if (list.fields[colname].size > max_len) {
+                field = list.fields[colname]
+                if (colname.indexOf('actions.') > -1) {
+                    return
+                }
+                if (max_len != 0 && field.size > max_len) {
+                    if (field.size == max_len) {
+                        n++
+                    } else {
+                        n = 1
+                    }
                     max_len = list.fields[colname].size
                 }
+                if (field.datatype == 'string' && field.size == 0) {
+                    // size 0 means no size limit
+                    if (max_len == 0) {
+                        n++
+                    } else {
+                       n = 1
+                    }
+                    max_len = 0
+                }
             })
+            var percent_width = Math.floor(10/n) * 10
             var rec = list.records[rowidx];
             var field = list.fields[col];
             if (field.hidden) return;
@@ -224,7 +244,7 @@ var grid = {
 
             return m('td', {
                 class: [
-                    field.datatype == 'string' && field.size == max_len ? 'w-100' : '',
+                    field.datatype == 'string' && field.size == max_len ? 'w-' + percent_width : '',
                     grid.column.align(list, col) === 'right' ? 'tr' : 'tl',
                     options.compressed || (field.datatype !== 'string' && field.datatype !== 'binary' && field.element != 'select') || (value.length < 30) ? 'nowrap' : '',
                     options.compressed && value.length > 30 ? 'pt0 pb0' : '',
