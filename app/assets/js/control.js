@@ -598,6 +598,7 @@ var control = {
                         field.element != 'textarea' ? null : m('i.fa', {
                             class: field.expanded ? 'fa-angle-down' : 'fa-angle-right',
                             onclick: function() {
+                                field = rec.fields[colname]
                                 field.expanded = !field.expanded;
                             }
                         })
@@ -613,6 +614,7 @@ var control = {
                             if (field.foreign_key && field.expandable && rec.fields[colname].value) {
                                 entry.toggle_relation(rec, colname);
                             } else if (field.element == 'textarea') {
+                                field = rec.fields[colname]
                                 field.expanded = !field.expanded;
                             }
                         }
