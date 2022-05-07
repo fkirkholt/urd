@@ -293,7 +293,7 @@ var control = {
             var size = field.datatype == 'float' || field.datatype == 'decimal'
                 ? field.size + 1
                 : field.size
-            var width = Math.round(size * 0.6) + 'em';
+            var width = size ? Math.round(size * 0.6) + 'em' : '';
 
             value = typeof field.value === 'string'
                 ? field.value.replace(/\n/g, '\u21a9')
@@ -306,7 +306,7 @@ var control = {
 
             return m('input', {
                 name: field.name,
-                maxlength: size,
+                maxlength: size ? size : '',
                 // required: !field.nullable && field.extra !== 'auto_increment',
                 class: [
                     !field.nullable && field.value === '' ? 'invalid' : '',
