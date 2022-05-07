@@ -282,7 +282,7 @@ var entry = {
             method: "GET",
             url: "table",
             params: {
-                base: field.foreign_key.base,
+                base: field.foreign_key.base || ds.base.name,
                 schema: field.foreign_key.schema,
                 table: field.foreign_key.table,
                 filter: filters.join(' AND ')
@@ -297,7 +297,7 @@ var entry = {
                 method: "GET",
                 url: "record",
                 params: {
-                    base: field.foreign_key.base,
+                    base: field.foreign_key.base || ds.base.name,
                     schema: field.foreign_key.schema,
                     table: field.foreign_key.table,
                     // betingelse: betingelse,
