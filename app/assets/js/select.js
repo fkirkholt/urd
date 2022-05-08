@@ -9,6 +9,7 @@ var select = {
         var value = vnode.attrs.value;
 
         return m('select', {
+            id: vnode.attrs.id,
             name: vnode.attrs.name,
             required: vnode.attrs.required,
             onchange: vnode.attrs.onchange,

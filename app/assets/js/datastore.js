@@ -1,7 +1,9 @@
 var m = require('mithril');
+var login = require('./login')
 
 var store = {
     base: {},
+    user: {},
     schema: {
         config: {
             urd_structure: false,
@@ -31,7 +33,9 @@ var store = {
                 callback(data);
             }
         }).catch(function(e) {
-            if (e.code === 401) {
+            if (e.code === 401 || e.code === 404) {
+                login.msg = e.response.detail
+                login.error = true
                 $('div.curtain').show();
                 $('#login').show();
                 $('#brukernavn').focus();

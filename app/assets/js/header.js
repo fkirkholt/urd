@@ -18,9 +18,6 @@ var header = {
     },
 
     view: function(vnode) {
-
-        if (!ds.user) return;
-
         return [
             m(breadcrumb),
             m('div#menu', {
@@ -97,7 +94,13 @@ var header = {
                     m('li', {
                         onclick: function() {
                             $.getJSON('logout', function() {
-                                window.location.reload();
+                                ds.base.server = null
+                                ds.base.name = null
+                                if (m.route.get() == "") {
+                                    window.location.reload()
+                                } else {
+                                    m.route.set('')
+                                }
                             });
                         }
                     }, 'Logg ut'),

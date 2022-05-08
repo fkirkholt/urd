@@ -1,19 +1,56 @@
 var m = require('mithril');
 var $ = require('jquery');
+var select = require('./select.js');
 
 var login = {
 
     view: function() {
-        return m('div', [
+        return m('form', [
             m('div', {class: 'f4 mb2'}, 'Logg inn'),
-            !login.error ? '' : m('div', {class: 'red'}, 'Feil brukernavn/passord'),
+            !login.error ? '' : m('div', {class: 'red'}, login.msg || 'Logg inn'),
+            m(select, {
+                class: 'w-100 mb1',
+                id: 'system',
+                name: 'system',
+                label: 'System',
+                value: ds.base.system || 'sqlite',
+                onchange: function() {
+                    ds.base.system = $('#system').val()
+                },
+                options: [
+
+                    {
+                        label: 'SQLite',
+                        value: 'sqlite'
+                    },
+                    {
+                        label: 'MySQL',
+                        value: 'mysql'
+                    },
+                    {
+                        label: 'Oracle',
+                        value: 'oracle'
+                    },
+                    {
+                        label: 'PostgreSQL',
+                        value: 'postgres'
+                    }
+                ]
+            }),
             m('input[type=text]', {
+                id: 'server',
+                name: 'server',
+                placeholder: $('#system').val() == 'sqlite' ? 'Sti til mappe' : 'localhost',
+                value: ds.base.server,
+                class: 'db w-100 mb1'
+            }),
+            $('#system').val() == 'sqlite' ? '' : m('input[type=text]', {
                 id: 'brukernavn',
                 name: 'brukernavn',
                 placeholder: 'Brukernavn',
                 class: 'db w-100 mb1'
             }),
-            m('input[type=password]', {
+            $('#system').val() == 'sqlite' ? '' : m('input[type=password]', {
                 id: 'passord',
                 name: 'passord',
                 placeholder: 'Passord',
@@ -24,21 +61,38 @@ var login = {
                     }
                 }
             }),
+            m('input[type=text]', {
+                id: 'database',
+                name: 'database',
+                placeholder: 'Database',
+                value: ds.base.name,
+                class: 'db w-100 mb1'
+            }),
             m('input[type=button]', {
                 id: 'btn_login',
                 value: 'Logg inn',
                 class: 'db w-100',
                 onclick: function() {
+                    login.error = false
                     var param = {};
-                    param.username = $('#brukernavn').val();
-                    param.password = $('#passord').val();
+                    param.system = $('#system').val()
+                    param.server = $('#server').val().trim()
+                    param.username = $('#brukernavn').val()
+                    param.password = $('#passord').val()
+                    param.database = $('#database').val().trim()
 
                     m.request({
                         method: 'post',
                         url: 'login',
                         params: param
                     }).then(function(result) {
-                        window.location.reload()
+                        if (param.database && param.database != ds.base.name) {
+                            m.route.set('/' + param.database)
+                            $('div.curtain').hide();
+                            $('#login').hide();
+                        } else {
+                            window.location.reload()
+                        }
                     }).catch(function(e) {
                         if (e.code == 401) {
                             login.error = true
