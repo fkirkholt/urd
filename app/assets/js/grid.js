@@ -530,7 +530,7 @@ var grid = {
             m('td', {
                 align: 'right',
                 class: [
-                    'linjenr w1',
+                    'linjenr pa0 w1',
                     idx < ds.table.records.length - 1 ? 'bb b--light-gray' : '',
                 ].join(' ')
             }, [
@@ -557,7 +557,8 @@ var grid = {
                 }
 
                 return grid.cell.draw(ds.table, idx, col, {compressed: config.compressed, border: true, grid: true});
-            })
+            }),
+            m('td', {class: 'w-100 bl b--light-gray pa0 f6'})
         ]);
     },
 
@@ -568,7 +569,7 @@ var grid = {
         return [m('table#urdgrid.tbl', {class: 'max-w10 bb bt b--moon-gray flex flex-column overflow-auto bg-white', style: 'border-spacing: 0;'}, [
             m('thead', {class: 'db'}, [
                 m('tr', {class: 'cursor-default'}, [
-                    m('th', {class: 'tl bb b--moon-gray bg-light-gray normal f6 pb0 w1'}, ''),
+                    m('th', {class: 'tl bb b--moon-gray bg-light-gray normal f6 pa0 w1'}, ''),
                     Object.keys(ds.table.grid.columns).map(function(label, idx) {
                         var col = ds.table.grid.columns[label];
 
@@ -592,7 +593,8 @@ var grid = {
                                 class: 'pl1 di fa-angle-' + (grid.column.order(col) === 'asc' ? 'down' : 'up')
                             })
                         ]]));
-                    })
+                    }),
+                    m('th', {class: 'bl bb b--moon-gray bg-light-gray f6 pa0 w-100'})
                 ])
             ]),
             m('tbody', {class: 'db overflow-y-auto overflow-x-hidden'}, [
