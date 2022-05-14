@@ -23,7 +23,7 @@ var home = {
                 $('#login').show();
                 $('#brukernavn').focus();
             } else {
-                alert(e.message);
+                alert(e.response.detail);
             }
         });
     },
