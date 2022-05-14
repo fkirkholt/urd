@@ -576,7 +576,7 @@ var control = {
                     field.foreign_key.schema != 'public'
                 ) {
                     base = field.foreign_key.base + '.' + field.foreign_key.schema
-                } else if (ds.base.system == 'sqlite') {
+                } else if (ds.base.system == 'sqlite3') {
                     base = ds.base.name
                 } else {
                     base = field.foreign_key.base || field.foreign_key.schema

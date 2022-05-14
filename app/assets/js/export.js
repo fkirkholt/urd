@@ -100,7 +100,7 @@ var export_dialog = {
                 m('input[type=radio]', {name: 'dialect', value: 'mysql'}), ' MySQL', m('br'),
                 m('input[type=radio]', {name: 'dialect', value: 'oracle'}), ' Oracle', m('br'),
                 m('input[type=radio]', {name: 'dialect', value: 'postgres'}), ' PostgreSQL', m('br'),
-                m('input[type=radio]', {name: 'dialect', value: 'sqlite'}), ' SQLite', m('br'),
+                m('input[type=radio]', {name: 'dialect', value: 'sqlite3'}), ' SQLite', m('br'),
             ]),
             m('div[name=buttons]', {class: "bottom-0 max-w8 mt2"}, [
                 m('input[type=button]', {

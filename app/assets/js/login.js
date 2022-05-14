@@ -13,7 +13,7 @@ var login = {
                 id: 'system',
                 name: 'system',
                 label: 'System',
-                value: ds.base.system || 'sqlite',
+                value: ds.base.system || 'sqlite3',
                 onchange: function() {
                     ds.base.system = $('#system').val()
                 },
@@ -21,7 +21,7 @@ var login = {
 
                     {
                         label: 'SQLite',
-                        value: 'sqlite'
+                        value: 'sqlite3'
                     },
                     {
                         label: 'MySQL',
@@ -40,17 +40,17 @@ var login = {
             m('input[type=text]', {
                 id: 'server',
                 name: 'server',
-                placeholder: $('#system').val() == 'sqlite' ? 'Sti til mappe' : 'localhost',
+                placeholder: $('#system').val() == 'sqlite3' ? 'Sti til mappe' : 'localhost',
                 value: ds.base.server,
                 class: 'db w-100 mb1'
             }),
-            $('#system').val() == 'sqlite' ? '' : m('input[type=text]', {
+            $('#system').val() == 'sqlite3' ? '' : m('input[type=text]', {
                 id: 'brukernavn',
                 name: 'brukernavn',
                 placeholder: 'Brukernavn',
                 class: 'db w-100 mb1'
             }),
-            $('#system').val() == 'sqlite' ? '' : m('input[type=password]', {
+            $('#system').val() == 'sqlite3' ? '' : m('input[type=password]', {
                 id: 'passord',
                 name: 'passord',
                 placeholder: 'Passord',
