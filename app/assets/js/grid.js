@@ -131,23 +131,22 @@ var grid = {
                 action.disabled = rec.columns[action.alias];
             }
 
-            return action.disabled ? '' : m('td', [
-                m('i', {
-                    class: 'fa fa-' + action.icon,
-                    onclick: function(e) {
-                        var data = {};
-                        if (action.communication === 'download') {
-                            data.base = rec.base_name;
-                            data.table = rec.table_name;
-                            data.primary_key = JSON.stringify(rec.primary_key);
+            return action.disabled ? '' : m('i', {
+                class: 'fa fa-' + action.icon,
+                title: action.label,
+                onclick: function(e) {
+                    var data = {};
+                    if (action.communication === 'download') {
+                        data.base = rec.base_name;
+                        data.table = rec.table_name;
+                        data.primary_key = JSON.stringify(rec.primary_key);
 
-                            var address = (action.url[0] === '/') ? action.url.substr(1) : ds.base.schema + '/' + action.url;
-                            $.download(address, data, '_blank');
-                        }
-                        e.stopPropagation();
+                        var address = (action.url[0] === '/') ? action.url.substr(1) : ds.base.schema + '/' + action.url;
+                        $.download(address, data, '_blank');
                     }
-                })
-            ]);
+                    e.stopPropagation();
+                }
+            });
         },
 
 
@@ -548,19 +547,15 @@ var grid = {
             Object.keys(ds.table.grid.columns).map(function(label, colidx) {
                 var col = ds.table.grid.columns[label];
 
-                // Check if this is an action
-                if (col.indexOf('actions.') > -1) {
-                    var parts = col.split('.');
-                    var action_name = parts[1];
-                    var action = ds.table.actions[action_name];
-                    action.alias = action_name;
-
-                    return grid.cell.button(record, action);
-                }
-
                 return grid.cell.draw(ds.table, idx, col, {compressed: config.compressed, border: true, grid: true});
             }),
-            m('td', {class: 'w-100 bl b--light-gray pa0 f6'})
+            m('td', {class: 'w-100 bl bb b--light-gray pa0 f6 tr'}, [
+                ds.table.grid.actions.map(function(label, idx) {
+                    var action = ds.table.actions[label]
+
+                    return grid.cell.button(record, action)
+                })
+            ])
         ]);
     },
 
