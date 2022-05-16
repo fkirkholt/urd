@@ -127,8 +127,8 @@ var grid = {
 
             // If disabled status for the action is based on an expression
             // then we get the status from a column with same name as alias of action
-            if (action.alias && rec.columns[action.alias] !== undefined) {
-                action.disabled = rec.columns[action.alias];
+            if (action.name && rec.columns[action.name] !== undefined) {
+                action.disabled = rec.columns[action.name];
             }
 
             return action.disabled ? '' : m('i', {
@@ -550,8 +550,9 @@ var grid = {
                 return grid.cell.draw(ds.table, idx, col, {compressed: config.compressed, border: true, grid: true});
             }),
             m('td', {class: 'w-100 bl bb b--light-gray pa0 f6 tr'}, [
-                ds.table.grid.actions.map(function(label, idx) {
-                    var action = ds.table.actions[label]
+                ds.table.grid.actions.map(function(name, idx) {
+                    var action = ds.table.actions[name]
+                    action.name = name
 
                     return grid.cell.button(record, action)
                 })
