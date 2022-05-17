@@ -193,7 +193,7 @@ var toolbar = {
                         if (config.show_table) {
                             grid.align_thead();
                         } else {
-                            diagram.draw(ds.base.tables[ds.table.name]);
+                            diagram.draw(ds.table)
                         }
                         m.redraw();
                     }

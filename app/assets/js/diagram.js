@@ -1,6 +1,6 @@
 var m = require('mithril');
 var $ = require('jquery');
-var mermaid = require('mermaid');
+var mermaid = require('mermaid').default;
 var _union = require('lodash/union');
 var _repeat = require('lodash/repeat');
 
@@ -45,6 +45,36 @@ diagram = {
     },
 
     draw: function(table) {
+        var def = ["erDiagram"]
+        diagram.main_table = table.name;
+
+        def.push(table.name + ' {')
+        if (table.fields) {
+            Object.keys(table.fields).map(function(alias) {
+                var field = table.fields[alias];
+                var sign = ''
+                def.push(sign + field.datatype + ' ' + field.name);
+            });
+        }
+        def.push('}')
+
+        Object.keys(table.relations).map(function(alias) {
+            var rel = table.relations[alias];
+            if (rel.table == table.name) return;
+
+            var line  = rel.hidden ? '..' : '--';
+            def.push(table.name + ' ||' + line + 'o{ ' + rel.table + ' : contains');
+
+            var rel_table = ds.base.tables[rel.table];
+            if (rel_table.rowcount) {
+                def.push(rel.table + ' : count(' + rel_table.rowcount + ')');
+            }
+        });
+
+        this.def = def.join("\n");
+    },
+
+    draw_class: function(table) {
         var def = ["classDiagram"];
         def.push("class " + table.name);
 
