@@ -23,7 +23,7 @@
     "js-cookie": "^2.2.1",
     "jsoneditor": "^9.5.6",
     "lodash": "^4.17.21",
-    "mermaid": "^8.4.6",
+    "mermaid": "^8.14.0",
     "mithril": "^2.0.4",
     "moment": "^2.29.1",
     "mousetrap": "^1.6.5",
