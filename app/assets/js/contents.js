@@ -236,7 +236,7 @@ contents = {
                     class: 'hover-blue',
                     onclick: function() {
                         var module = contents.context_module;
-                        var def = ['classDiagram'];
+                        var def = ['erDiagram'];
 
                         Object.values(ds.base.contents[module].subitems).map(function(node) {
                             contents.draw_foreign_keys(node, def)

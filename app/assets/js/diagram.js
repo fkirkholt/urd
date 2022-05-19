@@ -23,7 +23,6 @@ diagram = {
     },
 
     onupdate: function(vnode) {
-
         if (this.def !== "") {
             mermaid.mermaidAPI.initialize({
                 securityLevel: 'loose',
@@ -58,12 +57,33 @@ diagram = {
         }
         def.push('}')
 
+        Object.keys(table.foreign_keys).map(function(alias) {
+            var fk = table.foreign_keys[alias];
+            var field_name = fk.foreign[fk.foreign.length -1]
+            var field = table.fields ? table.fields[field_name] : null
+            var label = field && field.label ? field.label : alias;
+            var fk_table = ds.base.tables[fk.table];
+            var line = field && field.hidden ? '..' : '--';
+            var symbol = field && field.nullable ? ' o|' : ' ||'
+            def.push(fk.table + symbol + line + ' o{' + table.name + ' : ' + field_name);
+            if (fk_table === undefined) return;
+            // def.push(fk.table + ' : pk(' + fk_table.primary_key.join(', ') + ')');
+            if (fk_table.rowcount && fk.table != table.name) {
+                // def.push(fk.table + ' : count(' + fk_table.rowcount + ')');
+            }
+        });
+
         Object.keys(table.relations).map(function(alias) {
             var rel = table.relations[alias];
+            var fk_field_name = rel.foreign[rel.foreign.length -1]
+            var fk_field = ds.base.tables[rel.table].fields
+                ? ds.base.tables[rel.table].fields[fk_field_name]
+                : null
+            var symbol = fk_field && fk_field.nullable ? ' o|' : ' ||'
             if (rel.table == table.name) return;
 
             var line  = rel.hidden ? '..' : '--';
-            def.push(table.name + ' ||' + line + 'o{ ' + rel.table + ' : contains');
+            def.push(table.name + symbol + line + 'o{ ' + rel.table + ' : ' + fk_field_name);
 
             var rel_table = ds.base.tables[rel.table];
             if (rel_table.rowcount) {
@@ -136,7 +156,8 @@ diagram = {
             var fk_table = ds.base.tables[fk.table]
             if (fk_table.hidden) return;
             // if (Object.values(module.subitems).indexOf('tables.' + fk.table) == -1) return;
-            def.push(fk.table + ' <-- ' + table.name);
+            var symbol = field.nullable ? ' o|' : ' ||'
+            def.push(fk.table + symbol + '--o{ ' + table.name + ' : ' + field.name);
         });
     },
 
@@ -169,25 +190,31 @@ diagram = {
         var new_path;
         var found_path = [];
 
-        Object.keys(table.relations).map(function(label) {
+        Object.keys(table.relations).map(function(fk_name) {
 
+            // make a copy of path
             new_path = path.slice();
 
-            var rel = table.relations[label];
+            var fk = table.relations[fk_name];
+            var fk_field_name = fk.foreign[fk.foreign.length -1]
+            var fk_field = ds.base.tables[fk.table].fields
+                ? ds.base.tables[fk.table].fields[fk_field_name]
+                : null
+            var symbol = fk_field && fk_field.nullable ? ' |o' : ' ||'
 
-            if ($.inArray(rel.table + ' --> ' + table.name, path) !== -1) return;
+            if ($.inArray(table.name + symbol + '--{o ' + fk.table + ' : ' + fk_field_name, path) !== -1) return;
 
-            var rel_table = ds.base.tables[rel.table];
-            if (rel_table.hidden) return;
+            var fk_table = ds.base.tables[fk.table];
+            if (fk_table.hidden) return;
 
-            new_path.push(table.name + ' <-- ' + rel.table);
+            new_path.push(table.name + symbol + '--o{ ' + fk.table + ' : ' + fk_field_name);
 
-            if (rel.table == diagram.main_table) {
+            if (fk.table == diagram.main_table) {
                 found_path = _union(found_path, new_path);
 
                 return;
             } else {
-                new_path = diagram.get_path(rel_table, new_path);
+                new_path = diagram.get_path(fk_table, new_path);
                 if (new_path) {
                     found_path = _union(found_path, new_path);
 
@@ -196,11 +223,14 @@ diagram = {
             }
         });
 
-        Object.keys(table.foreign_keys).map(function(label) {
+        Object.keys(table.foreign_keys).map(function(fk_name) {
             new_path = path.slice();
-            var fk = table.foreign_keys[label];
+            var fk = table.foreign_keys[fk_name];
+            var fk_field_name = fk.foreign[fk.foreign.length -1]
+            var fk_field = table.fields ? table.fields[fk_field_name] : null
+            var symbol = fk_field && fk_field.nullable ? ' |o' : ' ||'
 
-            if ($.inArray(fk.table + ' <-- ' + table.name, path) !== -1) return;
+            if ($.inArray(fk.table + symbol + '--o{ ' + table.name + ' : ' + fk_field_name, path) !== -1) return;
 
             var fk_table = ds.base.tables[fk.table];
 
@@ -212,7 +242,7 @@ diagram = {
             } else {
                 if (fk_table.type == 'reference') return;
 
-                new_path.push(table.name + ' --> ' + fk.table);
+                new_path.push(fk.table + symbol + '--o{ ' + table.name + ' : ' + fk_field_name);
 
                 new_path = diagram.get_path(fk_table, new_path);
                 if (new_path) {
