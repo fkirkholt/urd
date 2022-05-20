@@ -9,15 +9,15 @@ diagram = {
     main_table: "",
 
     oninit: function(vnode) {
-        $('body').on('click', 'svg g.classGroup', function() {
-            var table_name = $(this).find('text tspan.title').html();
+        $('body').on('click', 'svg g', function() {
+            var table_name = $(this).attr('id');
             var table = ds.base.tables[table_name];
 
             diagram.draw(table);
 
             $('#mermaid').html(diagram.def).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
-            $('#mermaid svg g.classGroup').addClass('pointer');
+            $('#mermaid svg g').addClass('pointer');
             $('#mermaid svg').addClass('center');
         });
     },
@@ -31,7 +31,7 @@ diagram = {
             $('#mermaid').html(this.def).removeAttr('data-processed');
             mermaid.init(undefined, $("#mermaid"));
 
-            $('#mermaid svg g.classGroup').addClass('pointer');
+            $('#mermaid svg g').addClass('pointer');
             $('#mermaid svg').addClass('center');
         }
 
