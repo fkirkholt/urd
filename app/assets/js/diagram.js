@@ -8,6 +8,25 @@ diagram = {
     def: "",
     main_table: "",
 
+    show_tooltip: function(evt) {
+        let tooltip = document.getElementById("tooltip");
+        var svg_width = $('svg').width()
+        var svg_height = $('svg').height()
+        var max_width = parseInt($('svg').css('max-width'))
+        var text = $(evt.target).parent().attr('id')
+        if (max_width/svg_width > 2) {
+            tooltip.innerHTML = text;
+            tooltip.style.display = "block";
+            tooltip.style.left = evt.pageX + 10 + 'px';
+            tooltip.style.top = evt.pageY + 10 + 'px';
+        }
+    },
+
+    hide_tooltip: function() {
+        var tooltip = document.getElementById("tooltip");
+        tooltip.style.display = "none";
+    },
+
     oninit: function(vnode) {
         $('body').on('click', 'svg g', function() {
             var table_name = $(this).attr('id');
@@ -32,6 +51,8 @@ diagram = {
             mermaid.init(undefined, $("#mermaid"));
 
             $('#mermaid svg g').addClass('pointer');
+            $('#mermaid svg g rect').attr('onmouseenter', "diagram.show_tooltip(evt);")
+                .attr('onmouseout', "diagram.hide_tooltip()")
             $('#mermaid svg').addClass('center');
         }
 

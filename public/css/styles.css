@@ -99,3 +99,10 @@ tr.bg-light-blue:focus {
 .dot {text-decoration-style: dotted}
 
 .jsoneditor {border: thin solid lightgray}
+
+#tooltip {
+  background: cornsilk;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 5px;
+}
