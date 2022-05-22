@@ -94,8 +94,27 @@ diagram = {
             }
         });
 
+        var rel_tables = []
+        Object.keys(table.relations).map(function(alias) {
+            var rel = table.relations[alias]
+            rel_tables.push(rel.table)
+        })
+
         Object.keys(table.relations).map(function(alias) {
             var rel = table.relations[alias];
+            var rel_table = ds.base.tables[rel.table];
+            var skip = false
+            if (true) {
+                Object.keys(rel_table.foreign_keys).map(function(alias) {
+                    var rel_fk = rel_table.foreign_keys[alias]
+                    if (rel_tables.includes(rel_fk.table)) {
+                        skip = true
+                    }
+                })
+            }
+            if (skip) {
+                return
+            }
             var fk_field_name = rel.foreign[rel.foreign.length -1]
             var fk_field = ds.base.tables[rel.table].fields
                 ? ds.base.tables[rel.table].fields[fk_field_name]
@@ -106,7 +125,6 @@ diagram = {
             var line  = rel.hidden ? '..' : '--';
             def.push(table.name + symbol + line + 'o{ ' + rel.table + ' : ' + fk_field_name);
 
-            var rel_table = ds.base.tables[rel.table];
             if (rel_table.rowcount) {
                 def.push(rel.table + ' : count(' + rel_table.rowcount + ')');
             }
