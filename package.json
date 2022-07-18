@@ -19,7 +19,7 @@
   "homepage": "https://github.com/arkivverket/urd#readme",
   "dependencies": {
     "jquery": "^3.5.1",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.2",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.21",
     "mithril": "^1.1.7",
